@@ -1,4 +1,4 @@
-#Documentation is actived by Help menu or F1 key press
+#summary Documentation is actived by Help menu or F1 key press
 
 = English =
 The archive of localized ToDoList doesn't contain documentation. So that when you perform Help menu or press F1 key, there should be a message dialog show you no documentation found. 
