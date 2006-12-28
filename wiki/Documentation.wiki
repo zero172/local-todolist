@@ -1,11 +1,12 @@
-Documentation is actived by Help menu or F1 key press
+#Documentation is actived by Help menu or F1 key press
 
+= English =
 The archive of localized ToDoList doesn't contain documentation. So that when you perform Help menu or press F1 key, there should be a message dialog show you no documentation found. 
 
 Please download the separate documentation archive and unzip to the folder in which ToDoList.exe is.
 
 
-=== 简体中文（Simplified Chinese） ===
+= 简体中文（Simplified Chinese） =
 
 从[帮助]菜单或者按F1键将打开文档
 
