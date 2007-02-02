@@ -126,14 +126,34 @@ int CRTFContentCtrlApp::ConvertToHtml(const unsigned char* pContent,
 		return 0; // nothing to convert
 
 	CString sRtf(pContent), sHtml;
-	
+
+	// scan the string looking for anything that smells like a 
+	// multi-byte character, because CRTF_HTMLConverter can't
+	// handle that at the moment
+	if (CRTF_HTMLConverter::HasMultiByteChars(sRtf))
+		return 0;
+
+/*
+	// check the code page to see if it represents a multi-byte
+	// char set because we can't handle that at present
+	int nCodePage = CRTF_HTMLConverter::GetCodePage(sRtf);
+
+	switch (nCodePage)
+	{
+	case 874:	// Thai
+	case 932:	// Japanese
+	case 936:	// Simplified Chinese
+	case 949:	// Korean
+	case 950:	// Traditional Chinese:
+		return 0;
+	}
+*/
+
 	// scan the string looking for anything that smells like a 
 	// multi-byte character, because CRTF_HTMLConverter can't
 	// handle that at the moment
 	if (Misc::IsMultibyteString(sRtf))
 		return 0;
-
-	CRTF_HTMLConverter r2h(CRTF_HTMLConverter::c_modRTF2HTML);
 
 	if (CRTF_HTMLConverter::Convert(sRtf, sHtml, FALSE))
 	{
