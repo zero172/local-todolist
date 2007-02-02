@@ -242,7 +242,7 @@ void CFilterBar::ShowFilter(TDC_COLUMN nType, BOOL bShow, BOOL bUpdate)
 
 BOOL CFilterBar::WantShowFilter(TDC_COLUMN nType)
 {
-	if ((int)nType < 0)
+	if ((int)nType < 0) // first filter is -1 and is therefore always visible
 		return TRUE;
 
 	return (BOOL)m_aVisibility[(DWORD)nType];
@@ -266,10 +266,21 @@ int CFilterBar::ReposControls(int nWidth, BOOL bCalcOnly)
 	}
 
 	int nCtrlHeight = dwm.OffsetCtrl(this, IDC_FILTERCOMBO).Height();
-	int nXPos = 0, nYPos = 0;
+	int nXPos = 0, nYPos = 0, nVisible = 0;
 
 	CDlgUnits dlu(*this);
 	
+	// indent controls after the first line so that they
+	// line up neatly with the first line. Unless we're only
+	// at the second control in which case there is nothing
+	// to line up with
+	const FILTERCTRL& fc0 = FILTERCTRLS[0];
+	const FILTERCTRL& fc1 = FILTERCTRLS[1];
+	int nLineIndent = dlu.ToPixelsX(fc0.nLenLabelDLU + 
+									fc0.nLenCtrlDLU -
+									fc1.nLenLabelDLU - 
+									fc1.nLenCtrlDLU - 1);
+
 	for (int nCtrl = 0; nCtrl < NUMFILTERCTRLS; nCtrl++)
 	{
 		CRect rCtrl;
@@ -284,16 +295,16 @@ int CFilterBar::ReposControls(int nWidth, BOOL bCalcOnly)
 			// if we're at the start of the line then just move ctrls
 			// else we must check whether there's enough space to fit
 			
-			if (nXPos > 0) // we're not the first
+			if (nXPos > 0 || (nYPos > 0 && nXPos > nLineIndent)) // we're not the first
 			{
 				// work out the total length of label + ctrl
 				int nLen = dlu.ToPixelsX(fc.nLenLabelDLU + FILTERCTRLXSPACING + fc.nLenCtrlDLU);
-				
+
 				// do we fit?
 				if ((nLen + nXPos) > nWidth) // no
 				{
 					// move to next line
-					nXPos = 0;
+					nXPos = nLineIndent;
 					nYPos += dlu.ToPixelsY(FILTERCTRLYSPACING) + nCtrlHeight;
 				}
 			}
@@ -321,6 +332,8 @@ int CFilterBar::ReposControls(int nWidth, BOOL bCalcOnly)
 			
 			// update XPos
 			nXPos = rCtrl.right + dlu.ToPixelsX(FILTERCTRLXSPACING);
+
+			nVisible++;
 		}
 		
 		GetDlgItem(fc.nIDLabel)->ShowWindow(bWantCtrl ? SW_SHOW : SW_HIDE);
