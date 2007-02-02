@@ -135,9 +135,12 @@ BEGIN
     BUTTON      BUTTON_CENTERALIGN
     BUTTON      BUTTON_RIGHTALIGN
     SEPARATOR
+    BUTTON      BUTTON_BULLET
     BUTTON      BUTTON_INDENT
     BUTTON      BUTTON_OUTDENT
-    BUTTON      BUTTON_BULLET
+    SEPARATOR
+    BUTTON      BUTTON_TEXTCOLOR
+    BUTTON      BUTTON_BACKCOLOR
 END
 
 
@@ -147,6 +150,7 @@ END
 //
 
 TOOLBAR_CONTROL         BITMAP  DISCARDABLE     "toolbar.bmp"
+IDB_TOOLBAR             BITMAP  DISCARDABLE     "toolbar2.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -168,6 +172,7 @@ BEGIN
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "Paste Simple (No formatting)", ID_EDIT_PASTESIMPLE
         MENUITEM "Past&e Tasks as References",  ID_EDIT_PASTEASREF
         MENUITEM "Delete\tDel",                 ID_EDIT_DELETE
         MENUITEM SEPARATOR
@@ -217,6 +222,12 @@ BEGIN
     BUTTON_OUTDENT          "\nDecrease Indent"
     BUTTON_BULLET           "\nBullet List"
     BUTTON_STRIKETHRU       "\nStrikethrough"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    BUTTON_TEXTCOLOR        "Text Colour"
+    BUTTON_BACKCOLOR        "Background Colour"
 END
 
 #endif    // English (Australia) resources
