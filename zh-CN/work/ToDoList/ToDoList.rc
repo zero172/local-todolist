@@ -26,7 +26,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 // RT_MANIFEST
 //
 
-IDR_MANIFEST            24             "res\\todolist.exe.manifest"
+IDR_MANIFEST            RT_MANIFEST             "res\\todolist.exe.manifest"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -34,7 +34,7 @@ IDR_MANIFEST            24             "res\\todolist.exe.manifest"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,1,0,0
+ FILEVERSION 5,1,1,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -53,7 +53,7 @@ BEGIN
             VALUE "Comments", "边城狂人 汉化"
             VALUE "CompanyName", "AbstractSpoon Software"
             VALUE "FileDescription", "ToDoList"
-            VALUE "FileVersion", "5, 1, 0, 0"
+            VALUE "FileVersion", "5, 1, 1, 0"
             VALUE "InternalName", "ToDoList"
             VALUE "LegalCopyright", "Copyright(C)AbstractSpoon 2003-06"
             VALUE "OriginalFilename", "ToDoList.exe"
@@ -197,7 +197,7 @@ BEGIN
                     WS_TABSTOP,0,34,135,10
 END
 
-IDD_PREFERENCES DIALOG  0, 0, 475, 263
+IDD_PREFERENCES DIALOG  0, 0, 475, 283
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "选项"
 FONT 9, "宋体"
@@ -263,8 +263,8 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "将已完成的任务存档(&A)",IDC_AUTOARCHIVE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,65,160,10
-    CONTROL         "刷新活动的“查找任务”结果(&R)",IDC_REFRESHFINDTASKS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,79,160,10
+    CONTROL         "刷新活动的“查找任务”结果(&R)",IDC_REFRESHFINDTASKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,79,160,10
     CONTROL         "将已存档的任务从当前列表中删队(&R)",
                     IDC_REMOVEARCHIVEDITEMS,"Button",BS_AUTOCHECKBOX | 
                     WS_GROUP | WS_TABSTOP,17,123,160,10
@@ -286,10 +286,11 @@ BEGIN
     CONTROL         "使用这个样式表(&U)",IDC_USESTYLESHEETFORDUEITEMS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,211,35,109,10
     EDITTEXT        IDC_DUETASKSTYLESHEET,223,48,139,13,ES_AUTOHSCROLL
-    CONTROL         "只显示任务的标题(&S)",IDC_DISPLAYDUETASKTITLESONLY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,199,65,93,10
-    CONTROL         "只显示分配给指定人的任务(&O)",IDC_ONLYSHOWDUETASKFORPERSON,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,199,79,110,10
+    CONTROL         "只显示任务的标题(&S)",IDC_DISPLAYDUETASKTITLESONLY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,199,65,93,10
+    CONTROL         "只显示分配给指定人的任务(&O)",
+                    IDC_ONLYSHOWDUETASKFORPERSON,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,199,79,110,10
     EDITTEXT        IDC_DUETASKPERSON,310,77,52,14,ES_AUTOHSCROLL
     CONTROL         "自动保存任务列表(&U)，每 ",IDC_AUTOSAVE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,199,108,105,10
@@ -337,9 +338,8 @@ BEGIN
     CONTROL         "单击系统托盘中的图标时显示／隐藏",
                     IDC_TOGGLETRAYVISIBILITY,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,20,99,157,10
-    CONTROL         "按下[Esc]键时最小化ToDoList",
-                    IDC_ESCAPEMINIMIZES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,115,169,10
+    CONTROL         "按下[Esc]键时最小化ToDoList",IDC_ESCAPEMINIMIZES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,115,169,10
     CONTROL         "退出时需要确认(&D)\n(不选中表示退出时自动保存任务列表)",
                     IDC_CONFIRMSAVEONEXIT,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     BS_MULTILINE | WS_TABSTOP,7,129,171,18
@@ -482,7 +482,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,202,166,10
     CONTROL         "任务的开始日期或者结束日期改变时重新计算任务可能进行的时间",
                     IDC_AUTOCALCTIMEEST,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,192,188,175,17
+                    BS_MULTILINE | WS_TABSTOP,192,202,175,17
     CONTROL         "任务所依赖的完成日期改变时自动调整其开始日期和结束日期",
                     IDC_AUTOUPDATEDEPENDEES,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,192,221,175,19
@@ -490,9 +490,6 @@ BEGIN
     LTEXT           "时间周期",IDC_TIMEGROUP,7,144,166,8
     LTEXT           "小时",IDC_STATIC,129,157,18,8
     LTEXT           "天",IDC_STATIC,129,172,16,8
-    CONTROL         "某个任务所依赖的任务完成时间变化时，自动调整它的开始时间和结束时间",
-                    IDC_AUTOUPDATEDEPENDEES,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | BS_MULTILINE | WS_TABSTOP,192,208,175,19
 END
 
 IDD_PREFTASKDEF_PAGE DIALOGEX 0, 0, 369, 249
@@ -563,7 +560,7 @@ BEGIN
                     WS_TABSTOP,7,7,355,168
     DEFPUSHBUTTON   "新工具(&N)",IDC_NEWTOOL,7,182,50,14
     LTEXT           "路径(&P)",IDC_STATIC,64,184,31,8
-    EDITTEXT        IDC_TOOLPATH,104,158,203,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TOOLPATH,104,182,203,14,ES_AUTOHSCROLL
     PUSHBUTTON      "删除工具(&D)",IDC_DELETETOOL,312,182,50,14
     LTEXT           "参数(&A)",IDC_STATIC,64,202,34,8
     EDITTEXT        IDC_CMDLINE,104,200,203,14,ES_AUTOHSCROLL
@@ -1020,8 +1017,8 @@ BEGIN
     PUSHBUTTON      "全部拷贝",IDC_COPYSHORTCUTS,165,206,50,14
 END
 
-IDD_REC_TASK_DAILY_PAGE DIALOG DISCARDABLE  0, 0, 186, 27
-STYLE WS_CHILD
+IDD_REC_TASK_DAILY_PAGE DIALOG  0, 0, 186, 27
+STYLE DS_SETFONT | WS_CHILD
 FONT 9, "宋体"
 BEGIN
     LTEXT           "每",IDC_STATIC,28,9,19,8
@@ -1029,8 +1026,8 @@ BEGIN
     LTEXT           "天",IDC_STATIC,85,9,20,8
 END
 
-IDD_REC_TASK_MONTHLY_PAGE DIALOG DISCARDABLE  0, 0, 186, 27
-STYLE WS_CHILD
+IDD_REC_TASK_MONTHLY_PAGE DIALOG  0, 0, 186, 27
+STYLE DS_SETFONT | WS_CHILD
 FONT 9, "宋体"
 BEGIN
     LTEXT           "在",IDC_STATIC,28,9,23,8
@@ -1040,8 +1037,8 @@ BEGIN
     LTEXT           "月",IDC_STATIC,144,9,28,8
 END
 
-IDD_REC_TASK_WEEKLY_PAGE DIALOG DISCARDABLE  0, 0, 186, 70
-STYLE WS_CHILD
+IDD_REC_TASK_WEEKLY_PAGE DIALOG  0, 0, 186, 70
+STYLE DS_SETFONT | WS_CHILD
 FONT 9, "宋体"
 BEGIN
     LTEXT           "每",IDC_STATIC,28,9,19,8
@@ -1053,8 +1050,8 @@ BEGIN
     LTEXT           "在",IDC_STATIC,28,26,10,8
 END
 
-IDD_REC_TASK_YEARLY_PAGE DIALOG DISCARDABLE  0, 0, 186, 27
-STYLE WS_CHILD
+IDD_REC_TASK_YEARLY_PAGE DIALOG  0, 0, 186, 27
+STYLE DS_SETFONT | WS_CHILD
 FONT 9, "宋体"
 BEGIN
     LTEXT           "每",IDC_STATIC,28,9,19,8
@@ -1063,20 +1060,20 @@ BEGIN
     EDITTEXT        IDC_MONTHDAY,125,7,25,13,ES_AUTOHSCROLL
 END
 
-IDD_RECURRING_TASK_DIALOG DIALOG DISCARDABLE  0, 0, 186, 138
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_RECURRING_TASK_DIALOG DIALOGEX 0, 0, 186, 138
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "重复选项"
-FONT 9, "宋体"
+FONT 9, "宋体", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "确定",IDOK,71,117,50,14
     PUSHBUTTON      "取消",IDCANCEL,129,117,50,14
-    LTEXT           "任务发生",IDC_STATIC,7,9,40,8
+    LTEXT           "任务频率",IDC_STATIC,7,9,40,8
     COMBOBOX        IDC_REGULARITY,53,7,126,113,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_REC_OPTIONS_FRAME,"Static",SS_BLACKFRAME | NOT 
                     WS_VISIBLE,0,21,179,62
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,108,172,1
-    LTEXT           "计算该任务下次发生的时间：",
+    LTEXT           "从选择的事件开始计算下次发生该任务的日期：",
                     IDC_RECALCFROMLABEL,7,86,102,17
     COMBOBOX        IDC_RECALCFROM,114,88,65,30,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -1090,11 +1087,10 @@ END
 
 IDD_EXPORT_DIALOG DLGINIT
 BEGIN
-    IDC_TASKLISTOPTIONS, 0x403, 20, 0
-0x6874, 0x2065, 0x6361, 0x6974, 0x6576, 0x7420, 0x7361, 0x6c6b, 0x7369, 
-0x0074, 
+    IDC_TASKLISTOPTIONS, 0x403, 13, 0
+0xb1b5, 0xb0c7, 0xcec8, 0xf1ce, 0xd0c1, 0xedb1, "\000" 
     IDC_TASKLISTOPTIONS, 0x403, 19, 0
-0x6c61, 0x206c, 0x706f, 0x6e65, 0x7420, 0x7361, 0x6c6b, 0x7369, 0x7374, 
+0xf2b4, 0xaabf, 0xc4b5, 0xf9cb, 0xd0d3, 0xcec8, 0xf1ce, 0xd0c1, 0xedb1, 
 "\000" 
     0
 END
@@ -1465,19 +1461,19 @@ END
 IDD_RECURRING_TASK_DIALOG DLGINIT
 BEGIN
     IDC_REGULARITY, 0x403, 5, 0
-0x6e4f, 0x6563, "\000" 
-    IDC_REGULARITY, 0x403, 6, 0
-0x6144, 0x6c69, 0x0079, 
-    IDC_REGULARITY, 0x403, 7, 0
-0x6557, 0x6b65, 0x796c, "\000" 
-    IDC_REGULARITY, 0x403, 8, 0
-0x6f4d, 0x746e, 0x6c68, 0x0079, 
-    IDC_REGULARITY, 0x403, 7, 0
-0x6559, 0x7261, 0x796c, "\000" 
-    IDC_RECALCFROM, 0x403, 10, 0
-0x6f63, 0x706d, 0x656c, 0x6574, 0x0064, 
-    IDC_RECALCFROM, 0x403, 4, 0
-0x7564, 0x0065, 
+0xbbd2, 0xceb4, "\000" 
+    IDC_REGULARITY, 0x403, 5, 0
+0xbfc3, 0xeccc, "\000" 
+    IDC_REGULARITY, 0x403, 5, 0
+0xbfc3, 0xdcd6, "\000" 
+    IDC_REGULARITY, 0x403, 5, 0
+0xbfc3, 0xc2d4, "\000" 
+    IDC_REGULARITY, 0x403, 5, 0
+0xbfc3, 0xeac4, "\000" 
+    IDC_RECALCFROM, 0x403, 5, 0
+0xeacd, 0xc9b3, "\000" 
+    IDC_RECALCFROM, 0x403, 5, 0
+0xbdb5, 0xdac6, "\000" 
     0
 END
 
@@ -2145,7 +2141,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "关于...",                     ID_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "AbstractSpoon - 2003-06",      ID_TRAYICON, GRAYED
+        MENUITEM "AbstractSpoon - 2003-06",     ID_TRAYICON, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "退出ToDoList(&X)",            ID_TRAYICON_CLOSE
     END
@@ -2417,7 +2413,7 @@ BEGIN
     ID_SORT_BYLASTMOD       "按最后修改时间排序"
     ID_SORT_BYRISK          "按风险排序"
     ID_SORT_BYVERSION       "按版本排序"
-    ID_SORT_BYRECURRENCE    "按循环任务排序"
+    ID_SORT_BYRECURRENCE    "按重复任务排序"
     ID_SORT_NONE            "禁止排序"
 END
 
@@ -2896,7 +2892,7 @@ BEGIN
     IDS_FIXDEPENDEESTITLE   "验证任务日期"
     IDS_FIXDEPENDEES        "你想验证所有日期与依赖顶冲突的任务吗？"
     IDS_LICENSE             "ToDoList(C)2003-06 <a href=""www.abstractspoon.com""><font color=""#006000"" face=""tahoma""><u><b>Abstract</b><i>Spoon </i>Software</u></font></a> is licensed under a <a href=""http://creativecommons.org/licenses/by-sa/2.5/""><font color=""#606060"" face=""tahoma"">Creative Commons Attribution-ShareAlike 2.5  License</a></font>"
-    IDS_SETFOCUS2TASKLIST    "让任务列表获取焦点"
+    IDS_SETFOCUS2TASKLIST   "让任务列表获取焦点"
     IDS_NOWUW               "在下载更新之前，你需要安装Web更新组件(然后重试)。\n\n你想现在下载Web更新组件吗？"
 END
 
@@ -2911,16 +2907,16 @@ BEGIN
     IDS_SAMPLETASK          "示例任务"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
-    IDS_TDC_FIELD_RECURRENCE "循环(&E)"
-    IDS_TDC_COLUMN_RECURRENCE "循环"
+    IDS_TDC_FIELD_RECURRENCE "重复(&E)"
+    IDS_TDC_COLUMN_RECURRENCE "重复"
     IDS_ONCEONLY            "一次"
     IDS_DAILY               "每日"
     IDS_WEEKLY              "每周"
     IDS_MONTHLY             "每月"
     IDS_YEARLY              "每年"
-    IDS_TDLBC_RECURRENCE    "循环"
+    IDS_TDLBC_RECURRENCE    "重复"
     IDS_TDLBC_VERSION       "版本"
     IDS_TDC_COLUMN_VERSION  "版本."
     IDS_TDC_FIELD_VERSION   "版本(&V)"
@@ -2931,7 +2927,7 @@ BEGIN
     IDS_COMMANDLINEOPTIONSTITLE "ToDoList命令行选项"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_FTD_VERSION         "U)\t版本"
 END
