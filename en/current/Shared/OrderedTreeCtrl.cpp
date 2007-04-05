@@ -199,7 +199,12 @@ LRESULT COrderedTreeCtrl::OnGutterWantRecalc(WPARAM /*wParam*/, LPARAM /*lParam*
 {
 	BuildVisibleIndexMap();
 
-	return 0L; // always
+	// do not recalc if editing a label
+	if (GetEditControl() != NULL)
+		return 1L; // cancel recalc
+
+	// else
+	return 0L;
 }
 
 LRESULT COrderedTreeCtrl::OnGutterGetFirstChildItem(WPARAM /*wParam*/, LPARAM lParam)

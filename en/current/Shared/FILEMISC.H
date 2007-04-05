@@ -80,6 +80,9 @@ namespace FileMisc
 
 	// append a line of text to a text file
 	bool AppendLineToFile(LPCTSTR szPathname, LPCTSTR szLine);
+
+	DWORD Run(HWND hwnd, LPCSTR lpFile, LPCSTR lpDirectory = NULL, int nShowCmd = SW_SHOW);
+
 }
 
 #endif // _MISCFILE_FUNCTIONS_H_

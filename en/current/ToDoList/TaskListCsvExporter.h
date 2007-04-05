@@ -36,7 +36,8 @@ protected:
 	CString ColumnHeadings() const;
 
 	void AppendAttribute(const ITaskList6* pTasks, HTASKITEM hTask, 
-								LPCTSTR szAttribName, LPCTSTR szAltAttribName, CString& sOutput) const;
+						LPCTSTR szAttribName, LPCTSTR szAltAttribName, 
+                        CString& sOutput, LPCTSTR szPrefix = NULL) const;
 	void AppendAttribute(LPCTSTR szAttrib, CString& sOutput) const;
 	void AppendAttribute(double dAttrib, LPCTSTR szFormat, 
 								CString& sOutput) const;

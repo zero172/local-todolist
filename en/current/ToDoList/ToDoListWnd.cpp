@@ -429,7 +429,7 @@ END_MESSAGE_MAP()
 
 BOOL CToDoListWnd::Create(DWORD dwFlags, LPCTSTR szTDListPath)
 {
-	m_sCmdLineFilePath = szTDListPath;
+	m_startupOptions.sFilePath = szTDListPath;
 	m_bVisible = (dwFlags & TLD_FORCEVISIBLE) ? 1 : -1;
 	m_bPasswordPrompting = (dwFlags & TLD_PASSWORDPROMPTING);
 	
@@ -487,9 +487,9 @@ int CToDoListWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (!InitToolbar())
 		return -1;
 
-   // menu icons
-   InitMenuIconManager();
-
+	// menu icons
+	InitMenuIconManager();
+	
 	// filterbar
 	if (!m_filterBar.Create(this, (UINT)IDC_STATIC))
 		return -1;
@@ -678,7 +678,7 @@ void CToDoListWnd::InitMenuIconManager()
 	aCmdIDs.Add(ID_PREFERENCES);
 	aCmdIDs.Add(ID_HELP);
 	
-	m_mgrMenuIcons.AddImages(aCmdIDs, IDB_TOOLBAR16, 16, RGB(192, 192, 192));
+	m_mgrMenuIcons.AddImages(aCmdIDs, IDB_TOOLBAR16, 16, RGB(255, 0, 255));//RGB(192, 192, 192));
 }
 
 void CToDoListWnd::OnShowKeyboardshortcuts() 
@@ -723,8 +723,11 @@ BOOL CToDoListWnd::InitToolbar()
 								WS_CHILD | WS_VISIBLE | CBRS_TOP |  
 								CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC))
 		{
-			if (m_toolbar.LoadToolBar(IDR_TOOLBAR, nIDToolbarImage))
+			if (m_toolbar.LoadToolBar(IDR_TOOLBAR))
+			{
+				m_toolbar.SetImage(nIDToolbarImage, RGB(255, 0, 255));
 				m_toolbar.GetToolBarCtrl().HideButton(ID_TOOLS_TOGGLECHECKIN, !Prefs().GetEnableSourceControl());
+			}
 		}
 	}
 	
@@ -735,7 +738,7 @@ BOOL CToDoListWnd::PreTranslateMessage(MSG* pMsg)
 {
 	if (pMsg->message == WM_CLOSE)
 	{
-		OnQueryEndSession();//OnWuwClose();
+		OnQueryEndSession();
 		return TRUE;
 	}
 
@@ -1206,17 +1209,36 @@ LRESULT CToDoListWnd::OnPostOnCreate(WPARAM /*wp*/, LPARAM /*lp*/)
 
 	// if we have a file on the commandline or any previous tasklists
 	// set the prompt of the initial tasklist to something appropriate
-	if (!m_sCmdLineFilePath.IsEmpty() || nTDCCount)
+	if (!m_startupOptions.sFilePath.IsEmpty() || nTDCCount)
 	{
 		//	TODO
 	}
 	
 	BOOL bOpen = FALSE;
 
-	if (!m_sCmdLineFilePath.IsEmpty())
-		bOpen = (TDCO_SUCCESS == OpenTaskList(m_sCmdLineFilePath));
+	if (!m_startupOptions.sFilePath.IsEmpty())
+	{
+		bOpen = (TDCO_SUCCESS == OpenTaskList(m_startupOptions.sFilePath));
+
+		// other startup options
+		if (bOpen)
+		{
+			CFilteredToDoCtrl& tdc = GetToDoCtrl();
+
+			if (m_startupOptions.dwIDSel)
+				tdc.SelectTask(m_startupOptions.dwIDSel);
+
+			else if (!m_startupOptions.sNewTask.IsEmpty())
+			{
+				tdc.NewTask(m_startupOptions.sNewTask, TDC_INSERTATTOP, TRUE, FALSE);
+
+				if (!m_startupOptions.sComments.IsEmpty())
+					tdc.SetSelectedTaskComments(m_startupOptions.sComments, m_startupOptions.sComments);
+			}
+		}
+	}
 	
-	m_sCmdLineFilePath.IsEmpty(); // always
+	m_startupOptions.Clear(); // always
 	
 	// load last files
 	if (!bOpen)
@@ -2635,7 +2657,7 @@ void CToDoListWnd::EnsureVisible()
 
 void CToDoListWnd::OnAbout() 
 {
-	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.1.1</b>",
+	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.1.5</b>",
 		CEnString(IDS_ABOUTHEADING), CEnString(IDS_ABOUTCOPYRIGHT), 1, 2, 8);
 	
 	dialog.DoModal();
@@ -2938,7 +2960,13 @@ BOOL CToDoListWnd::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 			LPCTSTR szTitle = (LPCTSTR)pCopyDataStruct->lpData;
 			
 			if (szTitle && *szTitle)
-				NewTask(szTitle, TDC_INSERTATTOP, TRUE, FALSE);
+			{
+				// do we need to cache this ?
+				if (!m_startupOptions.sFilePath.IsEmpty())
+					m_startupOptions.sNewTask = szTitle;
+				else
+					NewTask(szTitle, TDC_INSERTATTOP, TRUE, FALSE);
+			}
 			else
 			{
 				NewTask(CEnString(IDS_TASK), TDC_INSERTATTOP, TRUE, FALSE);
@@ -2956,18 +2984,32 @@ BOOL CToDoListWnd::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 			
 			if (szComments && *szComments)
 			{
-				CToDoCtrl& tdc = GetToDoCtrl();
-				
-				// comments can only be applied to singly selected tasks
-				if (tdc.GetSelectedCount() == 1)
-					tdc.SetSelectedTaskComments(szComments, szComments);
+				// do we need to cache this ?
+				if (!m_startupOptions.sFilePath.IsEmpty())
+					m_startupOptions.sComments = szComments;
+				else
+				{
+					CToDoCtrl& tdc = GetToDoCtrl();
+					
+					// comments can only be applied to singly selected tasks
+					if (tdc.GetSelectedCount() == 1)
+						tdc.SetSelectedTaskComments(szComments, szComments);
+				}
 			}
 		}
 		break;
 
 	case SELECTTASK:
 		if (pCopyDataStruct->lpData)
-			GetToDoCtrl().SelectTask(*((DWORD*)pCopyDataStruct->lpData));
+		{
+			DWORD dwID = *((DWORD*)pCopyDataStruct->lpData);
+
+			// do we need to cache this ?
+			if (!m_startupOptions.sFilePath.IsEmpty())
+				m_startupOptions.dwIDSel = dwID;
+			else
+				GetToDoCtrl().SelectTask(dwID);
+		}
 		break;
 	}
 	
@@ -5272,11 +5314,11 @@ void CToDoListWnd::OnUpdateNewtask(CCmdUI* pCmdUI)
 		OnUpdateNewtaskBeforeselectedtask(pCmdUI);
 		break;
 
-	case ID_NEWSUBTASK_ATTOP:
-		OnUpdateNewsubtaskAttop(pCmdUI);
+	case ID_NEWTASK_ATTOP:
+		OnUpdateNewtaskAttop(pCmdUI);
 		break;
 
-	case ID_NEWSUBTASK_ATBOTTOM:
+	case ID_NEWTASK_ATBOTTOM:
 		OnUpdateNewtaskAtbottom(pCmdUI);
 		break;
 	}
@@ -6261,39 +6303,38 @@ void CToDoListWnd::OnUpdateEditTimeTrackTask(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(tdc.IsSelectedTaskBeingTimeTracked() ? 1 : 0);
 }
 
-void CToDoListWnd::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct) 
+void CToDoListWnd::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	if (nIDCtl == IDC_TABCONTROL)
 	{
 		if (m_mgrToDoCtrls.GetDueItemStatus(lpDrawItemStruct->itemID))
 		{
 			CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
-			
+
 			// draw a little tag in the top left corner in the colour
 			// of the highest priority
 			const int DUECOLORINDEX = 11;
 			COLORREF crTag = m_aPriorityColors[DUECOLORINDEX];
-			
+
 			for (int nHPos = 0; nHPos < 6; nHPos++)
 			{
 				for (int nVPos = 0; nVPos < 6 - nHPos; nVPos++)
 				{
-					pDC->SetPixelV(lpDrawItemStruct->rcItem.left + nHPos, 
-						lpDrawItemStruct->rcItem.top + nVPos, crTag);
+					pDC->SetPixelV(lpDrawItemStruct->rcItem.left + nHPos,
+									lpDrawItemStruct->rcItem.top + nVPos, crTag);
 				}
 			}
 		}
-		
 		return;
 	}
 	else if (nIDCtl == 0 && lpDrawItemStruct->itemID == ID_CLOSE)
 	{
-		if (CMenuEx::DrawMDIButton(IDB_XPCLOSE, lpDrawItemStruct))
+		if (CMenuEx::DrawMDIButton(IDB_XPCLOSE, lpDrawItemStruct, TRUE, RGB(255, 0, 255))) 
 			return;
 	}
-	
+
 	CFrameWnd::OnDrawItem(nIDCtl, lpDrawItemStruct);
-}
+} 
 
 void CToDoListWnd::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct) 
 {
@@ -7067,8 +7108,15 @@ void CToDoListWnd::OnToolsCheckforupdates()
 void CToDoListWnd::OnEditInsertdatetime() 
 {
 	COleDateTime date = COleDateTime::GetCurrentTime();
+	const CPreferencesDlg& prefs = Prefs();
 
-	GetToDoCtrl().PasteText(date.Format());
+	CString sDate = CDateHelper::FormatDate(date, prefs.GetDisplayDatesInISO(),
+											prefs.GetShowWeekdayInDates());
+
+	sDate += ' ';
+	sDate += date.Format(VAR_TIMEVALUEONLY);
+
+	GetToDoCtrl().PasteText(sDate);
 }
 
 void CToDoListWnd::OnUpdateEditInsertdatetime(CCmdUI* pCmdUI) 

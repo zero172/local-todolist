@@ -208,8 +208,11 @@ BOOL CFindTaskDlg::OnInitDialog()
 	}
 	
 	// toolbar
-	VERIFY (m_toolbar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_ALIGN_TOP)
-		&& m_toolbar.LoadToolBar(IDR_FINDDLG, IDB_FIND16));
+	if (m_toolbar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_ALIGN_TOP))
+	{
+		if (m_toolbar.LoadToolBar(IDR_FINDDLG))
+			m_toolbar.SetImage(IDB_FIND16, RGB(255, 0, 255));
+	}
 	
 	m_tbHelper.Initialize(&m_toolbar, this);
 	

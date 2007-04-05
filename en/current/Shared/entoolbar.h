@@ -22,12 +22,11 @@ public:
 	BOOL LoadToolBar(LPCTSTR lpszResourceName, LPCTSTR szImagePath = NULL);
 	BOOL LoadToolBar(UINT nIDResource, LPCTSTR szImagePath = NULL);
 	BOOL LoadToolBar(UINT nIDResource, UINT nIDImage);
-	BOOL SetImage(const CString& sImagePath);
-	BOOL SetImage(UINT nIDImage);
+	BOOL SetImage(const CString& sImagePath, COLORREF crMask = (COLORREF)-1);
+	BOOL SetImage(UINT nIDImage, COLORREF crMask = (COLORREF)-1);
 	int GetButtonCount(BOOL bIgnoreSeparators = FALSE);
 	
 	void RefreshButtonStates();
-	void RefreshDisabledImageList();
 	
 	// Attributes
 protected:
@@ -53,8 +52,10 @@ protected:
 	virtual LRESULT OnItemPrePaint(LPNMTBCUSTOMDRAW /*lpNMCustomDraw*/) { return CDRF_DODEFAULT; }
 	virtual LRESULT OnItemPostPaint(LPNMTBCUSTOMDRAW /*lpNMCustomDraw*/) { return CDRF_DODEFAULT; }
 	
-	BOOL SetImage(CEnBitmapEx* pBitmap);
-	static BOOL GrayScale(CEnBitmapEx* pBitmap);
+	BOOL SetImage(CEnBitmapEx* pBitmap, COLORREF crMask);
+	void RefreshDisabledImageList(CEnBitmapEx* pBitmap, COLORREF crMask);
+
+	static BOOL GrayScale(CEnBitmapEx* pBitmap, COLORREF crMask = GetSysColor(COLOR_3DFACE));
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -72,8 +72,10 @@ END_MESSAGE_MAP()
 BOOL CRRECToolBar::Create( CWnd* parent)
 {
 	if (CreateEx(parent, TBSTYLE_FLAT | TBSTYLE_WRAPABLE, WS_CHILD | WS_VISIBLE | CBRS_ALIGN_TOP/* | WS_CLIPCHILDREN*/, 
-				CRect(0, 0, 0, 0), TOOLBAR_CONTROL) && LoadToolBar(TOOLBAR_CONTROL, IDB_TOOLBAR))
+				CRect(0, 0, 0, 0), TOOLBAR_CONTROL) && LoadToolBar(TOOLBAR_CONTROL))
 	{
+		SetImage(IDB_TOOLBAR, RGB(255, 0, 255));
+
 		// very important - turn OFF all the auto positioning and sizing
 		// by default have no borders
 		UINT nStyle = GetBarStyle();

@@ -35,7 +35,7 @@ IDR_MANIFEST            24      DISCARDABLE     "res\\todolist.exe.manifest"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,1,1,0
+ FILEVERSION 5,1,5,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -51,12 +51,12 @@ BEGIN
     BEGIN
         BLOCK "0c0904b0"
         BEGIN
-            VALUE "Comments", "Alpha\0"
+            VALUE "Comments", "\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 1, 1, 0\0"
+            VALUE "FileVersion", "5, 1, 5, 0\0"
             VALUE "InternalName", "ToDoList\0"
-            VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-06\0"
+            VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-07\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ToDoList.exe\0"
             VALUE "PrivateBuild", "\0"
@@ -2254,8 +2254,8 @@ BEGIN
         END
         POPUP "New Subtask"
         BEGIN
-            MENUITEM "At &Bottom of Task",          ID_NEWSUBTASK_ATBOTTOM
             MENUITEM "At &Top of Task",             ID_NEWSUBTASK_ATTOP
+            MENUITEM "At &Bottom of Task",          ID_NEWSUBTASK_ATBOTTOM
         END
         MENUITEM SEPARATOR
         MENUITEM "Split Task(s) into Two (2) Subtasks", 
@@ -2654,7 +2654,7 @@ BEGIN
     IDS_DUETHISMONTH        "The following tasks are due by the end of this month"
     IDS_DUENEXTMONTH        "The following tasks are due by the end of next month"
     IDS_DUETASKS_TITLE      "Due Tasks"
-    IDS_ABOUTCOPYRIGHT      "Copyright © 2003-06 AbstractSpoon Software\n   (www.abstractspoon.com)\n\nInstaller © Power Programmer\n   (www.powerprogrammer.co.uk)\n\nToolbar Icons © AWIcons\n   (www.awicons.com)\r\n\r\nCredits:\r\n\r\n• Paul DiLascia (of course)\r\n• :floyd: (part of the System Tray code)\r\n• Hans Dietrich (HTML control)\r\n• Armen Hakobyan (Enhanced folder dialog)\r\n• Open Office (Spellcheck Engine and Dictionaries)\r\n• Alex Hazanov (MSXML wrapper classes)\r\n• Richard Butler (Encryption)\r\n• Johan Rosengren (Original RTF comments control)\r\n• Daniel Beutler  (RTF2HTML conversion)\r\n• Valik (Plain Text importer)\r\n• Patchou (RichEdit border theming)\r\n• =[ Abin ]= (Ini class for tools importing)\r\n• Alex Cohn (Menu icon code)"
+    IDS_ABOUTCOPYRIGHT      "Copyright © 2003-07 AbstractSpoon Software\n   (www.abstractspoon.com)\n\nInstaller © Power Programmer\n   (www.powerprogrammer.co.uk)\n\nToolbar Icons © AWIcons\n   (www.awicons.com)\r\n\r\nCredits:\r\n\r\n• Paul DiLascia (of course)\r\n• :floyd: (part of the System Tray code)\r\n• Hans Dietrich (HTML control)\r\n• Armen Hakobyan (Enhanced folder dialog)\r\n• Open Office (Spellcheck Engine and Dictionaries)\r\n• Alex Hazanov (MSXML wrapper classes)\r\n• Richard Butler (Encryption)\r\n• Johan Rosengren (Original RTF comments control)\r\n• Daniel Beutler  (RTF2HTML conversion)\r\n• Valik (Plain Text importer)\r\n• Patchou (RichEdit border theming)\r\n• =[ Abin ]= (Ini class for tools importing)\r\n• Alex Cohn (Menu icon code)"
 END
 
 STRINGTABLE DISCARDABLE 

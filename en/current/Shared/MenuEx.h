@@ -28,7 +28,8 @@ public:
 	BOOL AddMDIButton(MENUEX_BTN nBtn, UINT nCmdID, UINT nThemeBMID = 0, BOOL bRightJustify = TRUE);
 	BOOL DeleteMDIMenu(UINT nCmdID);
 
-	static BOOL DrawMDIButton(UINT nIDBitmap, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL bDrawEdges = TRUE); 
+	static BOOL DrawMDIButton(UINT nIDBitmap, LPDRAWITEMSTRUCT lpDrawItemStruct, 
+                             BOOL bDrawEdges = TRUE, COLORREF crMask = (COLORREF)-1); 
 	static BOOL MeasureMDIButton(UINT nIDBitmap, LPMEASUREITEMSTRUCT lpMeasureItemStruct); 
 
 protected:

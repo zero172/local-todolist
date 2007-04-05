@@ -107,9 +107,19 @@ protected:
 	HWND m_hwndLastFocus;
 	CMenuIconMgr m_mgrMenuIcons;
 
+	struct TDCSTARTUP
+	{
+		TDCSTARTUP() : dwIDSel(0) {}
+		void Clear() { sFilePath.Empty(); sNewTask.Empty(); sComments.Empty(); dwIDSel = 0; }
+
+		CString	sFilePath; // tasklist to load
+		DWORD dwIDSel; // task to select
+		CString sNewTask, sComments; // task title/comments
+	};
+	TDCSTARTUP m_startupOptions;
+
 	CDWordArray m_aPriorityColors;
 	CFont m_fontMain;
-	CString	m_sCmdLineFilePath;
 	int m_nLastSelItem; // just for flicker-free todoctrl switching
 
 	BOOL m_bVisible;

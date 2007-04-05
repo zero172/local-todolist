@@ -65,7 +65,11 @@ void CColorComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	{
 		CDlgUnits dlu(GetParent());
 
-		if (rItem.Height() <= dlu.ToPixelsY(9))
+		BOOL bHasColor = (lpDrawItemStruct->itemData != (DWORD)-1);
+
+		if (!bHasColor)
+			rItem.DeflateRect(0, 1); 
+		else if (rItem.Height() <= dlu.ToPixelsY(9))
 			rItem.DeflateRect(1, 1); // selected item
 		else
 			rItem.DeflateRect(2, 2); // listbox item
@@ -77,7 +81,7 @@ void CColorComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		{
 			CRect rText(rItem);
 			
-			rColor.right = rColor.left + rColor.Height();
+			rColor.right = rColor.left + (bHasColor ? rColor.Height() : 0);
 			rText.left = rColor.right + 2;
 			
 			CString sText;
@@ -88,7 +92,7 @@ void CColorComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 		}
 
 		// draw color
-		if (lpDrawItemStruct->itemData != (DWORD)-1)
+		if (bHasColor)
 		{
 			if (!IsWindowEnabled() || (lpDrawItemStruct->itemState & ODS_GRAYED))
 				dc.FillSolidRect(rColor, GetSysColor(COLOR_3DFACE));
@@ -144,6 +148,7 @@ void CColorComboBox::PreSubclassWindow()
 		
 		CDlgUnits dlu(GetParent());
 		SetItemHeight(-1, dlu.ToPixelsY(9)); 
+		SetItemHeight(0, dlu.ToPixelsY(9)); 
 	}
 	
 	CComboBox::PreSubclassWindow();

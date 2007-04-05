@@ -625,7 +625,7 @@ void CXmlItem::ValidateString(CString& sText, char cReplace)
 		// some specific chars we don't like
 		switch (c)
 		{
-		case '…':
+		case 0x2026: // ellipsis
 			sText.SetAt(nChar, cReplace);
 			break;
 		}

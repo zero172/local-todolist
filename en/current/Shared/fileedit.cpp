@@ -296,7 +296,8 @@ void CFileEdit::OnBtnClick(UINT nID)
 				if (!m_sCurFolder.IsEmpty())
 					_chdir(m_sCurFolder);
 
-				int nRes = (int)ShellExecute(*this, NULL, sPath, NULL, NULL, SW_SHOWNORMAL); 
+//				int nRes = (int)ShellExecute(*this, NULL, sPath, NULL, NULL, SW_SHOWNORMAL); 
+				int nRes = (int)FileMisc::Run(*this, sPath, m_sCurFolder, SW_SHOWNORMAL); 
 
 				if (nRes < 32)
 				{

@@ -127,17 +127,29 @@ BOOL CMenuEx::IsThemed()
 	return CThemed().IsNonClientThemed();
 }
 
-BOOL CMenuEx::DrawMDIButton(UINT nIDBitmap, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL bDrawEdges)
+BOOL CMenuEx::DrawMDIButton(UINT nIDBitmap, LPDRAWITEMSTRUCT lpDrawItemStruct, BOOL bDrawEdges, COLORREF crMask)
 {
 	// draw the button
 	CEnBitmapEx bitmap;
+
+   if (crMask == (COLORREF)-1)
+	   bitmap.LoadSysBitmap(nIDBitmap);
+   else
+   {
+      bitmap.LoadBitmap(nIDBitmap);
+      bitmap.ReplaceColor(crMask, GetSysColor(COLOR_3DFACE));
+   }
 	
-	if (bitmap.LoadSysBitmap(nIDBitmap))
+	if (bitmap.GetSafeHandle())
 	{
 		CRect rect(lpDrawItemStruct->rcItem);
+
+
 		
 		CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
 		CDC memDC;
+      
+      pDC->FillSolidRect(rect, GetSysColor(COLOR_3DFACE));
 
 		if (memDC.CreateCompatibleDC(pDC))
 		{
