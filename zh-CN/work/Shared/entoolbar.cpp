@@ -13,6 +13,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+const COLORREF NO_COLOR = NO_COLOR;
+
 /////////////////////////////////////////////////////////////////////////////
 // CEnToolBar
 
@@ -77,33 +79,35 @@ BOOL CEnToolBar::LoadToolBar(UINT nIDResource, UINT nIDImage)
 	return FALSE;
 }
 
-BOOL CEnToolBar::SetImage(UINT nIDImage)
+BOOL CEnToolBar::SetImage(UINT nIDImage, COLORREF crMask)
 {
 	CEnBitmapEx bitmap;
 
    if (!bitmap.LoadBitmap(nIDImage))
 		return FALSE;
 
-   return SetImage(&bitmap);
+   return SetImage(&bitmap, crMask);
 }
 
-BOOL CEnToolBar::SetImage(const CString& sImagePath)
+BOOL CEnToolBar::SetImage(const CString& sImagePath, COLORREF crMask)
 {
 	CEnBitmapEx bitmap;
 
 	if (!bitmap.LoadImage(sImagePath))
 		return FALSE;
 
-   return SetImage(&bitmap);
+   return SetImage(&bitmap, crMask);
 }
 
-BOOL CEnToolBar::SetImage(CEnBitmapEx* pBitmap)
+BOOL CEnToolBar::SetImage(CEnBitmapEx* pBitmap, COLORREF crMask)
 {
-	// map 3d colors
-	pBitmap->RemapSysColors();
-	
 	CEnBitmapEx bmDis;
 	bmDis.CopyImage(pBitmap); // for later
+	
+   if (crMask == NO_COLOR) // map 3d colors
+	   pBitmap->RemapSysColors();
+   else
+      pBitmap->ReplaceColor(crMask, GetSysColor(COLOR_3DFACE));
 	
 	// button size
 	BITMAP BM;
@@ -122,7 +126,7 @@ BOOL CEnToolBar::SetImage(CEnBitmapEx* pBitmap)
 	
 	if (SetBitmap((HBITMAP)pBitmap->Detach()))
 	{
-		RefreshDisabledImageList();
+		RefreshDisabledImageList(&bmDis, crMask);
 		return TRUE;
 	}
 	
@@ -130,10 +134,10 @@ BOOL CEnToolBar::SetImage(CEnBitmapEx* pBitmap)
 	return FALSE;
 }
 
-BOOL CEnToolBar::GrayScale(CEnBitmapEx* pBitmap)
+BOOL CEnToolBar::GrayScale(CEnBitmapEx* pBitmap, COLORREF crMask)
 {
 	// create 'nice' disabled imagelist 
-	COLORREF cr3DFACE = GetSysColor(COLOR_3DFACE);
+//	COLORREF cr3DFACE = GetSysColor(COLOR_3DFACE);
 
 	C32BIPArray aProcessors;
 	CImageSysColorMapper ip1;
@@ -148,7 +152,7 @@ BOOL CEnToolBar::GrayScale(CEnBitmapEx* pBitmap)
 	aProcessors.Add(&ip5);
 	aProcessors.Add(&ip4);
 
-	return pBitmap->ProcessImage(aProcessors, cr3DFACE);
+	return pBitmap->ProcessImage(aProcessors, crMask);
 }
 
 int CEnToolBar::GetButtonCount(BOOL bIgnoreSeparators)
@@ -174,25 +178,26 @@ void CEnToolBar::RefreshButtonStates()
 	OnUpdateCmdUI((CFrameWnd*)GetParent(), FALSE);
 }
 
-void CEnToolBar::RefreshDisabledImageList() 
+void CEnToolBar::RefreshDisabledImageList(CEnBitmapEx* pBitmap, COLORREF crMask) 
 {
 	// not under win9x
 	if (COSVersion() >= OSV_NT4)
 	{
-		CEnBitmapEx bmDis;
-		
-		if (!bmDis.CopyImage(m_hbmImageWell))
-			return;
-		
 		// create 'nice' disabled imagelist 
-		if (GrayScale(&bmDis))
+		if (GrayScale(pBitmap, crMask))
 		{
+         if (crMask == NO_COLOR) // map 3d colors
+	         pBitmap->RemapSysColors();
+         else
+            pBitmap->ReplaceColor(crMask, GetSysColor(COLOR_3DFACE));
+	
 			// button size
 			int nCx = m_sizeImage.cx, nCy = m_sizeImage.cy;
 			
 			m_ilDisabled.DeleteImageList();
 			m_ilDisabled.Create(nCx, nCy, ILC_COLOR32, 0, 1);
-			m_ilDisabled.Add(&bmDis, GetSysColor(COLOR_3DFACE));
+
+			m_ilDisabled.Add(pBitmap, NO_COLOR);
 			
 			GetToolBarCtrl().SetDisabledImageList(&m_ilDisabled);
 			

@@ -49,11 +49,13 @@ enum
 	HM_SYSMSGFILTER	= 0x0400,
 };
 
-//struct MOUSEHOOKSTRUCTEX
-//{
-//    MOUSEHOOKSTRUCT MOUSEHOOKSTRUCT;
-//    DWORD mouseData;
-//};
+/*
+struct MOUSEHOOKSTRUCTEX
+{
+    MOUSEHOOKSTRUCT MOUSEHOOKSTRUCT;
+    DWORD mouseData;
+};
+*/
 
 #ifndef HSHELL_APPCOMMAND
 #define HSHELL_APPCOMMAND           12
@@ -312,7 +314,8 @@ protected:
             else
             {
                MOUSEHOOKSTRUCTEX infoEx;
-               (MOUSEHOOKSTRUCT) infoEx = *pInfo;
+               MOUSEHOOKSTRUCT& rInfo = infoEx;
+               rInfo = *pInfo;
                infoEx.mouseData = 0;
 
                if (mgr.OnMouse(wParam, infoEx))

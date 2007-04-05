@@ -83,9 +83,9 @@ CString& CTaskListCsvExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 	{
 		// same order as columns
 
-		// if there is a POS child item then this replaces nPos
 		if (WantAttribute(TDL_TASKPOS))
 		{
+			// if there is a POS child item then this replaces nPos
 			if (pTasks->TaskHasAttribute(hTask, TDL_TASKPOS))
 			{
 				nPos = pTasks->GetTaskPosition(hTask);
@@ -97,7 +97,6 @@ CString& CTaskListCsvExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 			}
 
 			AppendAttribute(sPos, sOutput);
-	//		AppendAttribute(pTasks, hTask, TDL_TASKPOS, sOutput);
 		}
 
 		AppendAttribute(pTasks, hTask, TDL_TASKID, NULL, sOutput);
@@ -113,6 +112,7 @@ CString& CTaskListCsvExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 		AppendAttribute(pTasks, hTask, TDL_TASKCREATIONDATESTRING, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKCREATEDBY, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKSTARTDATESTRING, NULL, sOutput);
+		AppendAttribute(pTasks, hTask, TDL_TASKDUEDATESTRING, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKEARLIESTDUEDATESTRING, TDL_TASKDUEDATESTRING, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKDONEDATESTRING, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKALLOCTO, NULL, sOutput);
@@ -126,6 +126,7 @@ CString& CTaskListCsvExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 		AppendAttribute(pTasks, hTask, TDL_TASKLASTMODSTRING, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKCALCCOST, TDL_TASKCOST, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKFILEREFPATH, NULL, sOutput);
+		AppendAttribute(pTasks, hTask, TDL_TASKDEPENDENCY, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKCOMMENTS, NULL, sOutput);
 	}
 
@@ -270,6 +271,7 @@ CString CTaskListCsvExporter::ColumnHeadings() const
 	sHeadings += CheckGetColumnHeading(TDL_TASKLASTMODSTRING, IDS_TDLBC_MODIFYDATE);
 	sHeadings += CheckGetColumnHeading(TDL_TASKCOST, IDS_TDLBC_COST);
 	sHeadings += CheckGetColumnHeading(TDL_TASKFILEREFPATH, IDS_TDLBC_FILEREF);
+	sHeadings += CheckGetColumnHeading(TDL_TASKDEPENDENCY, IDS_TDLBC_DEPENDS);
 	sHeadings += CheckGetColumnHeading(TDL_TASKCOMMENTS, IDS_TDLBC_COMMENTS);
 
 	return sHeadings;
@@ -310,7 +312,7 @@ int CTaskListCsvExporter::BuildAttribList(const ITaskList6* pTasks, HTASKITEM hT
 	// subtasks
 	hTask = pTasks->GetFirstTask(hTask);
 
-	if (hTask) // at least one sub-task
+	while (hTask) // at least one sub-task
 	{
 		BuildAttribList(pTasks, hTask);
 

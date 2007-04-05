@@ -32,8 +32,8 @@ CFileDialogEx::CFileDialogEx(BOOL bOpenFileDialog, LPCTSTR lpszDefExt,
 	DWORD dwVersion = ::GetVersion();
 	DWORD dwWinMajor = (DWORD)(LOBYTE(LOWORD(dwVersion)));
 
-	//if ((BYTE)dwWinMajor >= 5)
-	//	m_ofn.lStructSize = sizeof(OPENFILENAMEEX);
+	if ((BYTE)dwWinMajor >= 5)
+		m_ofn.lStructSize = sizeof(OPENFILENAMEEX);
 		
 }
 

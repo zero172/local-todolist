@@ -487,9 +487,9 @@ int CToDoListWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (!InitToolbar())
 		return -1;
 
-   // menu icons
-   InitMenuIconManager();
-
+	// menu icons
+	InitMenuIconManager();
+	
 	// filterbar
 	if (!m_filterBar.Create(this, (UINT)IDC_STATIC))
 		return -1;
@@ -678,7 +678,7 @@ void CToDoListWnd::InitMenuIconManager()
 	aCmdIDs.Add(ID_PREFERENCES);
 	aCmdIDs.Add(ID_HELP);
 	
-	m_mgrMenuIcons.AddImages(aCmdIDs, IDB_TOOLBAR16, 16, RGB(192, 192, 192));
+	m_mgrMenuIcons.AddImages(aCmdIDs, IDB_TOOLBAR16, 16, RGB(255, 0, 255));//RGB(192, 192, 192));
 }
 
 void CToDoListWnd::OnShowKeyboardshortcuts() 
@@ -723,8 +723,11 @@ BOOL CToDoListWnd::InitToolbar()
 								WS_CHILD | WS_VISIBLE | CBRS_TOP |  
 								CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC))
 		{
-			if (m_toolbar.LoadToolBar(IDR_TOOLBAR, nIDToolbarImage))
+			if (m_toolbar.LoadToolBar(IDR_TOOLBAR))
+			{
+				m_toolbar.SetImage(nIDToolbarImage, RGB(255, 0, 255));
 				m_toolbar.GetToolBarCtrl().HideButton(ID_TOOLS_TOGGLECHECKIN, !Prefs().GetEnableSourceControl());
+			}
 		}
 	}
 	
@@ -2654,7 +2657,7 @@ void CToDoListWnd::EnsureVisible()
 
 void CToDoListWnd::OnAbout() 
 {
-	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.1.4</b>",
+	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.1.5</b>",
 		CEnString(IDS_ABOUTHEADING), CEnString(IDS_ABOUTCOPYRIGHT), 1, 2, 8);
 	
 	dialog.DoModal();
@@ -6300,39 +6303,38 @@ void CToDoListWnd::OnUpdateEditTimeTrackTask(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(tdc.IsSelectedTaskBeingTimeTracked() ? 1 : 0);
 }
 
-void CToDoListWnd::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct) 
+void CToDoListWnd::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	if (nIDCtl == IDC_TABCONTROL)
 	{
 		if (m_mgrToDoCtrls.GetDueItemStatus(lpDrawItemStruct->itemID))
 		{
 			CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
-			
+
 			// draw a little tag in the top left corner in the colour
 			// of the highest priority
 			const int DUECOLORINDEX = 11;
 			COLORREF crTag = m_aPriorityColors[DUECOLORINDEX];
-			
+
 			for (int nHPos = 0; nHPos < 6; nHPos++)
 			{
 				for (int nVPos = 0; nVPos < 6 - nHPos; nVPos++)
 				{
-					pDC->SetPixelV(lpDrawItemStruct->rcItem.left + nHPos, 
-						lpDrawItemStruct->rcItem.top + nVPos, crTag);
+					pDC->SetPixelV(lpDrawItemStruct->rcItem.left + nHPos,
+									lpDrawItemStruct->rcItem.top + nVPos, crTag);
 				}
 			}
 		}
-		
 		return;
 	}
 	else if (nIDCtl == 0 && lpDrawItemStruct->itemID == ID_CLOSE)
 	{
-		if (CMenuEx::DrawMDIButton(IDB_XPCLOSE, lpDrawItemStruct))
+		if (CMenuEx::DrawMDIButton(IDB_XPCLOSE, lpDrawItemStruct, TRUE, RGB(255, 0, 255))) 
 			return;
 	}
-	
+
 	CFrameWnd::OnDrawItem(nIDCtl, lpDrawItemStruct);
-}
+} 
 
 void CToDoListWnd::OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct) 
 {

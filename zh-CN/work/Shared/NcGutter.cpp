@@ -638,6 +638,7 @@ BOOL CNcGutter::WantsRecalc(UINT nMsg, WPARAM wp, LPARAM lp, LRESULT& lr)
 
 	if (nMsg == WM_COMMAND)
 		nNotification = HIWORD(wp);
+
 	else if (nMsg == WM_NOTIFY)
 	{
 		NMHDR* pNMHDR = (NMHDR*)lp;
