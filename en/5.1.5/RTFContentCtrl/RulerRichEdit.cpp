@@ -1,0 +1,202 @@
+/* ==========================================================================
+File :			RuleRichEdit.cpp
+
+  Class :			CRulerRichEdit
+  
+	Author :		Johan Rosengren, Abstrakt Mekanik AB
+	Iain Clarke
+	
+	  Date :			2004-04-17
+	  
+		Purpose :		"CRulerRichEdit" is derived from "CWnd". 
+		
+		  Description :	The class, in addition to the normal "CWnd", 
+		  handles horizontal scrollbar messages - forcing an 
+		  update of the parent (to synchronize the ruler). The 
+		  change notification is called for the same reason. 
+		  "WM_GETDLGCODE" is handled, we want all keys in a 
+		  dialog box instantiation.
+		  
+			Usage :			This class is only useful as a child of the 
+			"CRulerRichEditCtrl".
+			
+========================================================================*/
+
+#include "stdafx.h"
+#include "RulerRichEdit.h"
+
+#include "..\shared\RichEdithelper.h"
+#include "..\shared\autoflag.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CRulerRichEdit
+
+CRulerRichEdit::CRulerRichEdit() : m_bPasteSimple(FALSE)
+/* ============================================================
+Function :		CRulerRichEdit::CRulerRichEdit
+Description :	constructor
+Access :		Public
+
+  Return :		void
+  Parameters :	none
+  
+	Usage :			
+	
+	  ============================================================*/
+{
+}
+
+CRulerRichEdit::~CRulerRichEdit()
+/* ============================================================
+Function :		CRulerRichEdit::~CRulerRichEdit
+Description :	destructor
+Access :		Public
+
+  Return :		void
+  Parameters :	none
+  
+	Usage :			
+	
+	  ============================================================*/
+{
+}
+
+BEGIN_MESSAGE_MAP(CRulerRichEdit, CUrlRichEditCtrl)
+//{{AFX_MSG_MAP(CRulerRichEdit)
+ON_WM_HSCROLL()
+ON_WM_GETDLGCODE()
+ON_WM_LBUTTONDBLCLK()
+//}}AFX_MSG_MAP
+ON_MESSAGE(WM_DROPFILES, OnDropFiles)
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CRulerRichEdit message handlers
+
+void CRulerRichEdit::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
+/* ============================================================
+Function :		CRulerRichEdit::OnHScroll
+Description :	Handles the "WM_HSCROLL" message.
+Access :		Protected
+
+  Return :		void
+  Parameters :	UINT nSBCode			-	Type of operation
+  UINT nPos				-	New position
+  CScrollBar* pScrollBar	-	Pointer to scrollbar
+  
+	Usage :			Called from MFC. Updates the ruler.
+	
+	  ============================================================*/
+{
+	
+	CUrlRichEditCtrl::OnHScroll( nSBCode, nPos, pScrollBar );
+	
+	if ( nSBCode == SB_THUMBTRACK )
+	{
+		SCROLLINFO	si;
+		ZeroMemory( &si, sizeof( SCROLLINFO ) );
+		si.cbSize = sizeof( SCROLLINFO );
+		GetScrollInfo( SB_HORZ, &si );
+		
+		si.nPos = nPos;
+		SetScrollInfo( SB_HORZ, &si );
+		
+		// notify parent
+		GetParent()->SendMessage(WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(), EN_HSCROLL), (LPARAM)GetSafeHwnd());
+	}
+}
+
+LRESULT CRulerRichEdit::OnDropFiles(WPARAM wp, LPARAM lp) 
+{
+	CWaitCursor cursor;
+	
+	if (GetKeyState(VK_SHIFT) & 0x8000)
+	{
+		TCHAR szFileName[_MAX_PATH];
+		::DragQueryFile((HDROP)wp, 0, szFileName, _MAX_PATH);
+		
+		CReFileObject fo(*this);
+		
+		return fo.Insert(szFileName);
+	}
+	else
+		return CUrlRichEditCtrl::OnDropFiles(wp, lp); // link
+}
+
+CLIPFORMAT CRulerRichEdit::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFORMAT format) 
+{ 
+	if (m_bPasteSimple)
+		return CF_TEXT;
+	
+	static CLIPFORMAT cfRtf = (CLIPFORMAT)::RegisterClipboardFormat(CF_RTF);
+	static CLIPFORMAT cfRtfObj = (CLIPFORMAT)::RegisterClipboardFormat(CF_RETEXTOBJ); 
+	
+	CLIPFORMAT formats[] = 
+	{ 
+		CF_HDROP,
+			cfRtf,
+			cfRtfObj, 
+			CF_BITMAP,
+			CF_TEXT,
+			CF_UNICODETEXT,
+			CF_BITMAP,          
+			CF_METAFILEPICT,    
+			CF_SYLK,            
+			CF_DIF,             
+			CF_TIFF,            
+			CF_OEMTEXT,         
+			CF_DIB,             
+			CF_PALETTE,         
+			CF_PENDATA,         
+			CF_RIFF,            
+			CF_WAVE,            
+			CF_ENHMETAFILE     
+	};
+	
+	const long nNumFmts = sizeof(formats) / sizeof(CLIPFORMAT);
+	
+	COleDataObject dataobj;
+    dataobj.Attach(lpDataOb, FALSE);
+    
+	for (int nFmt = 0; nFmt < nNumFmts; nFmt++)
+	{
+		if (format && format == formats[nFmt])
+			return format;
+		
+		if (dataobj.IsDataAvailable(formats[nFmt]))
+			return formats[nFmt];
+	}
+	
+	// all else
+	return CF_HDROP; 
+}
+
+UINT CRulerRichEdit::OnGetDlgCode() 
+{
+	return DLGC_WANTALLKEYS;
+}
+
+void CRulerRichEdit::OnLButtonDblClk(UINT nFlags, CPoint point) 
+{
+	SetCursor(AfxGetApp()->LoadStandardCursor(IDC_WAIT));
+	
+	CUrlRichEditCtrl::OnLButtonDblClk(nFlags, point);
+}
+
+void CRulerRichEdit::Paste(BOOL bSimple)
+{
+	if (!bSimple)
+		CUrlRichEditCtrl::Paste();
+	else
+	{
+		CAutoFlag af(m_bPasteSimple, TRUE);
+		
+		CUrlRichEditCtrl::Paste();
+	}
+}
