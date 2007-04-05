@@ -565,3 +565,42 @@ CString FileMisc::GetTempFileName(LPCTSTR szFilename, LPCTSTR szExt)
 
 	return szTempFile;
 }
+
+DWORD FileMisc::Run(HWND hwnd, LPCSTR lpFile, LPCSTR lpDirectory, int nShowCmd)
+{
+	DWORD dwRes = (DWORD)ShellExecute(hwnd, NULL, lpFile, NULL, lpDirectory, nShowCmd);
+
+	if (dwRes <= 32) // failure
+	{
+		// try CreateProcess
+		STARTUPINFO si;
+		PROCESS_INFORMATION pi;
+
+		ZeroMemory( &si, sizeof(si) );
+		si.cb = sizeof(si);
+		si.wShowWindow = (WORD)nShowCmd;
+		si.dwFlags = STARTF_USESHOWWINDOW;
+
+		ZeroMemory( &pi, sizeof(pi) );
+
+		// Start the child process.
+		if (CreateProcess( NULL,			// No module name (use command line).
+							(char*)lpFile,	// Command line.
+							NULL,			// Process handle not inheritable.
+							NULL,			// Thread handle not inheritable.
+							FALSE,			// Set handle inheritance to FALSE.
+							0,				// No creation flags.
+							NULL,			// Use parent's environment block.
+							lpDirectory,	// starting directory.
+							&si,			// Pointer to STARTUPINFO structure.
+							&pi ))			// Pointer to PROCESS_INFORMATION structure.
+		{
+			dwRes = 32; // success
+		}
+
+		// Close process and thread handles.
+		CloseHandle( pi.hProcess );
+		CloseHandle( pi.hThread );
+	}
+	return dwRes;
+}

@@ -30,6 +30,7 @@
 #include "..\shared\treectrlhelper.h"
 #include "..\shared\filemisc.h"
 #include "..\shared\autoflag.h"
+#include "..\shared\osversion.h"
 
 #include <Windowsx.h>
 #include <float.h>
@@ -3336,6 +3337,9 @@ HTREEITEM CToDoCtrl::InsertItem(LPCTSTR szText, HTREEITEM htiParent, HTREEITEM h
 			if (bEdit)
 			{
 				m_htiLastAdded = htiNew;
+				m_tree.PostMessage(TVM_EDITLABEL, 0, (LPARAM)htiNew); 
+
+/*
 				CEdit* pEdit = m_tree.EditLabel(htiNew);
 				
 				// workaround because if the user presses <enter> without
@@ -3346,6 +3350,7 @@ HTREEITEM CToDoCtrl::InsertItem(LPCTSTR szText, HTREEITEM htiParent, HTREEITEM h
 					pEdit->SetWindowText(szText);
 					pEdit->SetSel(0, -1);
 				}
+*/
 			}
 			else
 				m_tree.SetFocus();
@@ -3631,15 +3636,18 @@ void CToDoCtrl::OnTreeEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 				pTDI->SetModified();
 				
 				SetModified(TRUE, TDCA_TASKNAME);
-
-				m_tree.InvalidateItem(pTVDispInfo->item.hItem);
 			}
+
+			m_tree.InvalidateItem(pTVDispInfo->item.hItem);
 		}
 	}
 	else // cancelled
 	{
 		// if the item was just added and cancelled then delete it
-		if (pTVDispInfo->item.hItem == m_htiLastAdded)
+		// There's something funny going on under Vista that causes new subtasks
+		// to be auto cancelled resulting in them being deleted. So for now we
+		// disable the auto-delete-on-cancel feature of new tasks under Vista
+		if (/*COSVersion() <= OSV_XP && */pTVDispInfo->item.hItem == m_htiLastAdded)
 		{
 			CHoldRedraw hr(this);
 			
@@ -7644,7 +7652,10 @@ BOOL CToDoCtrl::AddItem(HTREEITEM hti, CTaskFile& file, HTASKITEM hParentTask,
 		
 		// attributes
 		file.SetTaskTitle(hTask, pTDI->sTitle);
-//		file.SetTaskID(hTask, dwID, WantExportColumn(TDCC_ID, bVisCols));
+		
+		// hide ID if not wanted
+		if (!WantExportColumn(TDCC_ID, bVisCols))
+			file.HideAttribute(hTask, TDL_TASKID); 
 		
 		// comments
 		if (!bTitleOnly)
@@ -8905,6 +8916,7 @@ void CToDoCtrl::ParseTaskLink(LPCTSTR szLink, DWORD& dwTaskID, CString& sFile)
 
 	// cleanup
 	sLink.Replace("%20", " ");
+	sLink.Replace("/", "\\");
 
 	// parse the url
 	int nDiv = sLink.Find('?');

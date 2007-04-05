@@ -62,8 +62,18 @@ double CDateHelper::GetDate(DH_DATE nDate)
 			// we must get the locale info to find out when this 
 			// user's week starts
 			date = COleDateTime::GetCurrentTime();
-			date -= date.GetDayOfWeek() - FirstDayOfWeek(); // start of week
-			date += 6;
+			
+			// increment the date until we hit the last day of the week
+			// note: we could have kept checking date.GetDayOfWeek but
+			// it's a lot of calculation that's just not necessary
+			int nLastDOW = LastDayOfWeek();
+			int nDOW = date.GetDayOfWeek();
+			
+			while (nDOW != nLastDOW) 
+			{
+				date += 1;
+				nDOW = NextDayOfWeek(nDOW);
+			}
 		}
 		break;
 
@@ -149,14 +159,55 @@ int CDateHelper::FirstDayOfWeek()
 
 	int nFirstDOW = atoi(szFDW);
 
-	// note: some cultures treat sunday as the first day of the week
-	// which is reported as day '6'. however because sunday is 
-	// conceptually day '-1' this makes everything a week out.
-	// so we hack it thus.
-	if (nFirstDOW == 6)
-		nFirstDOW = -1;
+	// we need dates to have same order as COleDateTime::GetDayOfWeek()
+	// which is 1 (sun) - 7 (sat)
+	switch (nFirstDOW)
+	{
+	case 0: /* mon */ return 2;
+	case 1: /* tue */ return 3;
+	case 2: /* wed */ return 4;
+	case 3: /* thu */ return 5;
+	case 4: /* fri */ return 6;
+	case 5: /* sat */ return 7;
+	case 6: /* sun */ return 1;
+	}
 
-	return nFirstDOW + 1;
+	ASSERT (0);
+	return 1;
+}
+
+int CDateHelper::LastDayOfWeek()
+{
+	switch (FirstDayOfWeek())
+	{
+	case 2: /* mon */ return 1; // sun
+	case 3: /* tue */ return 2; // mon
+	case 4: /* wed */ return 3; // tue
+	case 5: /* thu */ return 4; // wed
+	case 6: /* fri */ return 5; // thu
+	case 7: /* sat */ return 6; // fri
+	case 1: /* sun */ return 7; // sat
+	}
+
+	ASSERT (0);
+	return 1;
+}
+
+int CDateHelper::NextDayOfWeek(int nDOW)
+{
+	switch (nDOW)
+	{
+	case 2: /* mon */ return 3; // tue
+	case 3: /* tue */ return 4; // wed
+	case 4: /* wed */ return 5; // thu
+	case 5: /* thu */ return 6; // fri
+	case 6: /* fri */ return 7; // sat
+	case 7: /* sat */ return 1; // sun
+	case 1: /* sun */ return 2; // mon
+	}
+
+	ASSERT (0);
+	return 1;
 }
 
 CString CDateHelper::FormatDate(const COleDateTime& date, BOOL bISOFormat, BOOL bWantDOW)

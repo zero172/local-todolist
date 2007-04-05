@@ -107,7 +107,7 @@ void CFindRiskPage::GetRange(int& nFrom, int& nTo)
 		
 	case LESSTHAN:
 		nFrom = INT_MIN;
-		nTo = m_nMoreThanRisk - 1;
+		nTo = m_nLessThanRisk - 1;
 		break;
 		
 	case BETWEEN:

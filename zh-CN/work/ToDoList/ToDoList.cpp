@@ -290,7 +290,7 @@ void CToDoListApp::DoHelp(const CString& /*sHelpRef*/)
 
 		GetModuleFileName(NULL, szHelpPath, MAX_PATH);
 		_splitpath(szHelpPath, szDrive, szFolder, NULL, NULL);
-		_makepath(szHelpPath, szDrive, szFolder, "todolist_help.tdl", NULL);
+		_makepath(szHelpPath, szDrive, szFolder, "ToDoListDocumentation.tdl", NULL);
 
 		sHelpFile = szHelpPath;
 

@@ -116,7 +116,7 @@ void CFindPriorityPage::GetRange(int& nFrom, int& nTo)
 		
 	case LESSTHAN:
 		nFrom = INT_MIN;
-		nTo = m_nMoreThanPriority - 1;
+		nTo = m_nLessThanPriority - 1;
 		break;
 		
 	case BETWEEN:

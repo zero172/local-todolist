@@ -45,6 +45,9 @@ public:
 	static CString FormatCurrentDate(BOOL bISOFormat = FALSE, BOOL bWantDOW = FALSE);
 
 	static int FirstDayOfWeek();
+	static int LastDayOfWeek();
+	static int NextDayOfWeek(int nDOW);
+
 	static CString GetWeekday(int nWeekday, BOOL bShort); // 1-7, sun-sat
 	static CString GetMonth(int nMonth, BOOL bShort); // 1-12, jan-nov
 	static void GetWeekdays(BOOL bShort, CStringArray& aWeekDays); // sun-sat

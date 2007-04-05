@@ -101,7 +101,11 @@ CString& CTaskListCsvExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 		}
 
 		AppendAttribute(pTasks, hTask, TDL_TASKID, NULL, sOutput);
-		AppendAttribute(pTasks, hTask, TDL_TASKTITLE, NULL, sOutput);
+
+        // title is slightly different because we indent it for subtasks
+        CString sPrefix(' ', (nDepth > 1) ? (nDepth - 1) * 4 : 0);
+		AppendAttribute(pTasks, hTask, TDL_TASKTITLE, NULL, sOutput, sPrefix);
+      
 		AppendAttribute(pTasks, hTask, TDL_TASKCALCCOMPLETION, TDL_TASKPERCENTDONE, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKHIGHESTPRIORITY, TDL_TASKPRIORITY, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKCALCTIMEESTIMATE, TDL_TASKTIMEESTIMATE, sOutput);
@@ -163,15 +167,25 @@ void CTaskListCsvExporter::CheckAddAttribtoList(const ITaskList6* pTasks, HTASKI
 }
 
 void CTaskListCsvExporter::AppendAttribute(const ITaskList6* pTasks, HTASKITEM hTask, 
-										   LPCTSTR szAttribName, LPCTSTR szAltAttribName, CString& sOutput) const
+										            LPCTSTR szAttribName, LPCTSTR szAltAttribName, 
+                                          CString& sOutput, LPCTSTR szPrefix) const
 {
 	if (WantAttribute(szAttribName) || (szAltAttribName && WantAttribute(szAltAttribName)))
 	{
 		if (pTasks->TaskHasAttribute(hTask, szAttribName))
-			AppendAttribute(pTasks->GetTaskAttribute(hTask, szAttribName), sOutput);
+      {
+         CString sAttrib(szPrefix);
+         sAttrib += pTasks->GetTaskAttribute(hTask, szAttribName);
 
+			AppendAttribute(sAttrib, sOutput);
+      }
 		else if (szAltAttribName && pTasks->TaskHasAttribute(hTask, szAltAttribName))
-			AppendAttribute(pTasks->GetTaskAttribute(hTask, szAltAttribName), sOutput);
+      {
+         CString sAttrib(szPrefix);
+         sAttrib += pTasks->GetTaskAttribute(hTask, szAltAttribName);
+
+			AppendAttribute(sAttrib, sOutput);
+      }
 		else
 			sOutput += DELIM;
 	}

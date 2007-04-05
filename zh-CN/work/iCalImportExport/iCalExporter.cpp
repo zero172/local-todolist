@@ -36,7 +36,7 @@ bool CiCalExporter::Export(const ITaskList* pSrcTaskFile, const char* szDestFile
 	{
 		// header
 		WriteString(fileOut, "BEGIN:VCALENDAR");
-		WriteString(fileOut, "PRODID:iCalExporter © AbstractSpoon 2005");
+		WriteString(fileOut, "PRODID:iCalExporter (c) AbstractSpoon 2005");
 		WriteString(fileOut, "VERSION:1.0.0");
 
 		// export first task
