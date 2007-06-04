@@ -20,12 +20,26 @@ const int HVISIBLE = 20;
 
 CTreeCtrlHelper::CTreeCtrlHelper(CTreeCtrl& tree) : m_tree(tree)
 {
-
+	m_pVisibleIndices = new CMapIndices();
 }
 
 CTreeCtrlHelper::~CTreeCtrlHelper()
 {
+	delete m_pVisibleIndices;
+}
 
+CMapIndices& CTreeCtrlHelper::VIMap()
+{
+	ASSERT (m_pVisibleIndices);
+
+	return *m_pVisibleIndices;
+}
+	
+const CMapIndices& CTreeCtrlHelper::VIMap() const
+{
+	ASSERT (m_pVisibleIndices);
+
+	return *m_pVisibleIndices;
 }
 
 int CTreeCtrlHelper::GetItemPos(HTREEITEM hti, HTREEITEM htiParent)
@@ -702,3 +716,23 @@ void CTreeCtrlHelper::SetTopLevelItemsBold(BOOL bBold)
 		}
 	}
 }
+
+HTREEITEM CTreeCtrlHelper::FindItem(DWORD dwID, HTREEITEM htiStart) const
+{
+	// try htiStart first
+	if (htiStart && m_tree.GetItemData(htiStart) == dwID)
+		return htiStart;
+	
+	// else try htiStart's children
+	HTREEITEM htiFound = NULL;
+	HTREEITEM htiChild = m_tree.GetChildItem(htiStart);
+	
+	while (htiChild && !htiFound)
+	{
+		htiFound = FindItem(dwID, htiChild);
+		htiChild = m_tree.GetNextItem(htiChild, TVGN_NEXT);
+	}
+	
+	return htiFound;
+}
+

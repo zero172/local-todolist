@@ -34,6 +34,21 @@ BOOL CMouseWheelMgr::OnMouse(UINT uMouseMsg, const MOUSEHOOKSTRUCTEX& info)
 {
    if (uMouseMsg == WM_MOUSEWHEEL)
    {
+	   //fabio_2005
+#if _MSC_VER >= 1400
+
+      HWND hwndPt = ::WindowFromPoint(info.pt);
+
+      if (info.hwnd != hwndPt)  // does the window under the mouse have the focus.
+      {
+		  ::PostMessage(hwndPt, WM_MOUSEWHEEL, (info.mouseData & 0xffff0000), 
+						MAKELPARAM(info.pt.x, info.pt.y));
+
+		  return TRUE; // eat
+      }
+   }
+#else
+
       HWND hwndPt = ::WindowFromPoint(info.MOUSEHOOKSTRUCT.pt);
 
       if (info.MOUSEHOOKSTRUCT.hwnd != hwndPt)  // does the window under the mouse have the focus.
@@ -45,6 +60,7 @@ BOOL CMouseWheelMgr::OnMouse(UINT uMouseMsg, const MOUSEHOOKSTRUCTEX& info)
       }
    }
 
+#endif
    // all else
    return FALSE;
 }

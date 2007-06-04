@@ -72,7 +72,8 @@ DROPEFFECT CTaskListDropTarget::OnDragOver(CWnd* pWnd, COleDataObject* pObject, 
 			if (!(pWnd->GetStyle() & ES_READONLY))
 				return DROPEFFECT_LINK;
 		}
-		else if (pWnd->IsKindOf(RUNTIME_CLASS(CDialog)))
+		else if (pWnd->IsKindOf(RUNTIME_CLASS(CDialog)) ||
+				 pWnd->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
 		{
 			// allow dropping only on titlebar
 			if ((pWnd->GetStyle() & WS_CAPTION) && point.y < 0)
@@ -124,7 +125,8 @@ BOOL CTaskListDropTarget::OnDrop(CWnd* pWnd, COleDataObject* pObject, DROPEFFECT
 				if (!(pWnd->GetStyle() & ES_READONLY))
 					m_pParent->SendMessage(WM_TLDT_DROPFILE, (WPARAM)0, (LPARAM)(LPCTSTR)sLongPath);
 			}
-			else if (pWnd->IsKindOf(RUNTIME_CLASS(CDialog)))
+			else if (pWnd->IsKindOf(RUNTIME_CLASS(CDialog)) ||
+					 pWnd->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
 			{
 				// allow dropping only on titlebar
 				if ((pWnd->GetStyle() & WS_CAPTION) && point.y < 0)

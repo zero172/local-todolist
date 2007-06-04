@@ -2116,7 +2116,7 @@ void CRulerRichEditCtrl::LayoutControls(int width, int height)
 	if (!width || !height)
 		return;
 
-	TRACE("LayoutControls(w = %d, h = %d)\n", width, height);
+//	TRACE("LayoutControls(w = %d, h = %d)\n", width, height);
 
 	int toolbarHeight = 0;
 

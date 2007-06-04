@@ -46,6 +46,8 @@ public:
 	BOOL GetAutoSaveUnsavedOnMinimize() const { return !m_bDontAutoSaveUnsaved; }
 	BOOL GetAutoCheckForUpdates() const { return m_bAutoCheckForUpdates; }
 	BOOL GetEscapeMinimizes() const { return m_bEscapeMinimizes; }
+	BOOL GetEnableTDLProtocol() const { return m_bEnableTDLProtocol; }
+	BOOL GetEnableDelayedLoading() const { return m_bEnableDelayedLoading; }
 //	BOOL Get() const { return m_b; }
 
 // Dialog Data
@@ -67,6 +69,8 @@ public:
 	BOOL	m_bDontAutoSaveUnsaved;
 	BOOL	m_bAutoCheckForUpdates;
 	BOOL	m_bEscapeMinimizes;
+	BOOL	m_bEnableTDLProtocol;
+	BOOL	m_bEnableDelayedLoading;
 	//}}AFX_DATA
 	DWORD	m_dwGlobalHotkey;
 

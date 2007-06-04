@@ -98,6 +98,10 @@ PostBuild_Cmds=mkdir ..\ToDoList	mkdir ..\ToDoList\debug	copy debug\gpexport.dll
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\Shared\FILEMISC.CPP
+# End Source File
+# Begin Source File
+
 SOURCE=.\GPExport.cpp
 # End Source File
 # Begin Source File
@@ -133,10 +137,6 @@ SOURCE=..\3rdParty\XmlNodeWrapper.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=..\3rdParty\COMUTIL.H
-# End Source File
 # Begin Source File
 
 SOURCE=..\3rdParty\FIXALLOC.H

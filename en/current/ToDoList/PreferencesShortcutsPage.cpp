@@ -328,7 +328,7 @@ LRESULT CPreferencesShortcutsPage::OnGutterDrawItem(WPARAM /*wParam*/, LPARAM lP
 		else
 		{
 			BOOL bSelected = pNCGDI->bSelected;
-			BOOL bFocused = m_tcCommands.HasFocus();
+			BOOL bFocused = CTreeCtrlHelper(m_tcCommands).HasFocus();
 			COLORREF crTextColor = GetSysColor((bSelected && bFocused) ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT);
 			
 			// bkcolor

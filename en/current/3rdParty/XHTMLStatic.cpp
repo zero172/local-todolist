@@ -532,7 +532,12 @@ void CXHTMLStatic::OnPaint()
 							if (index2 != -1)
 							{
 								memset(lf.lfFaceName, 0, sizeof(lf.lfFaceName));
+//fabio_2005
+#if _MSC_VER >= 1400
+								_tcsncpy_s(lf.lfFaceName, strAttributes, index2);
+#else
 								_tcsncpy(lf.lfFaceName, strAttributes, index2);
+#endif
 
 								m -= index2 + 1;
 								if (m > 0)
@@ -608,7 +613,12 @@ void CXHTMLStatic::OnPaint()
 			index = strText.Find(_T('>'));
 			if (index != -1)
 				strText = strText.Mid(index+1);
+//fabio_2005
+#if _MSC_VER >= 1400
+			_tcscpy_s(lf.lfFaceName, _T("Courier New"));
+#else
 			_tcscpy(lf.lfFaceName, _T("Courier New"));
+#endif
 			continue;
 		}
 		///////////////////////////////////////////////////////////////////////
@@ -1184,7 +1194,12 @@ BOOL CXHTMLStatic::GotoURL(LPCTSTR url, int showcmd)
 		{
 			if (GetRegKey(HKEY_CLASSES_ROOT, _T(".htm"), key) == ERROR_SUCCESS) 
 			{
+//fabio_2005
+#if _MSC_VER >= 1400
+				_tcscat_s(key, _T("\\shell\\open\\command"));
+#else
 				_tcscat(key, _T("\\shell\\open\\command"));
+#endif
 
 				if (GetRegKey(HKEY_CLASSES_ROOT,key,key) == ERROR_SUCCESS) 
 				{
@@ -1200,8 +1215,14 @@ BOOL CXHTMLStatic::GotoURL(LPCTSTR url, int showcmd)
 					else
 						*pos = _T('\0');				   // Remove the parameter
 
+//fabio_2005
+#if _MSC_VER >= 1400
+					_tcscat_s(pos,1, _T(" "));
+					_tcscat_s(pos,lstrlen( url), url);
+#else
 					_tcscat(pos, _T(" "));
 					_tcscat(pos, url);
+#endif
 					result = (HINSTANCE) WinExec((LPSTR)key,showcmd);
 				}
 			}

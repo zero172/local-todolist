@@ -24,6 +24,8 @@ CPreferencesGenPage::CPreferencesGenPage() : CPropertyPage(CPreferencesGenPage::
 	m_bDontAutoSaveUnsaved = FALSE;
 	m_bAutoCheckForUpdates = FALSE;
 	m_bEscapeMinimizes = FALSE;
+	m_bEnableTDLProtocol = FALSE;
+	m_bEnableDelayedLoading = FALSE;
 	//}}AFX_DATA_INIT
 
 	// load settings
@@ -40,9 +42,11 @@ CPreferencesGenPage::CPreferencesGenPage() : CPropertyPage(CPreferencesGenPage::
 	m_bSpecifyGlobalHotkey = (m_dwGlobalHotkey ? 1 : 0);
 	m_bAddFilesToMRU = AfxGetApp()->GetProfileInt("Preferences", "AddFilesToMRU", TRUE);
 	m_bEnableTDLExtension = AfxGetApp()->GetProfileInt("Preferences", "EnableTDLExtension", TRUE);
+	m_bEnableTDLProtocol = AfxGetApp()->GetProfileInt("Preferences", "EnableTDLProtocol", FALSE);
 	m_bDontAutoSaveUnsaved = AfxGetApp()->GetProfileInt("Preferences", "DontAutoSaveUnsaved", FALSE);
 	m_bAutoCheckForUpdates = AfxGetApp()->GetProfileInt("Preferences", "AutoCheckForUpdates", FALSE);
 	m_bEscapeMinimizes = AfxGetApp()->GetProfileInt("Preferences", "EscapeMinimizes", TRUE);
+	m_bEnableDelayedLoading = AfxGetApp()->GetProfileInt("Preferences", "EnableDelayedLoading", TRUE);
 //	m_b = AfxGetApp()->GetProfileInt("Preferences", "", TRUE);
 }
 
@@ -65,6 +69,8 @@ void CPreferencesGenPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DONTAUTOSAVEUNSAVED, m_bDontAutoSaveUnsaved);
 	DDX_Check(pDX, IDC_CHECKFORUPDATES, m_bAutoCheckForUpdates);
 	DDX_Check(pDX, IDC_ESCAPEMINIMIZES, m_bEscapeMinimizes);
+	DDX_Check(pDX, IDC_ENABLETDLPROTOCOL, m_bEnableTDLProtocol);
+	DDX_Check(pDX, IDC_ENABLEDELAYEDLOADING, m_bEnableDelayedLoading);
 	//}}AFX_DATA_MAP
 	DDX_Check(pDX, IDC_ALWAYSONTOP, m_bAlwaysOnTop);
 	DDX_Check(pDX, IDC_USESYSTRAY, m_bUseSysTray);
@@ -142,9 +148,11 @@ void CPreferencesGenPage::OnOK()
 	AfxGetApp()->WriteProfileInt("Preferences", "GlobalHotkey", (m_bSpecifyGlobalHotkey ? m_dwGlobalHotkey : 0));
 	AfxGetApp()->WriteProfileInt("Preferences", "AddFilesToMRU", m_bAddFilesToMRU);
 	AfxGetApp()->WriteProfileInt("Preferences", "EnableTDLExtension", m_bEnableTDLExtension);
+	AfxGetApp()->WriteProfileInt("Preferences", "EnableTDLProtocol", m_bEnableTDLProtocol);
 	AfxGetApp()->WriteProfileInt("Preferences", "DontAutoSaveUnsaved", m_bDontAutoSaveUnsaved);
 	AfxGetApp()->WriteProfileInt("Preferences", "AutoCheckForUpdates", m_bAutoCheckForUpdates);
 	AfxGetApp()->WriteProfileInt("Preferences", "EscapeMinimizes", m_bEscapeMinimizes);
+	AfxGetApp()->WriteProfileInt("Preferences", "EnableDelayedLoading", m_bEnableDelayedLoading);
 //	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
 }
 

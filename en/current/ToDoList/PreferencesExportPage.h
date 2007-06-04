@@ -8,7 +8,7 @@
 //
 
 #include "..\shared\fontcombobox.h"
-#include "..\shared\groupline.h"
+//#include "..\shared\groupline.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesExportPage dialog
@@ -49,7 +49,7 @@ protected:
 	CString m_sHtmlFont;
 	int m_nTextIndent;
 	int m_nHtmlFontSize;
-	CGroupLineManager m_mgrGroupLines;
+//	CGroupLineManager m_mgrGroupLines;
 
 // Overrides
 	// ClassWizard generate virtual function overrides

@@ -53,6 +53,7 @@ public:
 	BOOL RemoveAll(BOOL bRemoveFromHistory = FALSE, BOOL bRedraw = TRUE);
 	BOOL AddItems(HTREEITEM htiFrom, HTREEITEM htiTo, BOOL bRedraw = TRUE);
 	BOOL ToggleItems(HTREEITEM htiFrom, HTREEITEM htiTo, BOOL bRedraw = TRUE);
+	BOOL AddAll(BOOL bRedraw = TRUE);
 
 	inline HTREEITEM GetFirstItem() const { return GetCount() ? m_lstSelection.GetHead() : NULL; }
 	inline HTREEITEM GetLastItem() const { return GetCount() ? m_lstSelection.GetTail() : NULL; }
@@ -105,6 +106,7 @@ protected:
 	void InvalidateItem(HTREEITEM hti);
 	static BOOL HasSelectedParent(HTREEITEM hti, const CHTIList& selection, const CTreeCtrl& tree);
 	int GetItemPos(HTREEITEM hti);
+	void AddAll(HTREEITEM hti);
 
 	struct SORTITEM
 	{

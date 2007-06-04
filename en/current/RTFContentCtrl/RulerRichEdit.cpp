@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CRulerRichEdit
 
-CRulerRichEdit::CRulerRichEdit() : m_bPasteSimple(FALSE)
+CRulerRichEdit::CRulerRichEdit() : m_bPasteSimple(FALSE), m_bIMEComposing(FALSE)
 /* ============================================================
 Function :		CRulerRichEdit::CRulerRichEdit
 Description :	constructor
@@ -74,6 +74,8 @@ ON_WM_GETDLGCODE()
 ON_WM_LBUTTONDBLCLK()
 //}}AFX_MSG_MAP
 ON_MESSAGE(WM_DROPFILES, OnDropFiles)
+ON_MESSAGE(WM_IME_STARTCOMPOSITION, OnIMEStartComposition)
+ON_MESSAGE(WM_IME_ENDCOMPOSITION, OnIMEEndComposition)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -199,4 +201,17 @@ void CRulerRichEdit::Paste(BOOL bSimple)
 		
 		CUrlRichEditCtrl::Paste();
 	}
+}
+LRESULT CRulerRichEdit::OnIMEStartComposition(WPARAM wp, LPARAM lp)
+{
+	m_bIMEComposing = TRUE;
+
+	return Default();
+}
+
+LRESULT CRulerRichEdit::OnIMEEndComposition(WPARAM wp, LPARAM lp)
+{
+	m_bIMEComposing = FALSE;
+
+	return Default();
 }

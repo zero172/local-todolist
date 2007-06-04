@@ -189,7 +189,7 @@ void CFindNumPage::GetNumberRange(double& dFrom, double& dTo)
 		
 	case LESSTHAN:
 		dFrom = DBL_MIN;
-		dTo = Misc::Atof(m_sLessThanValue) - 0.0000001;
+		dTo = Misc::Atof(m_sMoreThanValue) - 0.0000001;
 		break;
 		
 	case BETWEEN:

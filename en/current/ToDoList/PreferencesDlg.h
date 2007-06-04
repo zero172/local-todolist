@@ -60,9 +60,11 @@ public:
 	BOOL GetGlobalHotkey() const { return m_pageGen.GetGlobalHotkey(); }
 	BOOL GetAddFilesToMRU() const { return m_pageGen.GetAddFilesToMRU(); }
 	BOOL GetEnableTDLExtension() const { return m_pageGen.GetEnableTDLExtension(); }
+	BOOL GetEnableTDLProtocol() const { return m_pageGen.GetEnableTDLProtocol(); }
 	BOOL GetAutoSaveUnsavedOnMinimize() const { return m_pageGen.GetAutoSaveUnsavedOnMinimize(); }
 	BOOL GetAutoCheckForUpdates() const { return m_pageGen.GetAutoCheckForUpdates(); }
 	BOOL GetEscapeMinimizes() const { return m_pageGen.GetEscapeMinimizes(); }
+	BOOL GetEnableDelayedLoading() const { return m_pageGen.GetEnableDelayedLoading(); }
 
 	int GetReadonlyReloadOption() const { return m_pageMultiUser.GetReadonlyReloadOption(); }
 	int GetTimestampReloadOption() const { return m_pageMultiUser.GetTimestampReloadOption(); }
@@ -94,6 +96,7 @@ public:
 	BOOL GetAutoSaveUnsaved() const { return m_pageFile.GetAutoSaveUnsaved(); }
 	BOOL GetDontRemoveFlagged() const { return m_pageFile.GetDontRemoveFlagged(); }
 	BOOL GetExpandTasksOnLoad() const { return m_pageFile.GetExpandTasksOnLoad(); }
+	BOOL GetCheckForChangesBeforeSaving() const { return m_pageFile.GetCheckForChangesBeforeSaving(); }
 
 	CString GetHtmlFont() const { return m_pageExport.GetHtmlFont(); }
 	int GetHtmlFontSize() const { return m_pageExport.GetHtmlFontSize(); }
@@ -103,10 +106,11 @@ public:
 	BOOL GetExportSpaceForNotes() const { return m_pageExport.GetExportSpaceForNotes(); }
 	BOOL GetExportVisibleColsOnly() const { return m_pageExport.GetExportVisibleColsOnly(); }
 	CString GetHtmlCharSet() const { return m_pageExport.GetHtmlCharSet(); }
-
+	
 	int GetDefaultPriority() const { return m_pageTaskDef.GetDefaultPriority(); }
 	int GetDefaultRisk() const { return m_pageTaskDef.GetDefaultRisk(); }
-	CString GetDefaultAllocTo() const { return m_pageTaskDef.GetDefaultAllocTo(); }
+//	CString GetDefaultAllocTo() const { return m_pageTaskDef.GetDefaultAllocTo(); }
+	int GetDefaultAllocTo(CStringArray& aAllocTo) const { return m_pageTaskDef.GetDefaultAllocTo(aAllocTo); }
 	CString GetDefaultAllocBy() const { return m_pageTaskDef.GetDefaultAllocBy(); }
 	CString GetDefaultStatus() const { return m_pageTaskDef.GetDefaultStatus(); }
 	int GetDefaultCategories(CStringArray& aCats) const { return m_pageTaskDef.GetDefaultCategories(aCats); }
@@ -127,6 +131,7 @@ public:
 	BOOL GetUsePercentDoneInTimeEst() const { return m_pageTask.GetUsePercentDoneInTimeEst(); }
 	BOOL GetTreatSubCompletedAsDone() const { return m_pageTask.GetTreatSubCompletedAsDone(); }
 	BOOL GetUseHighestPriority() const { return m_pageTask.GetUseHighestPriority(); }
+	BOOL GetUseHighestRisk() const { return m_pageTask.GetUseHighestRisk(); }
 	BOOL GetAutoCalcTimeEstimates() const { return m_pageTask.GetAutoCalcTimeEstimates(); }
 	BOOL GetIncludeDoneInPriorityCalc() const { return m_pageTask.GetIncludeDoneInPriorityCalc(); }
 	BOOL GetWeightPercentCompletionByTimeEst() const { return m_pageTask.GetWeightPercentCompletionByTimeEst(); }
@@ -170,10 +175,10 @@ public:
 	BOOL GetAutoReFilter() const { return m_pageUI.GetAutoReFilter(); }
 	BOOL GetRestoreTasklistFilters() const { return m_pageUI.GetRestoreTasklistFilters(); }
 
-	BOOL GetShowButtonsInTree() const { return m_pageUITasklist.GetShowButtonsInTree(); }
 	BOOL GetShowInfoTips() const { return m_pageUITasklist.GetShowInfoTips(); }
 	BOOL GetShowComments() const { return m_pageUITasklist.GetShowComments(); }
-	BOOL GetShowColumn(TDLB_COLUMN nColumn) const { return m_pageUITasklist.GetShowColumn(nColumn); }
+	int GetVisibleColumns(CTDCColumnArray& aColumns) const { return m_pageUITasklist.GetVisibleColumns(aColumns); }
+	void SetVisibleColumns(const CTDCColumnArray& aColumns) { m_pageUITasklist.SetVisibleColumns(aColumns); }
 	BOOL GetShowPathInHeader() const { return m_pageUITasklist.GetShowPathInHeader(); }
 	BOOL GetStrikethroughDone() const { return m_pageUITasklist.GetStrikethroughDone(); }
 	BOOL GetFullRowSelection() const { return m_pageUITasklist.GetFullRowSelection(); }
@@ -198,11 +203,11 @@ public:
 	BOOL GetCommentsUseTreeFont() const { return m_pageUITasklistColors.GetCommentsUseTreeFont(); }
 	BOOL GetColorPriority() const { return m_pageUITasklistColors.GetColorPriority(); }
 	int GetPriorityColors(CDWordArray& aColors) const { return m_pageUITasklistColors.GetPriorityColors(aColors); }
+	void GetDueTaskColors(COLORREF& crDue, COLORREF& crDueToday) const { m_pageUITasklistColors.GetTaskDueColors(crDue, crDueToday); }
 	BOOL GetTreeFont(CString& sFaceName, int& nPointSize) const { return m_pageUITasklistColors.GetTreeFont(sFaceName, nPointSize); }
 	BOOL GetCommentsFont(CString& sFaceName, int& nPointSize) const { return m_pageUITasklistColors.GetCommentsFont(sFaceName, nPointSize); }
 	COLORREF GetGridlineColor() const { return m_pageUITasklistColors.GetGridlineColor(); }
 	COLORREF GetTaskDoneColor() const { return m_pageUITasklistColors.GetTaskDoneColor(); }
-	COLORREF GetTaskDueColor() const { return m_pageUITasklistColors.GetTaskDueColor(); }
 	COLORREF GetHidePriorityNumber() const { return m_pageUITasklistColors.GetHidePriorityNumber(); }
 	COLORREF GetAlternateLineColor() const { return m_pageUITasklistColors.GetAlternateLineColor(); }
 	int GetCategoryColors(CCatColorArray& aColors) const { return m_pageUITasklistColors.GetCategoryColors(aColors); }

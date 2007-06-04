@@ -31,6 +31,10 @@ protected:
 
 protected:
 	CString& ExportTask(const ITaskList6* pTasks, HTASKITEM hTask, int nDepth, int nPos, CString& sOutput) const;
+
+	static BOOL FormatAttributeList(const ITaskList6* pTasks, HTASKITEM hTask, 
+										   LPCTSTR szNumAttribName, LPCTSTR szAttribName, 
+                                          LPCTSTR szFormat, CString& sAttribText);
 	static BOOL FormatAttribute(const ITaskList6* pTasks, HTASKITEM hTask, LPCTSTR szAttribName, 
 								LPCTSTR szFormat, CString& sAttribText);
 };

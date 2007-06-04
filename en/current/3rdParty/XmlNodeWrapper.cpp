@@ -360,8 +360,8 @@ void CXmlDocumentWrapper::SetHeader(LPCTSTR szHeader)
 {
 	if (IsValid())
 	{
-		_bstr_t name(_com_util_fix::ConvertStringToBSTR("xml"), FALSE);
-		_bstr_t bstr(_com_util_fix::ConvertStringToBSTR(szHeader), FALSE);
+		_bstr_t name(CXmlNodeWrapper::ConvertStringToBSTR("xml"), FALSE);
+		_bstr_t bstr(CXmlNodeWrapper::ConvertStringToBSTR(szHeader), FALSE);
 		
 		MSXML2::IXMLDOMProcessingInstructionPtr pHdr = m_xmldoc->createProcessingInstruction(name, bstr);
 		
@@ -405,7 +405,7 @@ BOOL CXmlDocumentWrapper::Load(LPCTSTR path)
 	if (!IsValid())
 		return FALSE;
 	
-	_bstr_t bstr(_com_util_fix::ConvertStringToBSTR(path), FALSE);
+	_bstr_t bstr(CXmlNodeWrapper::ConvertStringToBSTR(path), FALSE);
 	m_xmldoc->put_async(VARIANT_FALSE);
 	
 	return (VARIANT_TRUE == m_xmldoc->load(bstr));
@@ -416,7 +416,7 @@ BOOL CXmlDocumentWrapper::LoadXML(LPCTSTR xml)
 	if (!IsValid())
 		return FALSE;
 	
-	_bstr_t bstr(_com_util_fix::ConvertStringToBSTR(xml), FALSE); 
+	_bstr_t bstr(CXmlNodeWrapper::ConvertStringToBSTR(xml), FALSE); 
 	
 	return (VARIANT_TRUE == m_xmldoc->loadXML(bstr));
 }
@@ -428,7 +428,7 @@ BOOL CXmlDocumentWrapper::Save(LPCTSTR path, BOOL bPreserveWhiteSpace)
 	
 	try
 	{
-		_bstr_t bPath(_com_util_fix::ConvertStringToBSTR(path), FALSE);
+		_bstr_t bPath(CXmlNodeWrapper::ConvertStringToBSTR(path), FALSE);
 		
 		if (bPath.length() == 0)
 			bPath = m_xmldoc->Geturl();
@@ -526,6 +526,41 @@ BOOL CXmlDocumentWrapper::IsVersion3orGreater()
 
 	return s_bVer3orGreater;
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+//------------------------//
+// Convert char * to BSTR //
+//------------------------//
+inline BSTR CXmlNodeWrapper::ConvertStringToBSTR(const char* pSrc)
+{
+	if(!pSrc) return NULL;
+	
+	BSTR wsOut(NULL);
+	DWORD cwch = ::MultiByteToWideChar(CP_ACP, 0, pSrc, -1, NULL, 0);//get size minus NULL terminator
+
+	if (cwch)
+	{
+		cwch--;
+		wsOut = ::SysAllocStringLen(NULL, cwch);
+		
+		if(wsOut)
+		{
+			if(!::MultiByteToWideChar(CP_ACP, 0, pSrc, -1, wsOut, cwch))
+			{
+				if(ERROR_INSUFFICIENT_BUFFER == ::GetLastError())
+					return wsOut;
+				::SysFreeString(wsOut);//must clean up
+				wsOut = NULL;
+			}
+		}
+		
+	};
+	
+	return wsOut;
+};
+
+//////////////////////////////////////////////////////////////////////////////
 
 MSXML2::IXMLDOMDocument* CXmlNodeWrapper::ParentDocument()
 {
@@ -724,7 +759,10 @@ MSXML2::IXMLDOMNode* CXmlNodeWrapper::InsertAfter(MSXML2::IXMLDOMNode *refNode, 
 void CXmlNodeWrapper::SetText(LPCTSTR text)
 {
 	if (IsValid())
-		m_xmlnode->Puttext(text);
+	{
+		_bstr_t bstr(ConvertStringToBSTR(text), FALSE);
+		m_xmlnode->Puttext(bstr);
+	}
 }
 
 CString CXmlNodeWrapper::GetText()
@@ -823,3 +861,4 @@ int CXmlNodeWrapper::NodeTypeVal()
 	// Valik - Fully qualify the name of NODE_INVALID to prevent an ambiguous symbol error (C2872) in VC 7.1
 	return MSXML2::NODE_INVALID;
 }
+

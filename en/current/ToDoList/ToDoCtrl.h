@@ -13,7 +13,6 @@
 #include "tdcstruct.h"
 #include "tdlprioritycombobox.h"
 #include "tdlriskcombobox.h"
-#include "tdlcategorycombobox.h"
 #include "recurringtaskedit.h"
 
 #include "..\shared\runtimedlg.h"
@@ -29,6 +28,7 @@
 #include "..\shared\TreeDragDropHelper.h"
 #include "..\shared\wndPrompt.h"
 #include "..\shared\contentmgr.h"
+#include "..\shared\encheckcombobox.h"
 //#include "..\shared\endatetimectrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -56,6 +56,7 @@ public:
 	TDC_FILE Save(CTaskFile& tasks/*out*/, LPCTSTR szFilePath = NULL, BOOL bCheckforLaterChanges = TRUE);
 	TDC_FILE Load(LPCTSTR szFilePath, LPCTSTR szArchivePath = NULL, 
 					TDC_ARCHIVE nRemove = TDC_REMOVEALL, BOOL bRemoveFlagged = TRUE);
+	BOOL DelayLoad(LPCTSTR szFilePath, COleDateTime& dtEarliestDue);
 
 	BOOL Import(LPCTSTR szFilePath, BOOL bAppend);
 
@@ -80,7 +81,9 @@ public:
 	inline CString GetFilePath() const { return m_sLastSavePath; }
 	inline void ClearFilePath() { m_sLastSavePath.Empty(); }
 	inline CString GetProjectName() const { return m_sProjectName; }
+	void SetProjectName(LPCTSTR szProjectName);
 	CString GetFriendlyProjectName(int nUntitledIndex = -1) const;
+	inline void SetFilePath(LPCTSTR szPath) { m_sLastSavePath = szPath; }
 
 	BOOL DeleteAllTasks();
 	void NewList();
@@ -97,7 +100,8 @@ public:
 	void SetStyle(TDC_STYLE nStyle, BOOL bOn = TRUE); // one style at a time only 
 	BOOL HasStyle(TDC_STYLE nStyle) const; // one style at a time only 
 
-	void ShowColumn(TDC_COLUMN nColumn, BOOL bShow, BOOL bUpdate = TRUE);
+	void SetVisibleColumns(const CTDCColumnArray& aColumns);
+	int GetVisibleColumns(CTDCColumnArray& aColumns) const;
 	BOOL IsColumnShowing(TDC_COLUMN nColumn) const;
 
 	BOOL SetPriorityColors(const CDWordArray& aColors); // must have 12 elements
@@ -106,7 +110,10 @@ public:
 	void SetTaskCompletedColor(COLORREF color);
 	void SetCategoryColors(const CTDCColorMap& colors);
 	BOOL GetCategoryColor(LPCTSTR szCategory, COLORREF& color) const;
+	void SetDueTaskColors(COLORREF crDue, COLORREF crDueToday);
+	void GetDueTaskColors(COLORREF& crDue, COLORREF& crDueToday) { crDue = m_crDue; crDueToday = m_crDueToday; }
 
+	// these return the full list of items in each droplist
 	int GetAllocToNames(CStringArray& aNames) const { return m_cbAllocTo.GetItems(aNames); }
 	int GetAllocByNames(CStringArray& aNames) const { return m_cbAllocBy.GetItems(aNames); }
 	int GetCategoryNames(CStringArray& aNames) const { return m_cbCategory.GetItems(aNames); }
@@ -141,13 +148,16 @@ public:
 	BOOL IsSelectedTaskDue() const;
 	BOOL OffsetSelectedTaskDate(TDC_DATE nDate, int nAmount, int nUnits, BOOL bAndSubtasks);
 
+	COleDateTime GetEarliestDueDate() const { return m_data.GetEarliestDueDate(); } // entire tasklist
+
 	COLORREF GetSelectedTaskColor() const; // -1 on no item selected
 	CString GetSelectedTaskComments() const;
 	CString GetSelectedTaskCustomComments() const;
 	CString GetSelectedTaskTitle() const;
 	double GetSelectedTaskTimeEstimate(int& nUnits) const;
 	double GetSelectedTaskTimeSpent(int& nUnits) const;
-	CString GetSelectedTaskAllocTo() const;
+//	CString GetSelectedTaskAllocTo() const;
+	int GetSelectedTaskAllocTo(CStringArray& aAllocTo) const;
 	CString GetSelectedTaskAllocBy() const;
 	CString GetSelectedTaskStatus() const;
 	int GetSelectedTaskCategories(CStringArray& aCats) const;
@@ -161,15 +171,20 @@ public:
 	BOOL IsSelectedTaskFlagged() const;
 	BOOL GetSelectedTaskRecurrence(TDIRECURRENCE& tr) const;
 	CString GetSelectedTaskVersion() const;
-
 	BOOL GetCustomCommentsType(GUID& idType) const;
 
+	double CalcSelectedTaskTimeEstimate(int nUnits = TDITU_HOURS) const;
+	double CalcSelectedTaskTimeSpent(int nUnits = TDITU_HOURS) const;
+	double CalcSelectedTaskCost() const;
+
 	BOOL SetSelectedTaskColor(COLORREF color);
+	BOOL ClearSelectedTaskColor() { return SetSelectedTaskColor((COLORREF)-1); }
 	BOOL SetSelectedTaskTitle(LPCTSTR szTitle);
 	BOOL SetSelectedTaskPercentDone(int nPercent);
 	BOOL SetSelectedTaskTimeEstimate(const double& dHours, int nUnits = TDITU_HOURS);
 	BOOL SetSelectedTaskTimeSpent(const double& dHours, int nUnits = TDITU_HOURS);
-	BOOL SetSelectedTaskAllocTo(LPCTSTR szAllocTo);
+	BOOL SetSelectedTaskAllocTo(const CStringArray& aAllocTo);
+//	BOOL SetSelectedTaskAllocTo(LPCTSTR szAllocTo);
 	BOOL SetSelectedTaskAllocBy(LPCTSTR szAllocBy);
 	BOOL SetSelectedTaskStatus(LPCTSTR szStatus);
 	BOOL SetSelectedTaskCategories(const CStringArray& aCats);
@@ -191,6 +206,7 @@ public:
 	BOOL IncrementSelectedTaskPriority(int nAmount); // +ve or -ve
 
 	BOOL GotoSelectedTaskFileRef();
+	CString GetSelectedTaskPath();
 
 	void PauseTimeTracking(BOOL bPause = TRUE) { m_bTimeTrackingPaused = bPause; }
 	BOOL TimeTrackSelectedTask();
@@ -203,7 +219,8 @@ public:
 	BOOL SetSelectedTaskAttributeAsParent(TDC_ATTRIBUTE nAttrib);
 
 	void SetDefaultTaskAttributes(LPCTSTR szTitle, LPCTSTR szComments, COLORREF color,
-									const double& dTimeEst, int nTimeEstUnits, LPCTSTR szAllocTo,
+									const double& dTimeEst, int nTimeEstUnits, 
+									const CStringArray& aAllocTo/*LPCTSTR szAllocTo*/,
 									LPCTSTR szAllocBy, LPCTSTR szStatus, const CStringArray& aCats,
 									int nPriority, int nRisk, BOOL bAutoStartDate, 
 									LPCTSTR szCreatedBy, double dCost);
@@ -246,12 +263,13 @@ public:
 	inline int GetSelectedCount() const { return Selection().GetCount(); }
 	inline BOOL IsItemSelected(HTREEITEM hti) const { return Selection().HasItem(hti); }
 	inline BOOL HasSelection() const { return GetSelectedCount(); }
-	inline CString GetItemPath(HTREEITEM hti, int nMaxElementLen = -1) const { return m_tree.GetItemPath(hti, nMaxElementLen); }
+	inline CString GetItemPath(HTREEITEM hti, int nMaxElementLen = -1) const { return m_tree.TCH().GetItemPath(hti, nMaxElementLen); }
 	inline void SetAlternateLineColor(COLORREF color) { m_tree.SetAlternateLineColor(color); }
 	
 	void SetFocusToTree();
 	BOOL IsTreeLabelEditing();
 	void SelectItem(HTREEITEM hti);
+	void SelectAll();
 	void DeselectAll(); // call externally only
 	BOOL MultiSelectItems(const CDWordArray& aTasks, int nState = 1, BOOL bRedraw = TRUE);
 	BOOL MultiSelectItem(HTREEITEM hti, int nState = 1, BOOL bRedraw = TRUE);
@@ -277,6 +295,8 @@ public:
 	COleDateTime GetLastTaskModified() { return m_tLastTaskMod; }
 	BOOL PtInHeader(CPoint ptScreen) const;
 
+	static void ParseTaskLink(LPCTSTR szLink, DWORD& dwTaskID, CString& sFile);
+
 protected:
 	CDateTimeCtrl m_dateStart, m_dateDue, m_dateDone;
 	CTDLPriorityComboBox m_cbPriority;
@@ -284,9 +304,9 @@ protected:
 	CEnEdit m_eExternalID, m_eDependency;
 	CSpinButtonCtrl m_spinPercent;
 	CMaskEdit m_ePercentDone, m_eCost;
-	CAutoComboBox m_cbAllocTo, m_cbAllocBy;
+	CAutoComboBox /*m_cbAllocTo, */m_cbAllocBy;
 	CAutoComboBox m_cbStatus;
-	CTDLCategoryComboBox m_cbCategory;
+	CCheckComboBox m_cbCategory, m_cbAllocTo;
 	CTimeEdit m_eTimeEstimate, m_eTimeSpent;
 	CFileEdit m_eFileRef;
 	CContentCtrl m_ctrlComments;
@@ -295,10 +315,10 @@ protected:
 	CAutoComboBox m_cbVersion;
 
 	HFONT m_fontTree, m_fontDone, m_fontComments, m_fontBold;
-	HCURSOR m_hHandCursor;
 	HIMAGELIST m_hilDone;
-	CBrush m_brDue;
 	CSysImageList m_ilFileRef;
+	CBrush m_brDue, m_brDueToday;
+	COLORREF m_crDue, m_crDueToday;
 
 	CToDoCtrlData m_data;
 
@@ -325,9 +345,9 @@ protected:
 
 	CString m_sFileRefPath;
 	CString m_sTextComments, m_CustomComments;
-	CString m_sAllocTo, m_sAllocBy;
+	CString /*m_sAllocTo, */m_sAllocBy;
 	CString m_sStatus;
-	CStringArray m_aCategory;
+	CStringArray m_aCategory, m_aAllocTo;
 	CString m_sProjectName;
 	CString m_sExternalID, m_sDepends;
 	double m_dTimeEstimate, m_dTimeSpent;
@@ -370,8 +390,10 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 	virtual void PreSubclassWindow();
+	
 // Implementation
 protected:
+	void UpdateComments(BOOL bSaveAndValidate);
 
 	// Generated message map functions
 	//{{AFX_MSG(CToDoCtrl)
@@ -445,6 +467,8 @@ protected:
 	afx_msg LRESULT OnTDCDoTaskLink(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnAutoComboChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGetFont(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+	afx_msg LRESULT OnRefreshPercentSpinVisibility(WPARAM wp, LPARAM lp);
 	DECLARE_MESSAGE_MAP()
 
 protected:
@@ -456,7 +480,6 @@ protected:
 	void InvalidateItem(HTREEITEM hti);
 	void UpdateTask(TDC_ATTRIBUTE nAttrib);
 	void UpdateControls(HTREEITEM hti = NULL);
-	void InitHandCursor();
 	void UpdateSelectedTaskPath();
 	CRect GetSplitterRect();
 	void UpdateColumnHeaderClicking();
@@ -489,6 +512,7 @@ protected:
 	int ArchiveDoneTasks(LPCTSTR szFilePath, TDC_ARCHIVE nRemove, 
 						BOOL bRemoveFlagged, BOOL bHoldRedraw); // returns the number of tasks removed
 
+	BOOL IsSortable() const;
 
 	void ProcessItemLButtonDown(HTREEITEM htiHit, int nHitFlags, UINT nColID);
 	void ProcessItemLButtonUp(HTREEITEM htiHit, int nHitFlags, UINT nColID);
@@ -517,6 +541,7 @@ protected:
 
 	BOOL Load(const CTaskFile& file, LPCTSTR szArchivePath = NULL, 
 				TDC_ARCHIVE nRemove = TDC_REMOVEALL, BOOL bRemoveFlagged = TRUE);
+	BOOL CheckRestoreBackupFile(LPCTSTR szFilePath);
 
 	TDCCOLUMN* GetColumn(UINT nColID); 
 	TDCCOLUMN* GetColumn(TDC_SORTBY nSortBy);
@@ -550,7 +575,6 @@ protected:
 	void FixupTaskDependentsDates(DWORD dwTaskID);
 	BOOL AdjustTaskDates(DWORD dwTaskID, DWORD dwDependencyID);
 	
-	static void ParseTaskLink(LPCTSTR szLink, DWORD& dwTaskID, CString& sFile);
 
 	enum TDI_STATE 
 	{

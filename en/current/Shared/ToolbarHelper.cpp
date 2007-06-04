@@ -132,7 +132,13 @@ BOOL CToolbarHelper::SetButton(UINT nBtnCmdID, UINT nMenuID, int nSubMenu, UINT 
 	THButton dm = { nMenuID, nSubMenu, nDefCmdID, cHotkey };
 
 	ZeroMemory(dm.szTip, sizeof(dm.szTip));
+	//fabio_2005
+#if _MSC_VER >= 1400
+	strncpy_s(dm.szTip, szTip, sizeof(dm.szTip) - 1);
+#else
 	strncpy(dm.szTip, szTip, sizeof(dm.szTip) - 1);
+#endif
+
 
 	m_mapTHButtons[nBtnCmdID] = dm;
 

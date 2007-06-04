@@ -177,6 +177,38 @@ BOOL CTreeSelectionHelper::RemoveItem(HTREEITEM hti, BOOL bRemoveFromHistory, BO
    return SetItem(hti, 0, bRedraw); 
 }
 
+BOOL CTreeSelectionHelper::AddAll(BOOL bRedraw)
+{
+	// traverse all top level aItems adding each in turn
+	HTREEITEM hti = m_tree.GetChildItem(NULL);
+
+	while (hti)
+	{
+		AddAll(hti);
+		hti = m_tree.GetNextItem(hti, TVGN_NEXT);
+	}
+
+	// redraw
+	if (bRedraw)
+		m_tree.Invalidate();
+
+	return GetCount();
+}
+
+void CTreeSelectionHelper::AddAll(HTREEITEM hti)
+{
+	AddItem(hti, FALSE); // no redraw
+
+	// add children
+	HTREEITEM htiChild = m_tree.GetChildItem(hti);
+
+	while (htiChild)
+	{
+		AddAll(htiChild);
+		htiChild = m_tree.GetNextItem(htiChild, TVGN_NEXT);
+	}
+}
+
 BOOL CTreeSelectionHelper::RemoveAll(BOOL bRemoveFromHistory, BOOL bRedraw) 
 { 
 	if (GetCount())
@@ -294,15 +326,6 @@ void CTreeSelectionHelper::SortIfAllSiblings(BOOL bAscending)
 		// sort that array
 		qsort(aItems.GetData(), aItems.GetSize(), sizeof(SORTITEM), SortProc);
 
-#ifdef _DEBUG
-	for (int nItem = 0; nItem < aItems.GetSize(); nItem++)
-	{
-		const SORTITEM& si = aItems[nItem];
-		TRACE ("%d ", si.nPos);
-	}
-	TRACE ("\n");
-#endif
-
 		// rebuild the selection
 		RemoveAll(FALSE);
 
@@ -336,25 +359,12 @@ int CTreeSelectionHelper::BuildSortArray(CSortArray& aItems)
 	{
 		HTREEITEM hti = GetNextItem(pos);
 
-#ifdef _DEBUG
-//		DWORD dwID = m_tree.GetItemData(hti);
-#endif
-
 		int nPos = GetItemPos(hti);
 		SORTITEM si = { hti, nPos };
 		
 		aItems.SetAt(nItem, si);
 		nItem++;
 	}
-
-#ifdef _DEBUG
-//	for (nItem = 0; nItem < aItems.GetSize(); nItem++)
-//	{
-//		const SORTITEM& si = aItems[nItem];
-//		TRACE ("%d ", si.nPos);
-//	}
-//	TRACE ("\n");
-#endif
 
 	return aItems.GetSize();
 }

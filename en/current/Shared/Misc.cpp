@@ -83,9 +83,9 @@ BOOL Misc::GuidToString(const GUID& guid, CString& sGuid)
 
 BOOL Misc::GuidIsNull(const GUID& guid)
 {
-	static GUID NULLGUID = { 0, 0, 0, { 0, 0, 0, 0, 0, 0, 0, 0 } };
-
-   return SameGuids(guid, NULLGUID);
+	static GUID NULLGUID = { 0 };
+	
+	return SameGuids(guid, NULLGUID);
 }
 
 BOOL Misc::SameGuids(const GUID& guid1, const GUID& guid2)
@@ -98,11 +98,38 @@ void Misc::NullGuid(GUID& guid)
    ZeroMemory(&guid, sizeof(guid));
 }
 
-HFONT Misc::CreateFont(LPCTSTR szFaceName, int nPoint, BOOL bStrikeThru)
+HFONT Misc::CreateFont(HFONT hFont, DWORD dwFlags)
 {
-	if (nPoint <= 0)
-		return NULL;
+	LOGFONT lf;
+	::GetObject(hFont, sizeof(lf), &lf);
 	
+	lf.lfUnderline = (BYTE)(dwFlags & UNDERLINED);
+	lf.lfItalic = (BYTE)(dwFlags & ITALIC);
+	lf.lfStrikeOut = (BYTE)(dwFlags & STRIKETHRU);
+	lf.lfWeight = (dwFlags & BOLD) ? FW_BOLD : FW_NORMAL;
+	
+	HFONT hFontOut = CreateFontIndirect(&lf);
+
+	// verify the font creation
+	if (!SameFontNameSize(hFont, hFontOut))
+	{
+		AfxMessageBox("failed to create font");
+		DeleteObject(hFontOut);
+		hFont = NULL;
+	}
+	
+	return hFontOut;
+}
+
+BOOL Misc::CreateFont(CFont& fontOut, HFONT fontIn, DWORD dwFlags)
+{
+	fontOut.DeleteObject();
+
+	return fontOut.Attach(CreateFont(fontIn, dwFlags));
+}
+
+HFONT Misc::CreateFont(LPCTSTR szFaceName, int nPoint, DWORD dwFlags)
+{
 	HFONT hDefFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 	
 	ASSERT (hDefFont);
@@ -111,18 +138,27 @@ HFONT Misc::CreateFont(LPCTSTR szFaceName, int nPoint, BOOL bStrikeThru)
 	::GetObject(hDefFont, sizeof(lf), &lf);
 	
 	// set the charset
-	if (!lf.lfCharSet)
+	if (dwFlags & SYMBOL)
+		lf.lfCharSet = SYMBOL_CHARSET;
+
+	else if (!lf.lfCharSet)
 		lf.lfCharSet = DEFAULT_CHARSET;
 	
 	if (szFaceName && *szFaceName)
 		lstrcpy(lf.lfFaceName, szFaceName);
 	
-	HDC hDC = ::GetDC(NULL);
-	lf.lfHeight = -MulDiv(abs(nPoint), GetDeviceCaps(hDC, LOGPIXELSY), 72);
-	::ReleaseDC(NULL, hDC);
+	if (nPoint > 0)
+	{
+		HDC hDC = ::GetDC(NULL);
+		lf.lfHeight = -MulDiv(abs(nPoint), GetDeviceCaps(hDC, LOGPIXELSY), 72);
+		::ReleaseDC(NULL, hDC);
+	}
 	
 	lf.lfWidth = 0;
-	lf.lfStrikeOut = (BYTE)bStrikeThru;
+	lf.lfUnderline = (BYTE)(dwFlags & UNDERLINED);
+	lf.lfItalic = (BYTE)(dwFlags & ITALIC);
+	lf.lfStrikeOut = (BYTE)(dwFlags & STRIKETHRU);
+	lf.lfWeight = (dwFlags & BOLD) ? FW_BOLD : FW_NORMAL;
 	
 	HFONT hFont = CreateFontIndirect(&lf);
 
@@ -135,6 +171,31 @@ HFONT Misc::CreateFont(LPCTSTR szFaceName, int nPoint, BOOL bStrikeThru)
 	}
 	
 	return hFont;
+}
+
+BOOL Misc::CreateFont(CFont& font, LPCTSTR szFaceName, int nPoint, DWORD dwFlags)
+{
+	font.DeleteObject();
+
+	return font.Attach(CreateFont(szFaceName, nPoint, dwFlags));
+}
+
+DWORD Misc::GetFontFlags(HFONT hFont)
+{
+	if (!hFont)
+		return 0;
+
+	LOGFONT lf;
+	::GetObject(hFont, sizeof(lf), &lf);
+
+	DWORD dwFlags = 0;
+	
+	dwFlags |= (lf.lfItalic ? ITALIC : 0);
+	dwFlags |= (lf.lfUnderline ? UNDERLINED : 0);
+	dwFlags |= (lf.lfStrikeOut ? STRIKETHRU : 0);
+	dwFlags |= (lf.lfWeight >= FW_BOLD ? BOLD : 0);
+	
+	return dwFlags;
 }
 
 int Misc::GetFontNameSize(HFONT hFont, CString& sFaceName)
@@ -162,7 +223,8 @@ BOOL Misc::SameFont(HFONT hFont, LPCTSTR szFaceName, int nPoint)
 	CString sFontName;
 	int nFontSize = GetFontNameSize(hFont, sFontName);
 
-	return (nPoint == nFontSize && sFontName.CompareNoCase(szFaceName) == 0);
+	return ((nPoint <= 0 || nPoint == nFontSize) && 
+			(!szFaceName || sFontName.CompareNoCase(szFaceName) == 0));
 }
 
 BOOL Misc::SameFontNameSize(HFONT hFont1, HFONT hFont2)
@@ -171,6 +233,36 @@ BOOL Misc::SameFontNameSize(HFONT hFont1, HFONT hFont2)
 	int nSize1 = GetFontNameSize(hFont1, sName1);
 
 	return SameFont(hFont2, sName1, nSize1);
+}
+
+HCURSOR Misc::HandCursor()
+{
+#ifndef IDC_HAND
+#	define IDC_HAND  MAKEINTRESOURCE(32649) // from winuser.h
+#endif
+	static HCURSOR cursor = NULL;
+	
+	if (!cursor)
+	{
+		cursor = ::LoadCursor(NULL, IDC_HAND);
+		
+		// fallback hack for win9x
+		if (!cursor)
+		{
+			CString sWinHlp32;
+			
+			GetWindowsDirectory(sWinHlp32.GetBuffer(MAX_PATH), MAX_PATH);
+			sWinHlp32.ReleaseBuffer();
+			sWinHlp32 += _T("\\winhlp32.exe");
+			
+			HMODULE hMod = LoadLibrary(sWinHlp32);
+			
+			if (hMod)
+				cursor = ::LoadCursor(hMod, MAKEINTRESOURCE(106));
+		}
+	}
+
+	return cursor;
 }
 
 void Misc::ProcessMsgLoop()
@@ -330,7 +422,7 @@ int Misc::ParseIntoArray(const CString& sText, CStringArray& array, BOOL bAllowE
 	return array.GetSize();
 }
 
-BOOL Misc::ArraysMatch(const CStringArray& array1, const CStringArray& array2, BOOL bOrderMatters)
+BOOL Misc::ArraysMatch(const CStringArray& array1, const CStringArray& array2, BOOL bOrderMatters, BOOL bCaseMatters)
 {
 	int nSize1 = array1.GetSize();
 	int nSize2 = array2.GetSize();
@@ -343,8 +435,17 @@ BOOL Misc::ArraysMatch(const CStringArray& array1, const CStringArray& array2, B
 		for (int nItem1 = 0; nItem1 < nSize1; nItem1++)
 		{
 			// check for non-equality
-			if (array1[nItem1] != array2[nItem1])
-				return FALSE;
+			if (bCaseMatters)
+			{
+				if (array1[nItem1] != array2[nItem1])
+					return FALSE;
+			}
+			else 
+			{
+				if (array1[nItem1].CompareNoCase(array2[nItem1]) != 0)
+					return FALSE;
+
+			}
 		}
 
 		return TRUE;
@@ -357,8 +458,13 @@ BOOL Misc::ArraysMatch(const CStringArray& array1, const CStringArray& array2, B
 
 		// look for matching item
 		for (int nItem2 = 0; nItem2 < nSize2 && !bMatch; nItem2++)
-			bMatch = (array1[nItem1] == array2[nItem2]);
-
+		{
+			if (bCaseMatters)
+				bMatch = (array1[nItem1] == array2[nItem2]);
+			else
+				bMatch = (array1[nItem1].CompareNoCase(array2[nItem2]) == 0);
+		}
+		
 		// no-match found == not the same
 		if (!bMatch)
 			return FALSE;
@@ -367,7 +473,7 @@ BOOL Misc::ArraysMatch(const CStringArray& array1, const CStringArray& array2, B
 	return TRUE;
 }
 
-BOOL Misc::MatchAny(const CStringArray& array1, const CStringArray& array2) 
+BOOL Misc::MatchAny(const CStringArray& array1, const CStringArray& array2, BOOL bCaseMatters) 
 {
 	int nSize1 = array1.GetSize();
 	int nSize2 = array2.GetSize();
@@ -377,8 +483,16 @@ BOOL Misc::MatchAny(const CStringArray& array1, const CStringArray& array2)
 		// look for matching item
 		for (int nItem2 = 0; nItem2 < nSize2; nItem2++)
 		{
-			if (array1[nItem1] == array2[nItem2])
-				return TRUE;
+			if (bCaseMatters)
+			{
+				if (array1[nItem1] == array2[nItem2])
+					return TRUE;
+			}
+			else
+			{
+				if (array1[nItem1].CompareNoCase(array2[nItem2]) == 0)
+					return TRUE;
+			}
 		}
 	}
 	
@@ -419,19 +533,7 @@ CFont& Misc::WingDings()
 	static CFont font;
 				
 	if (!font.GetSafeHandle())
-	{
-		LOGFONT lf;
-		HFONT hDef = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-					
-		if (GetObject(hDef, sizeof(lf), &lf))
-		{
-			lstrcpy(lf.lfFaceName, "Wingdings");
-			lf.lfCharSet = SYMBOL_CHARSET;
-			lf.lfQuality = ANTIALIASED_QUALITY;
-		}
-					
-		font.CreateFontIndirect(&lf);
-	}
+		font.Attach(CreateFont("Wingdings", -1, SYMBOL));
 
 	return font;
 }
@@ -509,8 +611,8 @@ double Misc::Atof(const CString& sValue)
 	// especially since we've no way of knowing how it is encoded.
 	// so we assume that if a period is present then it's encoded
 	// in 'english' else it's in native format
-	char* szLocale = strdup(setlocale(LC_NUMERIC, NULL));
-
+	char* szLocale = _strdup(setlocale(LC_NUMERIC, NULL));
+	
 	if (sValue.Find('.') != -1)
 		setlocale(LC_NUMERIC, "English");
 	else
@@ -615,7 +717,12 @@ int AFX_CDECL Misc::GetTextWidth(CDC* pDC, LPCTSTR lpszFormat, ...)
 
 	va_list argList;
 	va_start(argList, lpszFormat);
+//fabio_2005
+#if _MSC_VER >= 1400
+	_vstprintf_s(BUFFER, lpszFormat, argList);
+#else
 	_vstprintf(BUFFER, lpszFormat, argList);
+#endif
 	va_end(argList);
 
 	return pDC->GetTextExtent(BUFFER).cx;
@@ -630,6 +737,103 @@ CString Misc::GetDefCharset()
 	return sDefCharset;
 }
 
+BOOL Misc::FindWord(LPCTSTR szWord, LPCTSTR szText, BOOL bMatchCase, BOOL bMatchWholeWord)
+{
+	CString sWord(szWord), sText(szText);
+	
+	if (sWord.GetLength() > sText.GetLength())
+		return FALSE;
+	
+	sWord.TrimLeft();
+	sWord.TrimRight();
+	
+	if (!bMatchCase)
+	{
+		sWord.MakeUpper();
+		sText.MakeUpper();
+	}
+	
+	int nFind = sText.Find(sWord);
+	
+	if (nFind == -1)
+		return FALSE;
+	
+	else if (bMatchWholeWord) // test whole word
+	{
+		const CString DELIMS("()-\\/{}[]:;,. ?\"'");
+		
+		// prior and next chars must be delimeters
+		char cPrevChar = 0, cNextChar = 0;
+		
+		// prev
+		if (nFind == 0) // word starts at start
+			cPrevChar = ' '; // known delim
+		else
+			cPrevChar = sText[nFind - 1];
+		
+		// next
+		if ((nFind + sWord.GetLength()) < sText.GetLength())
+			cNextChar = sText[nFind + sWord.GetLength()];
+		else
+			cNextChar = ' '; // known delim
+		
+		if (DELIMS.Find(cPrevChar) == -1 || DELIMS.Find(cNextChar) == -1)
+			return FALSE;
+	}
+	
+	return TRUE;
+}
+
+int Misc::ParseSearchString(LPCTSTR szLookFor, CStringArray& aWords)
+{
+	aWords.RemoveAll();
+	
+	// parse on spaces unless enclosed in double-quotes
+	int nLen = lstrlen(szLookFor);
+	BOOL bInQuotes = FALSE, bAddWord = FALSE;
+	CString sWord;
+	
+	for (int nPos = 0; nPos < nLen; nPos++)
+	{
+		switch (szLookFor[nPos])
+		{
+		case ' ': // word break
+			if (bInQuotes)
+				sWord += szLookFor[nPos];
+			else
+				bAddWord = TRUE;
+			break;
+			
+		case '\"':
+			// whether its the start or end we add the current word
+			// and flip bInQuotes
+			bInQuotes = !bInQuotes;
+			bAddWord = TRUE;
+			break;
+			
+		default: // everything else
+			sWord += szLookFor[nPos];
+			
+			// also if its the last char then add it
+			bAddWord = (nPos == nLen - 1);
+			break;
+		}
+		
+		if (bAddWord)
+		{
+			sWord.TrimLeft();
+			sWord.TrimRight();
+			
+			if (!sWord.IsEmpty())
+				aWords.Add(sWord);
+			
+			sWord.Empty(); // next word
+		}
+	}
+	
+	return aWords.GetSize();
+}
+
 float Misc::GetAverageCharWidth(CDC* pDC)
 {
 	ASSERT(pDC);
@@ -639,3 +843,17 @@ float Misc::GetAverageCharWidth(CDC* pDC)
 	return (nExtent / 52.0f);
 }
 
+CString Misc::Format(double dVal, int nDecPlaces)
+{
+	char* szLocale = _strdup(setlocale(LC_NUMERIC, NULL)); // current locale
+	setlocale(LC_NUMERIC, ""); // local default
+
+	CString sValue;
+	sValue.Format("%.*f", nDecPlaces, dVal);
+				
+	// restore locale
+	setlocale(LC_NUMERIC, szLocale);
+	free(szLocale);
+
+	return sValue;
+}

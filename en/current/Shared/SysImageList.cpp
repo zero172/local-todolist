@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "SysImageList.h"
 #include "driveinfo.h"
+#include "filemisc.h"
 
 #include <shlwapi.h>     
 
@@ -83,11 +84,11 @@ int CSysImageList::GetFileImageIndex(LPCTSTR szFilePath, BOOL bFailUnKnown)
 		return -1;
 
 	// get the file's extension
-	char szExt[_MAX_EXT];
-	_splitpath(szFilePath, NULL, NULL, NULL, szExt);
+	CString sExt;
+	FileMisc::SplitPath(szFilePath, NULL, NULL, NULL, &sExt);
 
 	// check if its a folder first if it has no extension
-	if (szExt[0] == 0)
+	if (sExt.IsEmpty())
 	{
 		// if its a remote path then simply assume it is a folder for now
 		if (CDriveInfo::IsRemotePath(szFilePath, FALSE))
@@ -99,9 +100,7 @@ int CSysImageList::GetFileImageIndex(LPCTSTR szFilePath, BOOL bFailUnKnown)
 		}
 		
 		// else
-		DWORD dwFileAttrib = GetFileAttributes(szFilePath);
-		
-		if (dwFileAttrib != 0xffffffff && (dwFileAttrib & FILE_ATTRIBUTE_DIRECTORY))
+		if (FileMisc::FolderExists(szFilePath))
 			return m_nFolderImage;
 	}
 
@@ -115,12 +114,12 @@ int CSysImageList::GetFileImageIndex(LPCTSTR szFilePath, BOOL bFailUnKnown)
 	}
 
 	// fail if no extension
-	if (bFailUnKnown && szExt[0] == 0)
+	if (bFailUnKnown && sExt.IsEmpty())
 		return -1;
 
 	// use the entire path if <= MAX_PATH in length else just the extension
 	if (lstrlen(szFilePath) > MAX_PATH)
-		szFilePath = szExt;
+		szFilePath = sExt;
 
 	// else
 	SHFILEINFO sfi;

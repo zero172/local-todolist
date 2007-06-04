@@ -228,7 +228,13 @@ BOOL CTrayIcon::AddToTray()
 	if (!m_sTip.IsEmpty())
 	{
 		nid.uFlags |= NIF_TIP;
+		//fabio_2005
+#if _MSC_VER >= 1400
+		_tcsncpy_s(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
+#else
 		_tcsncpy(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
+#endif
+		
 		nid.szTip[sizeof(nid.szTip)/sizeof(TCHAR)-1] = (TCHAR)0;
 	}
 
@@ -281,7 +287,12 @@ BOOL CTrayIcon::ModifyTip(UINT uIDNewTip)
 	if (!m_sTip.IsEmpty())
 	{
 		nid.uFlags |= NIF_TIP;
+//fabio_2005
+#if _MSC_VER >= 1400
+		_tcsncpy_s(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
+#else
 		_tcsncpy(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
+#endif
 		nid.szTip[sizeof(nid.szTip)/sizeof(TCHAR)-1] = (TCHAR)0;
 	}
 
@@ -301,7 +312,12 @@ BOOL CTrayIcon::ModifyTip(LPCTSTR sNewTip)
 	if (!m_sTip.IsEmpty())
 	{
 		nid.uFlags |= NIF_TIP;
+//fabio_2005
+#if _MSC_VER >= 1400
+		_tcsncpy_s(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
+#else
 		_tcsncpy(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
+#endif
 		nid.szTip[sizeof(nid.szTip)/sizeof(TCHAR)-1] = (TCHAR)0;
 	}
 
@@ -437,10 +453,17 @@ BOOL CTrayIcon::ShowBalloon(LPCTSTR szText, LPCTSTR szTitle, DWORD dwIcon, UINT 
 	nid.hWnd = GetSafeHwnd();
 	nid.uID = GetDlgCtrlID();
 	nid.uFlags = NIF_INFO;
+//fabio_2005
+#if _MSC_VER >= 1400
+    _tcsncpy_s(nid.szInfo, szText, 256);
+    if (szTitle)
+        _tcsncpy_s(nid.szInfoTitle, szTitle, 64);
+#else
     _tcsncpy(nid.szInfo, szText, 256);
-
     if (szTitle)
         _tcsncpy(nid.szInfoTitle, szTitle, 64);
+#endif
+
     else
         nid.szInfoTitle[0] = _T('\0');
 

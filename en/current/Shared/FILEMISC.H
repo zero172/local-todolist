@@ -7,6 +7,21 @@
 
 #include <time.h>
 
+class CFileBackup
+{
+public:
+	CFileBackup(const CString& sFile = "", const CString& sExt = ".bak");
+	~CFileBackup();
+
+	BOOL MakeBackup(const CString& sFile, const CString& sExt = ".bak");
+	BOOL RestoreBackup();
+
+	static CString BuildBackupPath(const CString& sFile, const CString& sExt = ".bak");
+
+protected:
+	CString m_sFile, m_sBackup;
+};
+
 namespace FileMisc
 {
 	void TerminatePath(CString& sPath);
@@ -36,21 +51,31 @@ namespace FileMisc
 	bool CreateFolder(const char* szFolder);
 	bool CreateFolderFromFilePath(const char* szFilePath);
 	bool FolderExists(const char* szFolder);
+	bool FileExists(const char* szFile);
 	bool FolderFromFilePathExists(const char* szFilePath);
 	bool PathHasWildcard(const char* szFilePath);
 
+	CString GetCwd();
+
 	CString& ValidateFilename(CString& sFilename);
 	CString& ValidateFilepath(CString& sFilepath);
-	void ReplaceExtension(char szFilePath[MAX_PATH + 1], const char* szExt);
+	void ReplaceExtension(CString& szFilePath, const char* szExt);
 
-	const char* FileNameFromPath(const char* szFilepath);
 
 	CString GetTempFileName(LPCTSTR szPrefix, UINT uUnique = 0);
 	CString GetTempFileName(LPCTSTR szFilename, LPCTSTR szExt);
 	bool SaveFile(const char* szPathname, const char* szText, int nLen = -1);
 	bool LoadFile(const char* szPathname, CString& sText);
 
-	bool GetFolderFromFilePath(const char* szFilePath, CString& sFolder);
+	bool ExtractResource(UINT nID, LPCTSTR szType, const CString& sTempFilePath, HINSTANCE hInst = NULL);
+	bool ExtractResource(LPCTSTR szModulePath, UINT nID, LPCTSTR szType, const CString& sTempFilePath);
+
+	CString GetModuleFileName(HMODULE hMod = NULL);
+	void SplitPath(const char* szPath, CString* pDrive, CString* pDir = NULL, CString* pFName = NULL, CString* pExt = NULL);
+	CString& MakePath(CString& sPath, const char* szDrive, const char* szDir = NULL, const char* szFName = NULL, const char* szExt = NULL);
+
+	CString GetFolderFromFilePath(const char* szFilePath);
+	const char* GetFileNameFromPath(const char* szFilepath);
 
 	// will delete the source folder on success
 	bool MoveFolder(const char* szSrcFolder, 

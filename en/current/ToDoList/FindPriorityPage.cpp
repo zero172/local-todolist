@@ -40,12 +40,12 @@ void CFindPriorityPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CFindPriorityPage)
 	DDX_Radio(pDX, IDC_THIS, m_nPriorityOption);
-	DDX_CBIndex(pDX, IDC_MORETHANPRIORITY, m_nMoreThanPriority);
-	DDX_CBIndex(pDX, IDC_LESSTHANPRIORITY, m_nLessThanPriority);
-	DDX_CBIndex(pDX, IDC_PRIORITYSTART, m_nStartPriority);
-	DDX_CBIndex(pDX, IDC_PRIORITYEND, m_nEndPriority);
-	DDX_CBIndex(pDX, IDC_THISPRIORITY, m_nThisPriority);
 	//}}AFX_DATA_MAP
+	DDX_CBPriority(pDX, IDC_MORETHANPRIORITY, m_nMoreThanPriority);
+	DDX_CBPriority(pDX, IDC_LESSTHANPRIORITY, m_nLessThanPriority);
+	DDX_CBPriority(pDX, IDC_PRIORITYSTART, m_nStartPriority);
+	DDX_CBPriority(pDX, IDC_PRIORITYEND, m_nEndPriority);
+	DDX_CBPriority(pDX, IDC_THISPRIORITY, m_nThisPriority);
 	DDX_Control(pDX, IDC_MORETHANPRIORITY, m_cbMoreThanPriority);
 	DDX_Control(pDX, IDC_LESSTHANPRIORITY, m_cbLessThanPriority);
 	DDX_Control(pDX, IDC_PRIORITYSTART, m_cbStartPriority);

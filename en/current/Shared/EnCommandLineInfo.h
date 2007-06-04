@@ -18,6 +18,9 @@ public:
 	BOOL GetOption(LPCTSTR szFlag, CStringArray* pParams = NULL) const; 
 	BOOL GetOption(LPCTSTR szFlag, CString& sParam) const; 
 
+	BOOL SetOption(LPCTSTR szFlag, LPCTSTR szParam); 
+	BOOL SetOption(LPCTSTR szFlag, DWORD dwParam); 
+
 	static CString ResolveShortcut(LPCTSTR szShortcut);
 
 protected:

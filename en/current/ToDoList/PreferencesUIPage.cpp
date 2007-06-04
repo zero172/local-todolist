@@ -26,6 +26,7 @@ CPreferencesUIPage::CPreferencesUIPage(const CContentMgr* pMgr) :
 	m_bMultiSelCategoryFilter = FALSE;
 	m_bAutoReFilter = FALSE;
 	m_bRestoreTasklistFilters = FALSE;
+	m_bMultiSelAllocToFilter = FALSE;
 	//}}AFX_DATA_INIT
 
 	// load settings
@@ -40,8 +41,8 @@ CPreferencesUIPage::CPreferencesUIPage(const CContentMgr* pMgr) :
 	m_bRightAlignLabels = AfxGetApp()->GetProfileInt("Preferences", "RightAlignLabels", TRUE);
 	m_bFocusTreeOnEnter = AfxGetApp()->GetProfileInt("Preferences", "FocusTreeOnEnter", FALSE);
 	m_bLargeToolbarIcons = AfxGetApp()->GetProfileInt("Preferences", "LargeToolbarIcons", TRUE);
-	m_nNewTaskPos = AfxGetApp()->GetProfileInt("Preferences", "NewTaskPos", PUIP_ABOVE);
-	m_nNewSubtaskPos = AfxGetApp()->GetProfileInt("Preferences", "NewSubtaskPos", PUIP_TOP);
+	m_nNewTaskPos = AfxGetApp()->GetProfileInt("Preferences", "NewTaskPos", PUIP_BELOW);
+	m_nNewSubtaskPos = AfxGetApp()->GetProfileInt("Preferences", "NewSubtaskPos", PUIP_BOTTOM);
 	m_bKeepTabsOrdered = AfxGetApp()->GetProfileInt("Preferences", "KeepTabsOrdered", FALSE);
 	m_bShowTasklistCloseButton = AfxGetApp()->GetProfileInt("Preferences", "ShowTasklistCloseButton", TRUE);
 	m_bEnableCtrlMBtnClose = AfxGetApp()->GetProfileInt("Preferences", "EnableCtrlMBtnClose", TRUE);
@@ -54,8 +55,8 @@ CPreferencesUIPage::CPreferencesUIPage(const CContentMgr* pMgr) :
 	m_bMultiSelCategoryFilter = AfxGetApp()->GetProfileInt("Preferences", "MultiSelCategoryFilter", TRUE);
 	m_bAutoReFilter = AfxGetApp()->GetProfileInt("Preferences", "AutoReFilter", FALSE);
 	m_bRestoreTasklistFilters = AfxGetApp()->GetProfileInt("Preferences", "RestoreTasklistFilters", FALSE);
+	m_bMultiSelAllocToFilter = AfxGetApp()->GetProfileInt("Preferences", "MultiSelAllocToFilter", TRUE);
 //	m_b = AfxGetApp()->GetProfileInt("Preferences", "", FALSE);
-
 
 	// comments format
 	if (m_pContentMgr)
@@ -97,10 +98,11 @@ void CPreferencesUIPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SHOWTASKLISTCLOSEBTN, m_bShowTasklistCloseButton);
 	DDX_Check(pDX, IDC_ENABLECTRLMBTNCLOSE, m_bEnableCtrlMBtnClose);
 	DDX_Check(pDX, IDC_SHOWEDITMENUASCOLUMNS, m_bShowEditMenuAsColumns);
-	DDX_CBIndex(pDX, IDC_COMMENTPOS, m_nCommentsPos);
 	DDX_Check(pDX, IDC_MULTISELCATFILTER, m_bMultiSelCategoryFilter);
 	DDX_Check(pDX, IDC_AUTOREFILTER, m_bAutoReFilter);
 	DDX_Check(pDX, IDC_RESTORETASKLISTFILTERS, m_bRestoreTasklistFilters);
+	DDX_CBIndex(pDX, IDC_COMMENTPOS, m_nCommentsPos);
+	DDX_Check(pDX, IDC_MULTISELALLOCTOFILTER, m_bMultiSelAllocToFilter);
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_COMMENTSFORMAT, m_cbCommentsFmt);
 	DDX_CBIndex(pDX, IDC_COMMENTSFORMAT, m_nDefaultCommentsFormat);
@@ -128,6 +130,7 @@ BOOL CPreferencesUIPage::OnInitDialog()
 	m_mgrGroupLines.AddGroupLine(IDC_SORTGROUP, *this);
 	m_mgrGroupLines.AddGroupLine(IDC_TABBARGROUP, *this);
 	m_mgrGroupLines.AddGroupLine(IDC_COMMENTSGROUP, *this);
+	m_mgrGroupLines.AddGroupLine(IDC_FILTERGROUP, *this);
 
 	// content types
 	if (m_pContentMgr)
@@ -177,6 +180,7 @@ void CPreferencesUIPage::OnOK()
 	AfxGetApp()->WriteProfileInt("Preferences", "MultiSelCategoryFilter", m_bMultiSelCategoryFilter);
 	AfxGetApp()->WriteProfileInt("Preferences", "AutoReFilter", m_bAutoReFilter);
 	AfxGetApp()->WriteProfileInt("Preferences", "RestoreTasklistFilters", m_bRestoreTasklistFilters);
+	AfxGetApp()->WriteProfileInt("Preferences", "MultiSelAllocToFilter", m_bMultiSelAllocToFilter);
 //	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
 
 	// comments format

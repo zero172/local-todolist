@@ -341,7 +341,7 @@ BOOL CRuntimeDlg::AddRCControl(LPCTSTR szRCType, LPCTSTR szClass, LPCTSTR szCapt
 	CString sClass(szClass);
 	
 	// get the win32 class name
-	if (sClass.IsEmpty() || stricmp(szRCType, "CONTROL") != 0)
+	if (sClass.IsEmpty() || _stricmp(szRCType, "CONTROL") != 0)
 	{
 		if (!CRCCtrlParser::GetClassName(szRCType, sClass) || sClass.IsEmpty())
 			return FALSE;
@@ -436,8 +436,8 @@ HWND CRuntimeDlg::CreateControl(LPCTSTR szClass, LPCTSTR szCaption, DWORD dwStyl
 			hFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 		
 		::SendMessage(hwnd, WM_SETFONT, (WPARAM)hFont, 0); 
-		
-		if (nIconID && stricmp(szClass, "static") == 0)
+
+		if (nIconID && _stricmp(szClass, "static") == 0)
 		{
 			HICON hIcon = AfxGetApp()->LoadIcon(nIconID);
 			
@@ -724,25 +724,30 @@ int CRuntimeDlg::AddRCControls(const CString& sRCControls)
 
 BOOL CRuntimeDlg::PreTranslateMessage(MSG* pMsg)
 {
+   BOOL bChild = (GetStyle() & WS_CHILD);
+   BOOL bTab = (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_TAB);
+   
 	// don't handle the enter/cancel keys in child dialogs
-	if (GetStyle() & WS_CHILD)
+/*
+	if (bChild)
 	{
 		if (pMsg->message == WM_KEYDOWN && (pMsg->wParam == VK_RETURN || pMsg->wParam == VK_ESCAPE))
 			return FALSE;
 	}
+*/
 	
 	// also filter out what look like accelerator keys 
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		if (pMsg->wParam != VK_CONTROL && (GetKeyState(VK_CONTROL) & 0x8000))
-			return FALSE;
-	}
+// 	if (pMsg->message == WM_KEYDOWN)
+// 	{
+// 		if (pMsg->wParam != VK_CONTROL && (GetKeyState(VK_CONTROL) & 0x8000))
+// 			return FALSE;
+// 	}
 	// filter out mouse moves because CDialog::PreTranslateMessage
 	// eats them and prevents tooltips working
-	else if (pMsg->message == WM_MOUSEMOVE)
-		return FALSE;
+//	else if (pMsg->message == WM_MOUSEMOVE)
+//		return FALSE;
 	
-	return CDialog::PreTranslateMessage(pMsg);
+   return (bChild && !bTab) ? CWnd::PreTranslateMessage(pMsg) : CDialog::PreTranslateMessage(pMsg);
 }
 
 void CRuntimeDlg::EnableControls(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bEnable)

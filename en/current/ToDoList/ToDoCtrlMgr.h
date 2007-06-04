@@ -18,6 +18,7 @@
 // CToDoCtrlMgr dialog
  
 enum TDCM_PATHTYPE { TDCM_UNDEF = -1, TDCM_REMOVABLE, TDCM_FIXED, TDCM_REMOTE }; // drive types
+enum TDCM_DUESTATUS { TDCM_NONE = -1, TDCM_PAST, TDCM_TODAY, TDCM_FUTURE }; 
 
 class CToDoCtrlMgr
 {
@@ -31,12 +32,18 @@ public:
 
 	void SetPrefs(const CPreferencesDlg* pPrefs);
 
+	void RefreshColumns(int nIndex, CTDCColumnArray& aColumns /*out*/);
+	BOOL HasOwnColumns(int nIndex) const;
+	void SetHasOwnColumns(int nIndex, BOOL bHas = TRUE);
+
 	CFilteredToDoCtrl& GetToDoCtrl(int nIndex);
 	const CFilteredToDoCtrl& GetToDoCtrl(int nIndex) const;
 
 	int RemoveToDoCtrl(int nIndex, BOOL bDelete = FALSE); // returns new selection
-	int AddToDoCtrl(CFilteredToDoCtrl* pCtrl, BOOL bReOrder = FALSE);
+	int AddToDoCtrl(CFilteredToDoCtrl* pCtrl, BOOL bLoaded = TRUE);
 	BOOL IsPristine(int nIndex) const;
+	BOOL IsLoaded(int nIndex) const;
+	void SetLoaded(int nIndex, BOOL bLoaded = TRUE);
 
 	BOOL HasTasks(int nIndex) const;
 	BOOL AnyHasTasks() const;
@@ -60,8 +67,8 @@ public:
 	void UpdateToDoCtrlReadOnlyUIState(int nIndex);
 	void UpdateToDoCtrlReadOnlyUIState(CFilteredToDoCtrl& tdc);
 
-	void SetDueItemStatus(int nIndex, BOOL bDueItems);
-	BOOL GetDueItemStatus(int nIndex) const;
+	void SetDueItemStatus(int nIndex, TDCM_DUESTATUS nStatus);
+	TDCM_DUESTATUS GetDueItemStatus(int nIndex) const;
 
 	int GetLastCheckoutStatus(int nIndex) const;
 	void SetLastCheckoutStatus(int nIndex, BOOL bStatus);
@@ -79,6 +86,7 @@ public:
 
 	CString UpdateTabItemText(int nIndex);
 	CString GetTabItemText(int nIndex) const;
+	CString GetTabItemTooltip(int nIndex) const;
 
 	int ArchiveDoneTasks(int nIndex);
 	CString GetArchivePath(LPCTSTR szFilePath) const;
@@ -86,7 +94,7 @@ public:
 
 	void SetNeedsPreferenceUpdate(int nIndex, BOOL bNeed);
 	BOOL GetNeedsPreferenceUpdate(int nIndex) const;
-	void SetAllNeedPreferenceUpdate(BOOL bNeed);
+	void SetAllNeedPreferenceUpdate(BOOL bNeed, int nExcept = -1);
 
 	void PreparePopupMenu(CMenu& menu, UINT nID1, int nMax = 20);
 
@@ -102,12 +110,14 @@ protected:
 			tLastMod = 0; 
 			bLastCheckoutSuccess = -1;
             nPathType = TDCM_UNDEF;
-			bDueItems = FALSE;
+			nDueStatus = TDCM_NONE;
 			bNeedPrefUpdate = TRUE;
 			nCreated = -1;
+			bLoaded = TRUE;
+			bHasOwnColumns = FALSE;
 		}
 		
-		TDCITEM(CFilteredToDoCtrl* pCtrl, int nIndex) 
+		TDCITEM(CFilteredToDoCtrl* pCtrl, int nIndex, BOOL _bLoaded) 
 		{ 
 			pTDC = pCtrl; 
 			
@@ -115,15 +125,17 @@ protected:
 			bLastStatusReadOnly = -1;
 			tLastMod = 0;
 			bLastCheckoutSuccess = -1;
-			bDueItems = FALSE;
+			nDueStatus = TDCM_NONE;
 			bNeedPrefUpdate = TRUE;
 			nCreated = nIndex;
+			bLoaded = _bLoaded;
+			bHasOwnColumns = FALSE;
 			
 			CString sFilePath = pCtrl->GetFilePath();
 			
 			if (!sFilePath.IsEmpty())
 			{
-				bLastStatusReadOnly = CDriveInfo::IsReadonlyPath(sFilePath);
+				bLastStatusReadOnly = (CDriveInfo::IsReadonlyPath(sFilePath) > 0);
 				tLastMod = FileMisc::GetLastModified(sFilePath);
 			}
 			
@@ -136,9 +148,11 @@ protected:
 		time_t tLastMod;
 		BOOL bLastCheckoutSuccess;
         TDCM_PATHTYPE nPathType;
-		BOOL bDueItems;
+		TDCM_DUESTATUS nDueStatus;
 		BOOL bNeedPrefUpdate;
 		int nCreated; // creation index regardless of actual position
+		BOOL bLoaded;
+		BOOL bHasOwnColumns;
 		
 		inline TDCM_PATHTYPE GetPathType() const { return nPathType; }
         
@@ -188,6 +202,13 @@ protected:
 
 	BOOL PathTypeSupportsSourceControl(TDCM_PATHTYPE nType) const;
 	const CPreferencesDlg& Prefs() const;
+
+	void RestoreFilter(CFilteredToDoCtrl* pCtrl);
+	void SaveFilter(const CFilteredToDoCtrl* pCtrl) const;
+
+	void RestoreColumns(TDCITEM* pTDCI);
+	void SaveColumns(const TDCITEM* pTDCI) const;
+
 };
 
 //{{AFX_INSERT_LOCATION}}

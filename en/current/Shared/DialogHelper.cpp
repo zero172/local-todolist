@@ -122,7 +122,13 @@ void DH_DDX_TextWithFormat(CDataExchange* pDX, int nIDC, LPCTSTR lpszFormat, UIN
 
 // *******************************************************************
 		if (strlen(szT) == 0)
+			//fabio_2005
+#if _MSC_VER >= 1400
+			strcpy_s(szT, "0");
+#else
 			strcpy(szT, "0");
+#endif
+
 // *******************************************************************
 
 		if (!DH_SimpleScanf(szT, lpszFormat, pData))
@@ -159,7 +165,13 @@ void DH_TextFloatFormat(CDataExchange* pDX, int nIDC, void* pData, double value,
 
 		// *******************************************************************
 		if (strlen(szBuffer) == 0)
+			//fabio_2005
+#if _MSC_VER >= 1400
+			strcpy_s(szBuffer, "0");
+#else
 			strcpy(szBuffer, "0");
+#endif
+
 		// *******************************************************************
 
 		double d;
@@ -178,7 +190,12 @@ void DH_TextFloatFormat(CDataExchange* pDX, int nIDC, void* pData, double value,
 	}
 	else
 	{
+		//fabio_2005
+#if _MSC_VER >= 1400
+		_stprintf_s(szBuffer, _T("%.*g"), nSizeGcvt, value);
+#else
 		_stprintf(szBuffer, _T("%.*g"), nSizeGcvt, value);
+#endif
 		AfxSetWindowText(hWndCtrl, szBuffer);
 	}
 

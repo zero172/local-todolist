@@ -10,8 +10,9 @@
 
 #include "..\shared\holdredraw.h"
 #include "..\shared\SysImageList.h"
-#include "..\shared\filedialogex.h"
+#include "..\shared\enfiledialog.h"
 #include "..\shared\enstring.h"
+#include "..\shared\filemisc.h"
 
 #include <shlwapi.h>
 
@@ -72,22 +73,42 @@ void CToolsHelper::TestTool(const USERTOOL& tool, const USERTOOLARGS& args, CWnd
 	}
 }
 
-void CToolsHelper::UpdateMenu(CCmdUI* pCmdUI, const CUserToolArray& tools)
+HICON CToolsHelper::GetToolIcon(CSysImageList& sil, const USERTOOL& ut)
+{
+	HICON hIcon = NULL;
+
+	// check valid tool path
+	// note: could also be url
+	if (GetFileAttributes(ut.sToolPath) != 0xffffffff || ::PathIsURL(ut.sToolPath))
+	{
+		if (ut.sIconPath.IsEmpty())
+			hIcon = sil.ExtractFileIcon(ut.sToolPath);	
+		else	
+			hIcon = sil.ExtractFileIcon(ut.sIconPath);
+	}
+
+	return hIcon;
+}
+
+void CToolsHelper::UpdateMenu(CCmdUI* pCmdUI, const CUserToolArray& tools, CMenuIconMgr& iconMgr)
 {
 	if (pCmdUI->m_pMenu)
 	{
 		CUserToolArray aTools;
 		aTools.Copy(tools);
 		
-		// delete existing tool entries first
+		// delete existing tool entries and their icons first
 		for (int nTool = 0; nTool < m_nSize; nTool++)
+		{
 			pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + nTool, MF_BYCOMMAND);
+			iconMgr.SetImage(m_nStartID + nTool, NULL);
+		}
 		
 		// if we have any tools to add we do it here
 		if (aTools.GetSize())
 		{
 			// add valid tools only by first removing invalid items
-			nTool = aTools.GetSize();
+			int nTool = aTools.GetSize();
 			
 			while (nTool--)
 			{
@@ -97,19 +118,25 @@ void CToolsHelper::UpdateMenu(CCmdUI* pCmdUI, const CUserToolArray& tools)
 			
 			if (aTools.GetSize())
 			{
+				CSysImageList sil; // for menu icons
+				VERIFY(sil.Initialize());
+		
 				int nPos = 0;
 				
 				for (nTool = 0; nTool < aTools.GetSize(); nTool++)
 				{
+					const USERTOOL& tool = aTools[nTool];
 					CString sMenuItem;
 					
 					if (nPos < 9)
-						sMenuItem.Format("&%d %s", nPos + 1, aTools[nTool].sToolName);
+						sMenuItem.Format("&%d %s", nPos + 1, tool.sToolName);
 					else
-						sMenuItem = aTools[nTool].sToolName;
+						sMenuItem = tool.sToolName;
 					
 					pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, MF_BYPOSITION | MF_STRING, 
 						m_nStartID + nTool, sMenuItem);
+
+					iconMgr.SetImage(m_nStartID + nTool, GetToolIcon(sil, tool));
 					
 					nPos++;
 				}
@@ -145,7 +172,7 @@ BOOL CToolsHelper::PrepareCmdline(const USERTOOL& tool, CString& sCmdline, const
 		if (GetFileAttributes(sTasklist) == 0xffffffff)
 		{
 			CEnString sTitle(IDS_SELECTTASKLIST_TITLE);
-			CFileDialogEx dialog(TRUE, GetDefaultFileExt(), NULL, OFN_OVERWRITEPROMPT, GetFileFilter());
+			CEnFileDialog dialog(TRUE, GetDefaultFileExt(), NULL, OFN_OVERWRITEPROMPT, GetFileFilter());
 			
 			dialog.m_ofn.lpstrTitle = sTitle;
 			
@@ -155,14 +182,14 @@ BOOL CToolsHelper::PrepareCmdline(const USERTOOL& tool, CString& sCmdline, const
 			sTasklist = dialog.GetPathName();
 		}
 		
-		char szDrive[_MAX_DRIVE], szPath[_MAX_PATH], szFileTitle[_MAX_FNAME], szExt[_MAX_EXT];
+		CString sDrive, sPath, sFName, sExt;
 		
-		_splitpath(sTasklist, szDrive, szPath, szFileTitle, szExt);
+		FileMisc::SplitPath(sTasklist, &sDrive, &sPath, &sFName, &sExt);
 		
 		tcp.ReplaceArgument(CLAT_PATHNAME, sTasklist);
-		tcp.ReplaceArgument(CLAT_FOLDER, CString(szDrive) + szPath);
-		tcp.ReplaceArgument(CLAT_FILENAME, CString(szFileTitle) + szExt);
-		tcp.ReplaceArgument(CLAT_FILETITLE, szFileTitle);
+		tcp.ReplaceArgument(CLAT_FOLDER, sDrive + sPath);
+		tcp.ReplaceArgument(CLAT_FILENAME, sFName + sExt);
+		tcp.ReplaceArgument(CLAT_FILETITLE, sFName);
 	}
 	
 	if (tcp.HasArgument(CLAT_TODOLIST))
@@ -241,7 +268,6 @@ void CToolsHelper::AppendToolsToToolbar(const CUserToolArray& aTools, CToolBar& 
 	// then re-add
 	if (aTools.GetSize())
 	{
-
 		// figure out if we want the large or small images
 		CSize sizeBtn(toolbar.GetToolBarCtrl().GetButtonSize());
 		sizeBtn -= CSize(7, 7); // btn borders from BarTool.cpp
@@ -256,39 +282,27 @@ void CToolsHelper::AppendToolsToToolbar(const CUserToolArray& aTools, CToolBar& 
 		for (int nTool = 0; nTool < aTools.GetSize(); nTool++)
 		{
 			const USERTOOL& tool = aTools[nTool];
-			
-			// check valid tool path
-			// note: could also be url
-			if (GetFileAttributes(tool.sToolPath) != 0xffffffff ||
-				::PathIsURL(tool.sToolPath))
+			HICON hIcon = GetToolIcon(sil, tool);
+				
+			if (hIcon)
 			{
-				HICON hIcon = 0;
+				CImageList* pIL = toolbar.GetToolBarCtrl().GetImageList();
+				int nImage = pIL->Add(hIcon);
 				
-				if (tool.sIconPath.IsEmpty())
-					hIcon = sil.ExtractFileIcon(tool.sToolPath);	
-				else	
-					hIcon = sil.ExtractFileIcon(tool.sIconPath);
+				TBBUTTON tbb = { nImage, nTool + m_nStartID, 0, TBSTYLE_BUTTON, 0, 0, (UINT)-1 };
 				
-				if (hIcon)
+				if (toolbar.GetToolBarCtrl().InsertButton(nStartPos + nAdded, &tbb))
 				{
-					CImageList* pIL = toolbar.GetToolBarCtrl().GetImageList();
-					int nImage = pIL->Add(hIcon);
+					if (pTBHelper)
+						pTBHelper->SetTooltip(nTool + m_nStartID, tool.sToolName);
 					
-					TBBUTTON tbb = { nImage, nTool + m_nStartID, 0, TBSTYLE_BUTTON, 0, 0, (UINT)-1 };
-					
-					if (toolbar.GetToolBarCtrl().InsertButton(nStartPos + nAdded, &tbb))
-					{
-						if (pTBHelper)
-							pTBHelper->SetTooltip(nTool + m_nStartID, tool.sToolName);
-						
-						nAdded++;
-					}
-					else // remove image
-						pIL->Remove(nImage);
-					
-					// cleanup
-					::DestroyIcon(hIcon);
+					nAdded++;
 				}
+				else // remove image
+					pIL->Remove(nImage);
+				
+				// cleanup
+				::DestroyIcon(hIcon);
 			}
 		}
 		

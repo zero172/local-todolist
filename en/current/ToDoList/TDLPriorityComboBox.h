@@ -12,6 +12,9 @@
 /////////////////////////////////////////////////////////////////////////////
 // CTDLPriorityComboBox window
 
+// replacement DDX routine
+void AFXAPI DDX_CBPriority(CDataExchange* pDX, int nIDC, int& nPriority);
+
 class CTDLPriorityComboBox : public CColorComboBox
 {
 // Construction

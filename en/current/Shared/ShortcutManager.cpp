@@ -229,7 +229,7 @@ UINT CShortcutManager::ProcessMessage(MSG* pMsg) const
 		return FALSE;
 
 	case VK_MBUTTON:
-		return FALSE;
+		break;
 		
 		// shortcut keys
 	default: 

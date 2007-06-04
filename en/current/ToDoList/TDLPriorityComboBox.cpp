@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "todolist.h"
 #include "TDLPriorityComboBox.h"
+#include "tdcenum.h"
 
 #include "..\shared\enstring.h"
 
@@ -27,6 +28,24 @@ const UINT IDS_TDC_SCALE[] = { IDS_TDC_SCALE0,
 
 
 const int TDC_NUMSCALES = sizeof(IDS_TDC_SCALE) / sizeof(UINT);
+
+void AFXAPI DDX_CBPriority(CDataExchange* pDX, int nIDC, int& nPriority)
+{
+	if (pDX->m_bSaveAndValidate)
+	{
+		::DDX_CBIndex(pDX, nIDC, nPriority);
+
+		if (nPriority == 0) // NONE
+			nPriority = FT_NOPRIORITY;
+		else
+			nPriority--;
+	}
+	else
+	{
+		int nTemp = (nPriority == FT_NOPRIORITY) ? 0 : nPriority + 1;
+		::DDX_CBIndex(pDX, nIDC, nTemp);
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CTDLPriorityComboBox
@@ -98,6 +117,9 @@ void CTDLPriorityComboBox::BuildCombo()
 	
 	ResetContent();
 	BOOL bHasColors = m_aColors.GetSize();
+
+	// first item is 'None' and never has a colour
+	AddColor((COLORREF)-1, CEnString(IDS_TDC_NONE));
 	
 	for (int nLevel = 0; nLevel <= 10; nLevel++)
 	{

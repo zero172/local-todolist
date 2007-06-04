@@ -83,7 +83,12 @@ COleRichEditCtrl::CRichEditOleCallback::GetNewStorage(LPSTORAGE* lplpstg)
 {
 	m_iNumStorages++;
 	WCHAR tName[50];
+
+#if _MSC_VER >= 1400
+	swprintf_s(tName, 50, L"REOLEStorage%d", m_iNumStorages);
+#else
 	swprintf(tName, L"REOLEStorage%d", m_iNumStorages);
+#endif
 
 	HRESULT hResult = m_pStorage->CreateStorage(tName, 
 		STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE ,

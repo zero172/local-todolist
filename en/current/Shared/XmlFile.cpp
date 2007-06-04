@@ -3,8 +3,10 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+
 #include "XmlFile.h"
 #include "misc.h"
+#include "filemisc.h"
 
 #include "..\3rdparty\xmlnodewrapper.h"
 
@@ -18,6 +20,8 @@ static char THIS_FILE[]=__FILE__;
 
 #include "xmlcharmap.h"
 #include "htmlcharmap.h"
+
+
 
 CString& XML2TXT(CString& xml) { return CHtmlCharMap::ConvertFromRep(xml); } // we use the html map for backwards compatibility
 CString& TXT2XML(CString& txt) { return CXmlCharMap::ConvertToRep(txt); }
@@ -268,7 +272,7 @@ CXmlItem* CXmlItem::AddItem(LPCTSTR szName, int nValue)
 	return AddItem(szName, ToString(nValue));
 }
 
-CXmlItem* CXmlItem::AddItem(LPCTSTR szName, const double& dValue)
+CXmlItem* CXmlItem::AddItem(LPCTSTR szName, double dValue)
 {
 	return AddItem(szName, ToString(dValue));
 }
@@ -292,7 +296,7 @@ CXmlItem* CXmlItem::SetItemValue(LPCTSTR szName, int nValue)
 	return SetItemValue(szName, ToString(nValue));
 }
 
-CXmlItem* CXmlItem::SetItemValue(LPCTSTR szName, const double& dValue)
+CXmlItem* CXmlItem::SetItemValue(LPCTSTR szName, double dValue)
 {
 	return SetItemValue(szName, ToString(dValue));
 }
@@ -318,7 +322,7 @@ void CXmlItem::SetValue(int nValue)
 	m_sValue = ToString(nValue);
 }
 
-void CXmlItem::SetValue(const double& dValue)
+void CXmlItem::SetValue(double dValue)
 {
 	m_sValue = ToString(dValue);
 }
@@ -754,7 +758,14 @@ BOOL CXmlFile::Load(LPCTSTR szFilePath, LPCTSTR szRootItemName, IXmlParse* pCall
 		szRootItemName = m_xiRoot.GetName();
 	
 	m_pCallback = pCallback;
+
+	if (Open(szFilePath, XF_READ))
+		return LoadEx(szRootItemName, pCallback);
+
+	// else
+	return FALSE;
 	
+/*
 	CXmlDocumentWrapper doc;
 	
 	BOOL bRes = doc.Load(szFilePath);
@@ -763,6 +774,7 @@ BOOL CXmlFile::Load(LPCTSTR szFilePath, LPCTSTR szRootItemName, IXmlParse* pCall
 		bRes = FALSE;
 	
 	return bRes;
+*/
 }
 
 BOOL CXmlFile::Save(LPCTSTR szFilePath)
@@ -865,11 +877,21 @@ BOOL CXmlFile::LoadEx(LPCTSTR szRootItemName, IXmlParse* pCallback)
 		Seek(0, CFile::begin); // move to start
 		
 		// preallocate string to avoid excessive memory allocations
-		// Valik - Cast to int to prevent data loss warning (C4244) under VC 7.1
-		int nLength = static_cast<int>(GetLength());
-		pFileContents = new char[nLength + 1];
-		ZeroMemory(pFileContents, nLength + 1);
+		DWORD dwLength = GetLength();
+		pFileContents = new char[dwLength + 1];
+		ZeroMemory(pFileContents, dwLength + 1);
+
+		BOOL bContinue = TRUE;
+		char* pFilePtr = pFileContents;
 		
+		while (bContinue)
+		{
+			DWORD nRead = Read(pFilePtr, dwLength);
+			pFilePtr += nRead;
+			bContinue = (nRead != dwLength);
+		}
+
+/*
 		const UINT BUFLEN = 1024 * 100;
 		char BUFFER[BUFLEN];
 		BOOL bContinue = TRUE;
@@ -887,8 +909,9 @@ BOOL CXmlFile::LoadEx(LPCTSTR szRootItemName, IXmlParse* pCallback)
 			
 			bContinue = (nRead == BUFLEN);
 		}
-		
-		pFileContents[nLength] = 0;
+*/		
+
+		pFileContents[dwLength] = 0;
 	}
 	catch (...)
 	{
@@ -1302,7 +1325,7 @@ CXmlItem* CXmlFile::AddItem(LPCTSTR szName, int nValue)
 	return m_xiRoot.AddItem(szName, nValue); 
 }
 
-CXmlItem* CXmlFile::AddItem(LPCTSTR szName, const double& dValue) 
+CXmlItem* CXmlFile::AddItem(LPCTSTR szName, double dValue) 
 { 
 	return m_xiRoot.AddItem(szName, dValue); 
 }
@@ -1327,6 +1350,21 @@ double CXmlFile::GetItemValueF(LPCTSTR szItemName, LPCTSTR szSubItemName) const
 	return m_xiRoot.GetItemValueF(szItemName, szSubItemName); 
 }
 
+CXmlItem* CXmlFile::SetItemValue(LPCTSTR szName, LPCTSTR sValue, BOOL bCData)
+{
+	return m_xiRoot.SetItemValue(szName, sValue, bCData); 
+}
+
+CXmlItem* CXmlFile::SetItemValue(LPCTSTR szName, int nValue)
+{
+	return m_xiRoot.SetItemValue(szName, nValue); 
+}
+
+CXmlItem* CXmlFile::SetItemValue(LPCTSTR szName, double dValue)
+{
+	return m_xiRoot.SetItemValue(szName, dValue); 
+}
+
 CString CXmlFile::GetFilePath() const 
 { 
 	return CFile::GetFilePath(); 
@@ -1334,14 +1372,7 @@ CString CXmlFile::GetFilePath() const
 
 CString CXmlFile::GetFileName() const 
 { 
-	CString sFilePath = GetFilePath(); 
-
-	char szFileName[MAX_PATH], szExt[_MAX_EXT];
-	
-	_splitpath(sFilePath, NULL, NULL, szFileName, szExt);
-	strcat(szFileName, szExt);
-
-	return szFileName;
+	return FileMisc::GetFileNameFromPath(GetFilePath());
 }
 
 const HANDLE CXmlFile::GetFileHandle() const 

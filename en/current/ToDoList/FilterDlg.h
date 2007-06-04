@@ -10,10 +10,10 @@
 #include "filteredtodoctrl.h"
 #include "tdlprioritycombobox.h"
 #include "tdlriskcombobox.h"
-#include "tdlcategorycombobox.h"
 
 #include "..\shared\tabbedcombobox.h"
 #include "..\shared\dialoghelper.h"
+#include "..\shared\encheckcombobox.h"
 
 #include <afxtempl.h>
 
@@ -35,9 +35,12 @@ protected:
 	//{{AFX_DATA(CFilterDlg)
 	enum { IDD = IDD_FILTER_DIALOG };
 	//}}AFX_DATA
-	CTDLCategoryComboBox	m_cbCategoryFilter;
-	CComboBox	m_cbStatusFilter;
-	CComboBox	m_cbAllocToFilter, m_cbAllocByFilter;
+	CEnCheckComboBox	m_cbCategoryFilter;
+//	CComboBox	m_cbStatusFilter;
+	CEnCheckComboBox	m_cbStatusFilter;
+	CEnCheckComboBox	m_cbAllocToFilter;
+//	CComboBox m_cbAllocByFilter;
+	CEnCheckComboBox m_cbAllocByFilter;
 	CTabbedComboBox	m_cbTaskFilter;
 	CTDLPriorityComboBox	m_cbPriorityFilter;
 	CTDLRiskComboBox	m_cbRiskFilter;

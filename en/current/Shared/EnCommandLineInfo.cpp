@@ -95,6 +95,30 @@ BOOL CEnCommandLineInfo::GetOption(LPCTSTR szFlag, CStringArray* pParams) const
 	return TRUE;
 }
 
+BOOL CEnCommandLineInfo::SetOption(LPCTSTR szFlag, LPCTSTR szParam)
+{
+	CString sFlag(szFlag), sLookup, sParameter;
+	sFlag.MakeUpper();
+
+	// option cannot already exist
+	if (m_mapCommandLine.Lookup(sFlag, sParameter))
+		return FALSE;
+
+	// set szParam as the one and only option parameter
+	sLookup.Format("%s_PARAMETER_0", sFlag);
+	m_mapCommandLine[sLookup] == szParam;
+
+	return TRUE;
+}
+
+BOOL CEnCommandLineInfo::SetOption(LPCTSTR szFlag, DWORD dwParam)
+{
+	CString sParam;
+	sParam.Format("%d", dwParam);
+
+	return SetOption(szFlag, sParam);
+}
+
 BOOL CEnCommandLineInfo::GetOption(LPCTSTR szFlag, CString& sParam) const
 {
 	CStringArray aParams;
@@ -133,7 +157,7 @@ CString CEnCommandLineInfo::ResolveShortcut(LPCTSTR szShortcut)
 
 		if (SUCCEEDED(hResult))
 		{
-			WORD wsz[MAX_PATH];	// buffer for Unicode string
+			WCHAR wsz[MAX_PATH];	// buffer for Unicode string
 			
 			MultiByteToWideChar(CP_ACP, 0, szShortcut, -1, wsz, MAX_PATH);
 			hResult = ppf->Load(wsz, STGM_READ);
@@ -147,7 +171,12 @@ CString CEnCommandLineInfo::ResolveShortcut(LPCTSTR szShortcut)
 					TCHAR szPath[MAX_PATH];
 					WIN32_FIND_DATA wfd;
 					
+//fabio_2005
+#if _MSC_VER >= 1400
+					strcpy_s(szPath, szShortcut);
+#else
 					strcpy(szPath, szShortcut);
+#endif
 					hResult = psl->GetPath(szPath, MAX_PATH, (WIN32_FIND_DATA*)&wfd, SLGP_SHORTPATH);
 
 					if (SUCCEEDED(hResult))

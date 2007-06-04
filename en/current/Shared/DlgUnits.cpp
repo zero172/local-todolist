@@ -125,7 +125,7 @@ void CDlgUnits::FromPixels(long& x, long& y) const
 {
 	if (m_hWnd)
 	{
-		// this is a bit messy ebcause there is no MapDialogRect() in reverse
+		// this is a bit messy because there is no MapDialogRect() in reverse
 		CRect rect(0, 0, 1000, 1000);
 		MapDialogRect(m_hWnd, rect);
 

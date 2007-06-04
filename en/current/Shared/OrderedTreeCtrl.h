@@ -17,7 +17,7 @@
 #define OTC_GRIDCOLOR ::GetSysColor(COLOR_3DFACE)
 #define OTC_POSCOLUMNID (NCG_CLIENTCOLUMNID - 1)
 
-class COrderedTreeCtrl : public CTreeCtrl, public CTreeCtrlHelper
+class COrderedTreeCtrl : public CTreeCtrl//, public CTreeCtrlHelper
 {
 // Construction
 public:
@@ -31,27 +31,32 @@ public:
 	void EnableGutterColumnHeaderClicking(UINT nColID, BOOL bEnable = TRUE);
 	void SetGutterColumnSort(UINT nColID, NCGSORT nSortDir);
 
-	void ShowGutterPosColumn(BOOL bShow = TRUE);
+	BOOL ShowGutterPosColumn(BOOL bShow = TRUE); // returns TRUE if changed
+	BOOL IsGutterPosColumnShowing() const { return m_bShowingPosColumn; }
 	void SetGridlineColor(COLORREF color);
-    COLORREF GetGridlineColor() { return m_crGridlines; }
+    COLORREF GetGridlineColor() const { return m_crGridlines; }
 
 	inline void RedrawGutter() { m_gutter.Redraw(); }
 	inline void RedrawGutterItem(DWORD dwItem) { m_gutter.RedrawItem(dwItem); }
 	inline void RecalcGutter(BOOL bForceRedraw = TRUE) { m_gutter.RecalcGutter(bForceRedraw); }
 	inline BOOL RecalcGutterColumn(UINT nColID) { return m_gutter.RecalcColumn(nColID); }
-	inline int GetGutterWidth() { return m_gutter.GetGutterWidth(); }
+	inline int GetGutterWidth() const { return m_gutter.GetGutterWidth(); }
 
-	inline COLORREF GetAlternateLineColor() { return m_crAltLines; }
+	inline COLORREF GetAlternateLineColor() const { return m_crAltLines; }
 	void SetAlternateLineColor(COLORREF color);
 	COLORREF GetItemLineColor(HTREEITEM hti);
 
 	BOOL PtInHeader(CPoint ptScreen) const;
+
+	CTreeCtrlHelper& TCH() { return m_ht; }
+	const CTreeCtrlHelper& TCH() const { return m_ht; }
 
 protected:
 	CNcGutter m_gutter;
 	BOOL m_bShowingPosColumn;
 	COLORREF m_crGridlines, m_crAltLines;
 	BOOL m_bWantInit;
+	CTreeCtrlHelper m_ht;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

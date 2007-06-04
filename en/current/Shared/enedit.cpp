@@ -29,6 +29,11 @@ CEnEdit::CEnEdit(BOOL bComboStyle, LPCTSTR szMask, DWORD dwFlags) :
 
 CEnEdit::~CEnEdit()
 {
+	// cleanup fonts
+	int nBtn = m_aButtons.GetSize();
+	
+	while (nBtn--)
+		::DeleteObject(m_aButtons[nBtn].hFont);
 }
 
 
@@ -620,14 +625,14 @@ void CEnEdit::DrawButton(CDC* pDC, const CRect& rWindow, int nBtn, const CPoint&
 	}
 }
 
-UINT CEnEdit::OnNcHitTest(CPoint point) 
+LRESULT CEnEdit::OnNcHitTest(CPoint point) 
 {
 	int nBtn = ButtonHitTest(point);
 
 	if (nBtn >= 0)
 		return HTBORDER;
 
-	return CMaskEdit::OnNcHitTest(point);
+	return (LRESULT)CMaskEdit::OnNcHitTest(point);
 }
 
 LRESULT CEnEdit::OnHotChange(WPARAM wp, LPARAM lp)

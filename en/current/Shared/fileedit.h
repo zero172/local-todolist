@@ -69,7 +69,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg void OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
-	afx_msg UINT OnNcHitTest(CPoint point);
+	afx_msg LRESULT OnNcHitTest(CPoint point);
 	afx_msg BOOL OnChange();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	//}}AFX_MSG

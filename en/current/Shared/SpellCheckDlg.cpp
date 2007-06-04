@@ -4,8 +4,9 @@
 #include "stdafx.h"
 #include "SpellCheckDlg.h"
 #include "ispellcheck.h"
-#include "filedialogex.h"
+#include "enfiledialog.h"
 #include "stringres.h"
+#include "filemisc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -71,12 +72,12 @@ CSpellCheckDlg::CSpellCheckDlg(LPCTSTR szDictionaryPath, LPCTSTR szText, CWnd* /
 
 	if (!IsSpellCheckDll(m_sEnginePath))
 	{
-		char szDllPath[MAX_PATH], szDrive[_MAX_DRIVE], szFolder[MAX_PATH];
-		GetModuleFileName(NULL, szDllPath, MAX_PATH);
-		_splitpath(szDllPath, szDrive, szFolder, NULL, NULL);
-		_makepath(szDllPath, szDrive, szFolder, "MySpellCheck", ".dll");
+		CString sDllPath = FileMisc::GetModuleFileName(), sDrive, sFolder;
 
-		m_sEnginePath = szDllPath;
+		FileMisc::SplitPath(sDllPath, &sDrive, &sFolder);
+		FileMisc::MakePath(sDllPath, sDrive, sFolder, "*", ".dll");
+
+		m_sEnginePath = sDllPath;
 	}
 }
 
@@ -199,7 +200,7 @@ void CSpellCheckDlg::OnChangeDictionary()
 void CSpellCheckDlg::OnBrowse()
 {
 	UpdateData();
-	CFileDialogEx dialog(TRUE, "dic", m_sSelDictionary, OFN_PATHMUSTEXIST, SPELLCHECK_DICT_FILTER);
+	CEnFileDialog dialog(TRUE, "dic", m_sSelDictionary, OFN_PATHMUSTEXIST, SPELLCHECK_DICT_FILTER);
 	
 	dialog.m_ofn.lpstrTitle = SPELLCHECK_BROWSE_TITLE;
 	
@@ -320,7 +321,7 @@ BOOL CSpellCheckDlg::OnInitDialog()
 		while (!bCancel && !IsSpellCheckDll(m_sEnginePath))
 		{
 			// notify user and browse for dll
-			CFileDialogEx dialog(TRUE, "dll", m_sEnginePath, OFN_PATHMUSTEXIST, SPELLCHECK_ENGINE_FILTER);
+			CEnFileDialog dialog(TRUE, "dll", m_sEnginePath, OFN_PATHMUSTEXIST, SPELLCHECK_ENGINE_FILTER);
 
 			dialog.m_ofn.lpstrTitle = SPELLCHECK_ENGINE_TITLE;
 

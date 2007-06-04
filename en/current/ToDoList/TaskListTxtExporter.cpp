@@ -118,9 +118,9 @@ CString& CTaskListTxtExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 
 		FormatAttribute(pTasks, hTask, TDL_TASKCREATIONDATESTRING, " (created: %s)", sCreateDate);
 		FormatAttribute(pTasks, hTask, TDL_TASKCREATEDBY, " (created by: %s)", sCreateBy);
-		FormatAttribute(pTasks, hTask, TDL_TASKALLOCTO, " (allocated to: %s)", sAllocTo);
+		FormatAttributeList(pTasks, hTask, TDL_TASKNUMALLOCTO, TDL_TASKALLOCTO, " (allocated to: %s)", sAllocTo);
 		FormatAttribute(pTasks, hTask, TDL_TASKALLOCBY, " (allocated by: %s)", sAllocBy);
-		FormatAttribute(pTasks, hTask, TDL_TASKCATEGORY, " (category: %s)", sCategory);
+		FormatAttributeList(pTasks, hTask, TDL_TASKNUMCATEGORY, TDL_TASKCATEGORY, " (category: %s)", sCategory);
 		FormatAttribute(pTasks, hTask, TDL_TASKSTATUS, " (status: %s)", sStatus);
 		FormatAttribute(pTasks, hTask, TDL_TASKRISK, " (risk: %s)", sRisk);
 		FormatAttribute(pTasks, hTask, TDL_TASKEXTERNALID, " (ext.ID: %s)", sExtID);
@@ -209,4 +209,30 @@ BOOL CTaskListTxtExporter::FormatAttribute(const ITaskList6* pTasks, HTASKITEM h
 	}
 
 	return FALSE;
+}
+
+
+BOOL CTaskListTxtExporter::FormatAttributeList(const ITaskList6* pTasks, HTASKITEM hTask, 
+										   LPCTSTR szNumAttribName, LPCTSTR szAttribName, 
+                                           LPCTSTR szFormat, CString& sAttribText)
+{
+	int nItemCount = atoi(pTasks->GetTaskAttribute(hTask, szNumAttribName));
+
+	if (nItemCount <= 1)
+		return FormatAttribute(pTasks, hTask, szAttribName, szFormat, sAttribText);
+
+	// else more than one (use plus sign as delimiter)
+	CString sAttribs = pTasks->GetTaskAttribute(hTask, szAttribName);
+	
+	for (int nItem = 1; nItem < nItemCount; nItem++)
+	{
+		CString sAttribName;
+		sAttribName.Format("%s%d", szAttribName, nItem);
+		
+		sAttribs += '+';
+		sAttribs += pTasks->GetTaskAttribute(hTask, sAttribName);
+	}
+	
+	sAttribText.Format(szFormat, sAttribs);
+	return TRUE;
 }

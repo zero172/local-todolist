@@ -265,7 +265,7 @@ struct SEARCHPARAMS
 	DWORD dwFlags; // see above
 	
 	CString sText;
-	CStringArray aCategories;
+	CStringArray aItems;
 	COleDateTime dateFrom, dateTo;
 	int nFrom, nTo;
 	double dFrom, dTo;
@@ -287,14 +287,15 @@ typedef CArray<SEARCHRESULT, SEARCHRESULT&> CResultArray;
 
 struct FTDCFILTER
 {
-	FTDCFILTER() : nFilter(FT_ALL), nPriority(-1), nRisk(-1), dwFlags(0) {}
+	FTDCFILTER() : nFilter(FT_ALL), nPriority(FT_ANYPRIORITY), nRisk(FT_ANYRISK), dwFlags(0) {}
 
 	void operator=(const FTDCFILTER& filter)
 	{
 		nFilter = filter.nFilter;
 		nPriority = filter.nPriority;
 		nRisk = filter.nRisk;
-		sAllocTo = filter.sAllocTo;
+//		sAllocTo = filter.sAllocTo;
+		aAllocTo.Copy(filter.aAllocTo);
 		sStatus = filter.sStatus;
 		sAllocBy = filter.sAllocBy;
 		aCategories.Copy(filter.aCategories);
@@ -303,10 +304,14 @@ struct FTDCFILTER
 
 	BOOL operator==(const FTDCFILTER& filter) const
 	{
-		return (filter.nFilter == nFilter && filter.nPriority == nPriority &&
-				filter.nRisk == nRisk && filter.sAllocTo == sAllocTo &&
-				filter.sStatus == sStatus && filter.sAllocBy == sAllocBy &&
+		return (filter.nFilter == nFilter && 
+				filter.nPriority == nPriority &&
+				filter.nRisk == nRisk && 
+//				filter.sAllocTo == sAllocTo &&
+				filter.sStatus == sStatus && 
+				filter.sAllocBy == sAllocBy &&
 				Misc::ArraysMatch(aCategories, filter.aCategories) &&
+				Misc::ArraysMatch(aAllocTo, filter.aAllocTo) &&
 				dwFlags == filter.dwFlags);
 	}
 
@@ -317,9 +322,9 @@ struct FTDCFILTER
 	
 	BOOL IsSet() const
 	{
-		return (nFilter != FT_ALL || nPriority >= 0 || nRisk >= 0 ||
-			aCategories.GetSize() || !sAllocTo.IsEmpty() ||
-			!sStatus.IsEmpty() || !sAllocBy.IsEmpty()) ? 1 : 0;
+		return (nFilter != FT_ALL || nPriority != FT_ANYPRIORITY || nRisk != FT_ANYRISK ||
+				aCategories.GetSize() || aAllocTo.GetSize() || /*!sAllocTo.IsEmpty() ||*/
+				!sStatus.IsEmpty() || !sAllocBy.IsEmpty()) ? 1 : 0;
 	}
 
 	BOOL HasFlag(DWORD dwFlag) const
@@ -335,8 +340,15 @@ struct FTDCFILTER
 			dwFlags &= ~dwFlags;
 	}
 
+	BOOL MatchAllocTo(const CStringArray& aAllocTos) const
+	{
+		return MatchItems(aAllocTo, aAllocTos, HasFlag(FT_ANYALLOCTO));
+	}
+
 	BOOL MatchCategories(const CStringArray& aCats) const
 	{
+		return MatchItems(aCategories, aCats, HasFlag(FT_ANYCATEGORY));
+/*
 		if (HasFlag(FT_ANYCATEGORY))
 		{
 			// special case: if aCats is empty, test for empty
@@ -372,6 +384,7 @@ struct FTDCFILTER
 		}
 		else // simple compare
 			return Misc::ArraysMatch(aCategories, aCats);
+*/
 	}
 
 	void Reset()
@@ -381,10 +394,51 @@ struct FTDCFILTER
 	
 	FILTER_TYPE nFilter;
 	int nPriority, nRisk;
-	CStringArray aCategories;
+	CStringArray aCategories, aAllocTo;
 	CString sStatus;
-	CString sAllocTo, sAllocBy;
+	CString /*sAllocTo, */sAllocBy;
 	DWORD dwFlags;
+
+	protected:
+
+	static BOOL MatchItems(const CStringArray& aItems1, const CStringArray& aItems2, BOOL bAny)
+	{
+		if (bAny)
+		{
+			// special case: if aCats is empty, test for empty
+			// string in aCategories
+			if (aItems2.GetSize() == 0)
+				return (Misc::Find(aItems1, "") != -1);
+			else
+				return Misc::MatchAny(aItems1, aItems2);
+		}
+
+		// else exact match required
+		// since we cannot filter against both having a category
+		// and not having a category at the same time
+		// we ignore the empty string unless that's all there is
+		if (aItems1.GetSize() == 1 && aItems1[0].IsEmpty())
+			return (aItems2.GetSize() == 0);
+
+		int nBlank = Misc::Find(aItems1, "");
+		
+		if (nBlank != -1)
+		{
+			CStringArray aCopy; 
+			aCopy.Copy(aItems1);
+			
+			while (nBlank != -1)
+			{
+				aCopy.RemoveAt(nBlank);
+				nBlank = Misc::Find(aCopy, "");
+			}
+			
+			// compare what's left
+			return Misc::ArraysMatch(aCopy, aItems2);
+		}
+		else // simple compare
+			return Misc::ArraysMatch(aItems1, aItems2);
+	}
 };
 
 

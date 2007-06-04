@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "FileRegister.h"
 #include "regkey.h"
+#include "Filemisc.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -211,11 +212,10 @@ BOOL CFileRegister::IsRegisteredApp()
 
 	if (!sRegAppFileName.IsEmpty())
 	{
-		char szFName[_MAX_FNAME], szExt[_MAX_EXT];
-		_splitpath(m_sAppPath, NULL, NULL, szFName, szExt);
-		strcat(szFName, szExt);
+		CString sFName, sExt;
+		FileMisc::SplitPath(m_sAppPath, NULL, NULL, &sFName, &sExt);
 
-		if (sRegAppFileName.CompareNoCase(szFName) == 0)
+		if (sRegAppFileName.CompareNoCase(sFName + sExt) == 0)
 			return TRUE;
 	}
 
@@ -249,18 +249,15 @@ CString CFileRegister::GetRegisteredAppPath(BOOL bFilenameOnly)
 	}
 
 	// note: apps often have parameters after so we do this
-	char szDrive[_MAX_DRIVE], szDir[_MAX_DIR], szFName[_MAX_FNAME];
-	_splitpath(sAppPath, szDrive, szDir, szFName, NULL);
-	lstrcat(szFName, ".exe");
+	CString sDrive, sDir, sFName;
+	FileMisc::SplitPath(sAppPath, &sDrive, &sDir, &sFName);
+
+	sFName += ".exe";
 	
 	if (bFilenameOnly)
-		sAppPath = szFName;
+		sAppPath = sFName;
 	else
-	{
-		// else rebuild path
-		_makepath(sAppPath.GetBuffer(MAX_PATH), szDrive, szDir, szFName, NULL);
-		sAppPath.ReleaseBuffer();
-	}
+		FileMisc::MakePath(sAppPath, sDrive, sDir, sFName);
 	
 	return sAppPath;
 }

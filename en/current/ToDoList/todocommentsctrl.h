@@ -32,7 +32,7 @@ public:
 	bool HasTypeID() const { return false; }
 	bool GetTypeID(GUID& /*id*/) const { return false; }
 	void Release() { delete this; }
-	bool ProcessMessage(MSG* /*pMsg*/) { return false; }
+	bool ProcessMessage(MSG* pMsg);
 
 // Attributes
 protected:

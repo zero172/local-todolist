@@ -9,6 +9,7 @@
 
 #include "..\shared\deferwndmove.h"
 #include "..\shared\dlgunits.h"
+#include "..\shared\enstring.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,13 +43,17 @@ const int NUMFILTERCTRLS = sizeof(FILTERCTRLS) / sizeof(FILTERCTRL);
 const int FILTERCTRLXSPACING = 6; // dlu
 const int FILTERCTRLYSPACING = 2; // dlu
 
-#define WM_WANTCOMBOPROMPT (WM_USER+1)
+#define WM_WANTCOMBOPROMPT (WM_APP+1)
 
 /////////////////////////////////////////////////////////////////////////////
 // CFilterBar dialog
 
 CFilterBar::CFilterBar(CWnd* pParent /*=NULL*/)
-	: CDialog(IDD_FILTER_BAR, pParent)
+	: CDialog(IDD_FILTER_BAR, pParent), 
+	  m_cbCategoryFilter(TRUE, IDS_NOCATEGORY, IDS_TDC_ANY),
+	  m_cbAllocToFilter(TRUE, IDS_NOALLOCTO, IDS_TDC_ANYONE),
+	  m_cbAllocByFilter(FALSE, 0, IDS_TDC_ANYONE),
+	  m_cbStatusFilter(FALSE, 0, IDS_TDC_ANY)
 {
 	//{{AFX_DATA_INIT(CFilterBar)
 		// NOTE: the ClassWizard will add member initialization here
@@ -73,32 +78,74 @@ void CFilterBar::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PRIORITYFILTERCOMBO, m_cbPriorityFilter);
 	DDX_Control(pDX, IDC_RISKFILTERCOMBO, m_cbRiskFilter);
 	DDX_CBIndex(pDX, IDC_FILTERCOMBO, (int&)m_filter.nFilter);
-	DDX_CBString(pDX, IDC_ALLOCTOFILTERCOMBO, m_filter.sAllocTo);
+//	DDX_CBString(pDX, IDC_ALLOCTOFILTERCOMBO, m_filter.sAllocTo);
 	DDX_CBString(pDX, IDC_ALLOCBYFILTERCOMBO, m_filter.sAllocBy);
 	DDX_CBString(pDX, IDC_STATUSFILTERCOMBO, m_filter.sStatus);
 	
 	// special handling
 	if (pDX->m_bSaveAndValidate)
 	{
-		int nPriority;
-		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nPriority);
-		m_filter.nPriority = nPriority - 1;
+		int nIndex;
 
-		int nRisk;
-		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nRisk);
-		m_filter.nRisk = nRisk - 1;
+		// priority
+		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nIndex);
 
+		if (nIndex == 0) // any
+			m_filter.nPriority = FT_ANYPRIORITY;
+
+		else if (nIndex == 1) // none
+			m_filter.nPriority = FT_NOPRIORITY;
+		else
+			m_filter.nPriority = nIndex - 2;
+
+		// risk
+		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nIndex);
+
+		if (nIndex == 0) // any
+			m_filter.nRisk = FT_ANYRISK;
+
+		else if (nIndex == 1) // none
+			m_filter.nRisk = FT_NORISK;
+		else
+			m_filter.nRisk = nIndex - 2;
+
+		// cats
 		m_cbCategoryFilter.GetChecked(m_filter.aCategories);
+
+		// allocto
+		m_cbAllocToFilter.GetChecked(m_filter.aAllocTo);
 	}
 	else
 	{
-		int nPriority = m_filter.nPriority + 1;
-		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nPriority);
+		int nIndex;
+		
+		// priority
+		if (m_filter.nPriority == FT_ANYPRIORITY)
+			nIndex = 0;
 
-		int nRisk = m_filter.nRisk + 1;
-		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nRisk);
+		else if (m_filter.nPriority == FT_NOPRIORITY)
+			nIndex = 1;
+		else
+			nIndex = m_filter.nPriority + 2;
 
+		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nIndex);
+
+		// risk
+		if (m_filter.nRisk == FT_ANYRISK)
+			nIndex = 0;
+
+		else if (m_filter.nRisk == FT_NORISK)
+			nIndex = 1;
+		else
+			nIndex = m_filter.nRisk + 2;
+
+		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nIndex);
+
+		// cats
 		m_cbCategoryFilter.SetChecked(m_filter.aCategories);
+
+		// allocto
+		m_cbAllocToFilter.SetChecked(m_filter.aAllocTo);
 	}
 }
 
@@ -108,7 +155,8 @@ BEGIN_MESSAGE_MAP(CFilterBar, CDialog)
 	ON_WM_SIZE()
 	//}}AFX_MSG_MAP
 	ON_CBN_SELCHANGE(IDC_FILTERCOMBO, OnSelchangeFilter)
-	ON_CBN_SELCHANGE(IDC_ALLOCTOFILTERCOMBO, OnSelchangeFilter)
+//	ON_CBN_SELCHANGE(IDC_ALLOCTOFILTERCOMBO, OnSelchangeFilter)
+	ON_CBN_CLOSEUP(IDC_ALLOCTOFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_ALLOCBYFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_STATUSFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_PRIORITYFILTERCOMBO, OnSelchangeFilter)
@@ -177,7 +225,7 @@ void CFilterBar::RefreshFilterControls(const CFilteredToDoCtrl& tdc)
 	
 	// priority
 	m_cbPriorityFilter.SetColors(m_aPriorityColors);
-	m_cbPriorityFilter.InsertColor(0, (COLORREF)-1, ""); // add a blank item
+	m_cbPriorityFilter.InsertColor(0, (COLORREF)-1, CEnString(IDS_TDC_ANY)); // add a blank item
 	
 	// risk never needs changing
 	
@@ -209,7 +257,7 @@ void CFilterBar::SetPriorityColors(const CDWordArray& aColors)
 		int nSel = m_cbPriorityFilter.GetCurSel();
 
 		m_cbPriorityFilter.SetColors(aColors);
-		m_cbPriorityFilter.InsertColor(0, (COLORREF)-1, ""); // add a blank item
+		m_cbPriorityFilter.InsertColor(0, (COLORREF)-1, CEnString(IDS_TDC_ANY)); // add a blank item
 
 		m_cbPriorityFilter.SetCurSel(nSel);
 	}
@@ -229,6 +277,7 @@ int CFilterBar::CalcHeight(int nWidth)
 	return ReposControls(nWidth, TRUE);
 }
 
+/*
 void CFilterBar::ShowFilter(TDC_COLUMN nType, BOOL bShow, BOOL bUpdate)
 {
 	if ((int)nType < 0)
@@ -238,6 +287,27 @@ void CFilterBar::ShowFilter(TDC_COLUMN nType, BOOL bShow, BOOL bUpdate)
 
 	if (bUpdate)
 		ReposControls();
+}
+*/
+
+void CFilterBar::SetVisibleFilters(const CTDCColumnArray& aFilters)
+{
+	// clear first
+	int nFilter = m_aVisibility.GetSize();
+
+	while (nFilter--)
+		m_aVisibility[nFilter] = FALSE;
+
+	// then set the visible ones
+	int nItem = aFilters.GetSize();
+
+	while (nItem--)
+	{
+		nFilter = aFilters[nItem];
+		m_aVisibility[nFilter] = TRUE;
+	}
+
+	ReposControls();
 }
 
 BOOL CFilterBar::WantShowFilter(TDC_COLUMN nType)
@@ -352,8 +422,8 @@ void CFilterBar::SetFilter(const FTDCFILTER& filter)
 
 	// the droplists don't get set properly if they
 	// are empty but were not previously so we do it manually
-	if (m_filter.sAllocTo.IsEmpty())
-		m_cbAllocToFilter.SetCurSel(0);
+// 	if (m_filter.sAllocTo.IsEmpty())
+// 		m_cbAllocToFilter.SetCurSel(0);
 	
 	if (m_filter.sAllocBy.IsEmpty())
 		m_cbAllocByFilter.SetCurSel(0);
@@ -367,7 +437,7 @@ BOOL CFilterBar::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	// one-time init for risk filter combo
-	m_cbRiskFilter.InsertString(0, ""); // add a blank item
+	m_cbRiskFilter.InsertString(0, CEnString(IDS_TDC_ANY)); // add a blank item
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

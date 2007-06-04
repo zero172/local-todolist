@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "ContentMgr.h"
 #include "IContentControl.h"
+#include "filemisc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -39,13 +40,12 @@ BOOL CContentMgr::Initialize()
 
 	// look at every dll from whereever we are now
 	CFileFind ff;
-    char szFolder[MAX_PATH], szDrive[_MAX_DRIVE], szSearchPath[MAX_PATH];
+    CString sSearchPath = FileMisc::GetModuleFileName(), sFolder, sDrive;
 
-    GetModuleFileName(NULL, szSearchPath, MAX_PATH);
-    _splitpath(szSearchPath, szDrive, szFolder, NULL, NULL);
-    _makepath(szSearchPath, szDrive, szFolder, "*", ".dll");
+	FileMisc::SplitPath(sSearchPath, &sDrive, &sFolder);
+	FileMisc::MakePath(sSearchPath, sDrive, sFolder, "*", ".dll");
 
-	BOOL bContinue = ff.FindFile(szSearchPath);
+	BOOL bContinue = ff.FindFile(sSearchPath);
 	
 	while (bContinue)
 	{

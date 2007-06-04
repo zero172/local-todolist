@@ -28,6 +28,7 @@ public:
 	BOOL GetUsePercentDoneInTimeEst() const { return m_bUsePercentDoneInTimeEst; }
 	BOOL GetTreatSubCompletedAsDone() const { return m_bTreatSubCompletedAsDone; }
 	BOOL GetUseHighestPriority() const { return m_bUseHighestPriority; }
+	BOOL GetUseHighestRisk() const { return m_bUseHighestPriority; } // Note: this uses same flag as priority
 	BOOL GetAutoCalcTimeEstimates() const { return m_bAutoCalcTimeEst; }
 	BOOL GetIncludeDoneInPriorityCalc() const { return m_bIncludeDoneInPriorityCalc; }
 	BOOL GetWeightPercentCompletionByTimeEst() const { return m_bWeightPercentCompletionByTimeEst; }

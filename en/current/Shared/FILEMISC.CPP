@@ -8,6 +8,65 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+CFileBackup::CFileBackup(const CString& sFile, const CString& sExt)
+{
+	MakeBackup(sFile, sExt);
+}
+
+CFileBackup::~CFileBackup()
+{
+	if (FileMisc::FileExists(m_sBackup))
+		::DeleteFile(m_sBackup);
+}
+
+BOOL CFileBackup::MakeBackup(const CString& sFile, const CString& sExt)
+{
+	ASSERT (m_sFile.IsEmpty() && m_sBackup.IsEmpty());
+
+	if (!m_sFile.IsEmpty() || !m_sBackup.IsEmpty())
+		return FALSE;
+
+	if (!FileMisc::FileExists(sFile))
+		return FALSE;
+
+	m_sFile = sFile;
+	m_sBackup = BuildBackupPath(sFile, sExt);
+
+	return ::CopyFile(m_sFile, m_sBackup, FALSE);
+}
+
+BOOL CFileBackup::RestoreBackup()
+{
+	ASSERT (!m_sFile.IsEmpty() && !m_sBackup.IsEmpty());
+
+	if (m_sFile.IsEmpty() || m_sBackup.IsEmpty())
+		return FALSE;
+
+	return ::CopyFile(m_sBackup, m_sFile, FALSE);
+}
+
+CString CFileBackup::BuildBackupPath(const CString& sFile, const CString& sExt)
+{
+	CString sBackup(sFile);
+
+	sBackup.TrimRight();
+
+	// add extension
+	if (sExt.IsEmpty())
+		sBackup += ".bak";
+	else
+	{
+		if (sExt.Find('.') == -1)
+			sBackup += '.';
+
+		sBackup += sExt;
+	}
+
+	return sBackup;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 void FileMisc::TerminatePath(CString& sPath)
 {
 	sPath.TrimRight();
@@ -26,12 +85,12 @@ void FileMisc::UnterminatePath(CString& sPath)
 		sPath = sPath.Left(len - 1);
 }
 
-void FileMisc::ReplaceExtension(char szFilePath[MAX_PATH + 1], const char* szExt)
+void FileMisc::ReplaceExtension(CString& sFilePath, const char* szExt)
 {
-	char szDrive[_MAX_DRIVE], szDir[MAX_PATH], szFile[_MAX_FNAME];
+	CString sDrive, sDir, sFile;
 
-	_splitpath(szFilePath, szDrive, szDir, szFile, NULL);
-	_makepath(szFilePath, szDrive, szDir, szFile, szExt);
+	SplitPath(sFilePath, &sDrive, &sDir, &sFile);
+	MakePath(sFilePath, sDrive, sDir, sFile, szExt);
 }
 
 CString& FileMisc::ValidateFilepath(CString& sFilepath)
@@ -68,9 +127,9 @@ CString& FileMisc::ValidateFilename(CString& sFilename)
 	return ValidateFilepath(sFilename);
 }
 
-const char* FileMisc::FileNameFromPath(const char* szFilepath)
+const char* FileMisc::GetFileNameFromPath(const char* szFilepath)
 {
-	char* szFilename = strrchr(szFilepath, '\\');
+	const char* szFilename = strrchr(szFilepath, '\\');
 
 	if (szFilename)
 		return szFilename + 1;
@@ -268,44 +327,50 @@ bool FileMisc::FolderExists(const char* szFolder)
 	return (dwAttrib != 0xffffffff && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
+bool FileMisc::FileExists(const char* szFile)
+{
+	DWORD dwAttrib = GetFileAttributes(szFile);
+
+	return (dwAttrib != 0xffffffff && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) == 0);
+}
+
 bool FileMisc::FolderFromFilePathExists(const char* szFilePath)
+{
+	return FolderExists(GetFolderFromFilePath(szFilePath));
+}
+
+CString FileMisc::GetCwd()
+{
+	char szCwd[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, szCwd);
+
+	return szCwd;
+}
+
+CString FileMisc::GetFolderFromFilePath(const char* szFilePath)
 {
 	CString sFolder;
 
-	if (GetFolderFromFilePath(szFilePath, sFolder))
-		return FolderExists(sFolder);
-
-	// else
-	return false;
-}
-
-bool FileMisc::GetFolderFromFilePath(const char* szFilePath, CString& sFolder)
-{
 	// check if its a folder already
 	if (FolderExists(szFilePath))
 	{
 		sFolder = szFilePath;
-		return true;
+	}
+	else
+	{
+		// remove file ending
+		CString sDrive, sDir;
+
+		SplitPath(szFilePath, &sDrive, &sDir);
+		MakePath(sFolder, sDrive, sDir);
 	}
 
-	// remove file ending
-	char szDrive[MAX_PATH], szDir[MAX_PATH], szFolder[MAX_PATH];
-	_splitpath(szFilePath, szDrive, szDir, NULL, NULL);
-	_makepath(szFolder, szDrive, szDir, NULL, NULL);
-
-	sFolder = szFolder;
-
-	return true;
+	return sFolder;
 }
 
 bool FileMisc::CreateFolderFromFilePath(const char* szFilePath)
 {
-	CString sFolder;
-
-	if (GetFolderFromFilePath(szFilePath, sFolder))
-		return CreateFolder(sFolder);
-
-	return false;
+	return CreateFolder(GetFolderFromFilePath(szFilePath));
 }
 
 bool FileMisc::PathHasWildcard(const char* szFilePath)
@@ -359,7 +424,7 @@ bool FileMisc::CreateFolder(const char* szFolder)
 			sRemaining = sRemaining.Mid(nFind);
 		}
 
-		if (GetFileAttributes(sFolder) == 0xffffffff && mkdir(sFolder) != 0)
+		if (GetFileAttributes(sFolder) == 0xffffffff && _mkdir(sFolder) != 0)
 			bResult = false;
 	}
 
@@ -524,7 +589,7 @@ bool FileMisc::LoadFile(const char* szPathname, CString& sText)
 		if (file.GetLength())
 		{
 			// init size
-			CString sTemp('\0', file.GetLength());
+			CString sTemp('\0', (int)file.GetLength());
 			sText = sTemp;
 
 			CString sLine;
@@ -558,12 +623,13 @@ CString FileMisc::GetTempFileName(LPCTSTR szPrefix, UINT uUnique)
 
 CString FileMisc::GetTempFileName(LPCTSTR szFilename, LPCTSTR szExt)
 {
-	char szTempFile[MAX_PATH] = "", szTempPath[MAX_PATH];
+	CString sTempFile;
+	char szTempPath[MAX_PATH];
 	
 	if (::GetTempPath(MAX_PATH, szTempPath))
-		_makepath(szTempFile, NULL, szTempPath, szFilename, szExt);
+		MakePath(sTempFile, NULL, szTempPath, szFilename, szExt);
 
-	return szTempFile;
+	return sTempFile;
 }
 
 DWORD FileMisc::Run(HWND hwnd, LPCSTR lpFile, LPCSTR lpDirectory, int nShowCmd)
@@ -603,4 +669,108 @@ DWORD FileMisc::Run(HWND hwnd, LPCSTR lpFile, LPCSTR lpDirectory, int nShowCmd)
 		CloseHandle( pi.hThread );
 	}
 	return dwRes;
+}
+
+bool FileMisc::ExtractResource(UINT nID, LPCTSTR szType, const CString& sTempFilePath, HINSTANCE hInst)
+{
+	// compare time with that of module from which it was loaded
+	CString sTempPath;
+	CFileStatus fsRes, fsModule;
+	CString sModulePath = GetModuleFileName(hInst);
+
+	if (!CFile::GetStatus(sModulePath, fsModule))
+		return FALSE;
+	
+	// see if the file has been created before
+	if (!CFile::GetStatus(sTempFilePath, fsRes) || fsRes.m_mtime < fsModule.m_mtime)
+	{
+		// Load the resource into memory
+		HRSRC hRes = FindResource(hInst, (LPCSTR)nID, szType);
+		
+		if (!hRes) 
+		{
+			TRACE("Couldn't find %s resource %d!\n", szType, nID);
+			return FALSE;
+		}
+		
+		DWORD len = SizeofResource(hInst, hRes);
+		
+		BYTE* lpRes = (BYTE*)LoadResource(hInst, hRes);
+		ASSERT(lpRes);
+		
+		CFile file;
+		
+		if (file.Open(sTempFilePath, CFile::modeCreate | CFile::modeWrite))
+		{
+			file.Write(lpRes, len);
+			file.Close();
+			FreeResource((HANDLE)lpRes);
+		}
+		else
+		{
+			FreeResource((HANDLE)lpRes);
+			return FALSE;
+		}
+	}
+	
+	return TRUE;
+}
+
+CString FileMisc::GetModuleFileName(HMODULE hMod)
+{
+	CString sModulePath;
+
+	::GetModuleFileName(hMod, sModulePath.GetBuffer(MAX_PATH + 1), MAX_PATH);
+	sModulePath.ReleaseBuffer();
+
+	return sModulePath;
+}
+
+bool FileMisc::ExtractResource(LPCTSTR szModulePath, UINT nID, LPCTSTR szType, const CString& sTempFilePath)
+{
+	HMODULE hModule = LoadLibrary(szModulePath);
+
+	if (!hModule)
+		return false;
+
+	// else
+	return ExtractResource(nID, szType, sTempFilePath, hModule);
+}
+
+void FileMisc::SplitPath(const char* szPath, CString* pDrive, CString* pDir, CString* pFName, CString* pExt)
+{
+	char szDrive[_MAX_DRIVE], szFolder[_MAX_DIR], szFile[_MAX_FNAME], szExt[_MAX_EXT];
+
+#if _MSC_VER >= 1400
+	_splitpath_s(szPath, szDrive,_MAX_DRIVE, szFolder,_MAX_DIR, szFile, _MAX_FNAME, szExt, _MAX_EXT);
+#else
+	_splitpath(szPath, szDrive, szFolder, szFile, szExt);
+#endif
+
+	if (pDrive)
+		*pDrive = szDrive;
+
+	if (pDir)
+		*pDir = szFolder;
+
+	if (pFName)
+		*pFName = szFile;
+
+	if (pExt)
+		*pExt = szExt;
+}
+
+CString& FileMisc::MakePath(CString& sPath, const char* szDrive, const char* szDir, const char* szFName, const char* szExt)
+{
+	char szPath[MAX_PATH];
+
+#if _MSC_VER >= 1400
+	_makepath_s(szPath, MAX_PATH, szDrive, szDir, szFName, szExt);
+#else
+	_makepath(szPath, szDrive, szDir, szFName, szExt);
+#endif
+
+	sPath = szPath;
+
+	return sPath;
 }

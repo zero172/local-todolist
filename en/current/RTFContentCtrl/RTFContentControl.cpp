@@ -6,7 +6,7 @@
 #include "RTFContentControl.h"
 
 #include "..\shared\itasklist.h"
-#include "..\shared\filedialogex.h"
+#include "..\shared\enfiledialog.h"
 #include "..\shared\autoflag.h"
 #include "..\todolist\tdcmsg.h"
 #include "..\shared\richedithelper.h"
@@ -49,7 +49,7 @@ END_MESSAGE_MAP()
 
 void CRTFContentControl::OnChangeText() 
 {
-	if (m_bAllowNotify)
+	if (m_bAllowNotify && !GetRichEditCtrl().IsIMEComposing())
 		GetParent()->SendMessage(WM_TDCN_COMMENTSCHANGE);
 }
 
@@ -73,26 +73,23 @@ int CRTFContentControl::GetContent(unsigned char* pContent) const
 // hack to get round GetRTF not being const
 int CRTFContentControl::GetContent(const CRTFContentControl* pCtrl, unsigned char* pContent)
 {
-   DWORD dwTick = GetTickCount();
-   int nLen = 0;
-
-   if (pContent)
-   {
-	   CString sContent;
-
-	   // cast away constness
-	   sContent = ((CRTFContentControl*)pCtrl)->GetRTF();
-       nLen = sContent.GetLength();
-
-	   if (pContent)
-		   CopyMemory(pContent, (LPCTSTR)sContent, nLen);
-   }
-   else
-      nLen = ((CRTFContentControl*)pCtrl)->GetRTFLength();
- 
-   TRACE("CRTFContentControl::GetContent(%d ms)\n", GetTickCount() - dwTick);
-
-   return nLen;
+	int nLen = 0;
+	
+	if (pContent)
+	{
+		CString sContent;
+		
+		// cast away constness
+		sContent = ((CRTFContentControl*)pCtrl)->GetRTF();
+		nLen = sContent.GetLength();
+		
+		if (pContent)
+			CopyMemory(pContent, (LPCTSTR)sContent, nLen);
+	}
+	else
+		nLen = ((CRTFContentControl*)pCtrl)->GetRTFLength();
+	
+	return nLen;
 }
 
 bool CRTFContentControl::SetContent(unsigned char* pContent, int nLength)
@@ -158,6 +155,7 @@ void CRTFContentControl::SetReadOnly(bool bReadOnly)
 
 void CRTFContentControl::Release()
 {
+	DestroyWindow();
 	delete this;
 }
 
@@ -187,6 +185,7 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 				CRulerRichEdit& re = GetRichEditCtrl();
 
 				BOOL bCanEdit = re.IsWindowEnabled() && !(re.GetStyle() & ES_READONLY);
+				BOOL bHasText = re.GetTextLength();
 
 				EnableMenuItem(pPopup, ID_EDIT_UNDO, bCanEdit && re.CanUndo());
 				EnableMenuItem(pPopup, ID_EDIT_REDO, bCanEdit && re.SendMessage(EM_CANREDO));
@@ -208,10 +207,20 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 				CheckMenuItem(pPopup, ID_EDIT_SUPERSCRIPT, (cf.dwEffects & CFE_SUPERSCRIPT));
 				CheckMenuItem(pPopup, ID_EDIT_SUBSCRIPT, (cf.dwEffects & CFE_SUBSCRIPT));
 
+				EnableMenuItem(pPopup, BUTTON_BOLD, bCanEdit);
+				EnableMenuItem(pPopup, BUTTON_ITALIC, bCanEdit);
+				EnableMenuItem(pPopup, BUTTON_UNDERLINE, bCanEdit);
+				EnableMenuItem(pPopup, BUTTON_STRIKETHRU, bCanEdit);
+
+				EnableMenuItem(pPopup, ID_EDIT_SUPERSCRIPT, bCanEdit);
+				EnableMenuItem(pPopup, ID_EDIT_SUBSCRIPT, bCanEdit);
+
 				EnableMenuItem(pPopup, ID_EDIT_CUT, bCanEdit && bHasSel);
 				EnableMenuItem(pPopup, ID_EDIT_COPY, bHasSel);
 				EnableMenuItem(pPopup, ID_EDIT_PASTE, bCanEdit && CanPaste());
+				EnableMenuItem(pPopup, ID_EDIT_PASTESIMPLE, bCanEdit && CanPaste());
 				EnableMenuItem(pPopup, ID_EDIT_DELETE, bCanEdit && bHasSel);
+				EnableMenuItem(pPopup, ID_EDIT_SELECT_ALL, bHasText);
 
 				EnableMenuItem(pPopup, ID_EDIT_PASTEASREF, bCanEdit && !IsClipboardEmpty());
 				
@@ -266,7 +275,6 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 					break;
 
 				case ID_EDIT_REDO:
-//					CTextDocument(re).Redo();
 					re.SendMessage(EM_REDO);
 					break;
 
@@ -352,7 +360,7 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 								sFile.Empty();
 						}
 									
-						CFileDialogEx dialog(TRUE, NULL, sFile);
+						CEnFileDialog dialog(TRUE, NULL, sFile);
 						dialog.m_ofn.lpstrTitle = "Select File";
 						
 						if (dialog.DoModal() == IDOK)
@@ -424,6 +432,8 @@ BOOL CRTFContentControl::CanPaste()
 
 int CRTFContentControl::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
+	CAutoFlag af(m_bAllowNotify, FALSE);
+	
 	if (CRulerRichEditCtrl::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
@@ -448,48 +458,7 @@ int CRTFContentControl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 bool CRTFContentControl::ProcessMessage(MSG* pMsg) 
 {
-	UNREFERENCED_PARAMETER(pMsg);
-	
-	// we do our processing in PreTranslateMessage
-	return false;
-}
-
-void CRTFContentControl::OnDestroy() 
-{
-	CRulerRichEditCtrl::OnDestroy();
-	
-	// save toolbar and ruler state
-	AfxGetApp()->WriteProfileInt("Settings", "ShowToolbar", IsToolbarVisible());
-	AfxGetApp()->WriteProfileInt("Settings", "ShowRuler", IsRulerVisible());
-	AfxGetApp()->WriteProfileInt("Settings", "WordWrap", HasWordWrap());
-}
-
-void CRTFContentControl::OnStyleChanging(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
-{
-	if (nStyleType == GWL_EXSTYLE && (lpStyleStruct->styleNew & WS_EX_CLIENTEDGE))
-		lpStyleStruct->styleNew &= ~WS_EX_CLIENTEDGE;
-
-	CRulerRichEditCtrl::OnStyleChanging(nStyleType, lpStyleStruct);
-}
-
-LRESULT CRTFContentControl::OnCustomUrl(WPARAM wp, LPARAM lp)
-{
-	UNREFERENCED_PARAMETER(wp);
-	ASSERT (wp == RTF_CONTROL);
-
-	CString sUrl((LPCTSTR)lp);
-	int nFind = sUrl.Find(TDL_PROTOCOL);
-
-	if (nFind != -1)
-		return GetParent()->SendMessage(WM_TDCM_TASKLINK, 0, lp);
-
-	return 0;
-
-}
-
-BOOL CRTFContentControl::PreTranslateMessage(MSG* pMsg) 
-{
-	// handle shortcut keys
+	// process editing shortcuts
 	switch (pMsg->message)
 	{
 	case WM_KEYDOWN:
@@ -501,7 +470,7 @@ BOOL CRTFContentControl::PreTranslateMessage(MSG* pMsg)
 			{
 				switch (pMsg->wParam)
 				{
-				case 'c':
+				case 'c': 
 				case 'C':
 					GetRichEditCtrl().Copy();
 					return TRUE;
@@ -555,6 +524,45 @@ BOOL CRTFContentControl::PreTranslateMessage(MSG* pMsg)
 		}
 		break;
 	}
+
+	return false;
+}
+
+void CRTFContentControl::OnDestroy() 
+{
+	CRulerRichEditCtrl::OnDestroy();
+	
+	// save toolbar and ruler state
+	AfxGetApp()->WriteProfileInt("Settings", "ShowToolbar", IsToolbarVisible());
+	AfxGetApp()->WriteProfileInt("Settings", "ShowRuler", IsRulerVisible());
+	AfxGetApp()->WriteProfileInt("Settings", "WordWrap", HasWordWrap());
+}
+
+void CRTFContentControl::OnStyleChanging(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
+{
+	if (nStyleType == GWL_EXSTYLE && (lpStyleStruct->styleNew & WS_EX_CLIENTEDGE))
+		lpStyleStruct->styleNew &= ~WS_EX_CLIENTEDGE;
+
+	CRulerRichEditCtrl::OnStyleChanging(nStyleType, lpStyleStruct);
+}
+
+LRESULT CRTFContentControl::OnCustomUrl(WPARAM wp, LPARAM lp)
+{
+	UNREFERENCED_PARAMETER(wp);
+	ASSERT (wp == RTF_CONTROL);
+
+	CString sUrl((LPCTSTR)lp);
+	int nFind = sUrl.Find(TDL_PROTOCOL);
+
+	if (nFind != -1)
+		return GetParent()->SendMessage(WM_TDCM_TASKLINK, 0, lp);
+
+	return 0;
+
+}
+
+BOOL CRTFContentControl::PreTranslateMessage(MSG* pMsg) 
+{
 	
 	return CRulerRichEditCtrl::PreTranslateMessage(pMsg);
 }

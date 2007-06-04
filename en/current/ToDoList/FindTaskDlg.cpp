@@ -9,6 +9,7 @@
 #include "..\shared\dlgunits.h"
 #include "..\shared\enstring.h"
 #include "..\shared\dialoghelper.h"
+#include "..\shared\misc.h"
 
 #include <multimon.h>
 
@@ -73,7 +74,10 @@ const SEARCHFIELD* GetSearchField(FIND_WHAT nWhat)
 	return NULL;
 }
 
-static int TABSTOPS = 20;
+const int TABSTOPS = 20;
+const DWORD HEADERROW = 0xffffffff;
+
+const UINT WM_FTD_SELECTITEM = (WM_APP+1);
 
 /////////////////////////////////////////////////////////////////////////////
 // CFindTaskDlg dialog
@@ -86,7 +90,8 @@ CFindTaskDlg::CFindTaskDlg(CWnd* pParent /*=NULL*/)
 	m_pageTaskID(TRUE, FALSE),
 	m_pageVersion(FALSE, FALSE),
 	m_bDockable(FALSE),
-	m_bSearchResults(FALSE)
+	m_bSearchResults(FALSE),
+	m_nCurSel(-1)
 {
 	m_sResultsLabel.LoadString(IDS_FTD_RESULTS);
 	
@@ -140,7 +145,6 @@ BEGIN_MESSAGE_MAP(CFindTaskDlg, CDialog)
 	ON_BN_CLICKED(IDC_FIND, OnFind)
 	ON_WM_CLOSE()
 	ON_WM_SIZE()
-	ON_NOTIFY(LVN_ITEMACTIVATE, IDC_RESULTS, OnItemActivated)
 	ON_WM_DESTROY()
 	ON_CBN_SELCHANGE(IDC_FINDOPTION, OnSelchangeFindoption)
 	ON_WM_GETMINMAXINFO()
@@ -153,9 +157,11 @@ BEGIN_MESSAGE_MAP(CFindTaskDlg, CDialog)
 	ON_UPDATE_COMMAND_UI(ID_UNDOCK, OnUpdateUndock)
 	ON_COMMAND(ID_DOCKBELOW, OnDockbelow)
 	ON_UPDATE_COMMAND_UI(ID_DOCKBELOW, OnUpdateDockbelow)
-	ON_WM_DRAWITEM()
 	ON_BN_CLICKED(IDC_SEARCHRESULTS, OnSearchresults)
+	ON_WM_SETCURSOR()
+	ON_NOTIFY(LVN_ITEMCHANGING, IDC_RESULTS, OnItemchangingResults)
 	//}}AFX_MSG_MAP
+	ON_NOTIFY(LVN_ITEMACTIVATE, IDC_RESULTS, OnItemActivated)
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_RESULTS, OnCustomDraw)
 END_MESSAGE_MAP()
 
@@ -243,11 +249,11 @@ BOOL CFindTaskDlg::OnInitDialog()
 	m_lcResults.InsertColumn(COL_TASK, "Task", LVCFMT_LEFT, 200);
 	m_lcResults.InsertColumn(COL_MATCH, "", LVCFMT_LEFT, MATCH_COLWIDTH);
 	m_lcResults.InsertColumn(COL_PATH, "Path", LVCFMT_LEFT, 100);
-	
-	DWORD dwExStyle = m_lcResults.GetExtendedStyle() | 
-		LVS_EX_ONECLICKACTIVATE | LVS_EX_TWOCLICKACTIVATE | LVS_EX_UNDERLINEHOT;
-	m_lcResults.SetExtendedStyle(dwExStyle);
-	
+
+	m_lcResults.SetExtendedStyle(m_lcResults.GetExtendedStyle() | LVS_EX_ONECLICKACTIVATE | LVS_EX_UNDERLINEHOT);
+	m_lcResults.SetHotCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
+		
+
 	GetDlgItem(IDC_SELECTALL)->EnableWindow(FALSE);
 	CenterWindow();
 	
@@ -316,12 +322,12 @@ CSize CFindTaskDlg::GetMinDockedSize(DM_POS nPos)
 	rHost.right = rFind.right;
 
 	if (nPos == DMP_BELOW)
-		rHost.right += CDlgUnits(*this).ToPixelsX(40); // so the results list is visible
+		rHost.right += CDlgUnits(this).ToPixelsX(40); // so the results list is visible
 	else	
-		rHost.bottom += CDlgUnits(*this).ToPixelsY(40); // so the results list is visible
+		rHost.bottom += CDlgUnits(this).ToPixelsY(40); // so the results list is visible
 	
 	// add border
-	int nBorder = CDlgUnits(*this).ToPixelsX(7);
+	int nBorder = CDlgUnits(this).ToPixelsX(7);
 	rHost.InflateRect(nBorder, nBorder);
 	
 	// allow for non-client border
@@ -386,14 +392,13 @@ void CFindTaskDlg::AddResult(LPCTSTR szTask, LPCTSTR szMatch, LPCTSTR szPath, BO
 		m_mapResults[dwKey] = res;
 		
 		// update 'found' count
-		m_sResultsLabel.Format(IDS_FTD_SOMERESULTS, nPos + 1);
+		m_sResultsLabel.Format(IDS_FTD_SOMERESULTS, m_mapResults.GetCount());
 		UpdateData(FALSE);
 		
 		// focus first item added
-        if (m_lcResults.GetItemCount() == 1)
+		if (!GetDlgItem(IDC_SELECTALL)->IsWindowEnabled())
 		{
-            m_lcResults.SetItemState(nIndex, LVIS_FOCUSED | LVIS_SELECTED, 
-												LVIS_FOCUSED | LVIS_SELECTED);
+            SelectItem(nIndex);
 
 			// update 'search results' button' state
 			m_toolbar.RefreshButtonStates();
@@ -402,6 +407,27 @@ void CFindTaskDlg::AddResult(LPCTSTR szTask, LPCTSTR szMatch, LPCTSTR szPath, BO
 			GetDlgItem(IDC_SELECTALL)->EnableWindow(TRUE);
 		}
 	}
+}
+
+void CFindTaskDlg::AddHeaderRow(LPCTSTR szText, BOOL bSpaceAbove)
+{
+	int nPos = m_lcResults.GetItemCount();
+
+	// add space above?
+	if (bSpaceAbove)
+	{
+		int nIndex = m_lcResults.InsertItem(nPos, "");
+		m_lcResults.SetItemData(nIndex, HEADERROW);
+		nPos++;
+	}
+	
+	// add result
+	int nIndex = m_lcResults.InsertItem(nPos, szText);
+	m_lcResults.SetItemData(nIndex, HEADERROW);
+
+	// bold font for rendering
+	if (m_fontBold.GetSafeHandle() == NULL)
+		Misc::CreateFont(m_fontBold, (HFONT)m_lcResults.SendMessage(WM_GETFONT), Misc::BOLD);
 }
 
 BOOL CFindTaskDlg::GetSearchAllTasklists()
@@ -494,9 +520,6 @@ CString CFindTaskDlg::GetText()
 	case FW_TITLECOMMENTS:
 		return m_pageTitleComments.GetText();
 		
-	case FW_ALLOCTO:
-		return m_pageAllocTo.GetText();
-		
 	case FW_ALLOCBY:
 		return m_pageAllocBy.GetText();
 		
@@ -518,18 +541,36 @@ CString CFindTaskDlg::GetText()
 	return "";
 }
 
-int CFindTaskDlg::GetCategories(CStringArray& aCats)
+int CFindTaskDlg::GetItems(CStringArray& aItems)
 {
-	ASSERT(m_nFindOption == FW_CATEGORY);
-
-	return m_pageCategory.GetCategories(aCats);
+	switch (m_nFindOption)
+	{
+	case FW_CATEGORY:
+		return m_pageCategory.GetItems(aItems);
+		
+	case FW_ALLOCTO:
+		return m_pageAllocTo.GetItems(aItems);
+	}
+	
+	// all else
+	ASSERT(0);
+	return 0;
 }
 
-BOOL CFindTaskDlg::GetMatchAllCategories()
+BOOL CFindTaskDlg::GetMatchAllItems()
 {
-	ASSERT(m_nFindOption == FW_CATEGORY);
-
-	return m_pageCategory.GetMatchAllCategories();
+	switch (m_nFindOption)
+	{
+	case FW_CATEGORY:
+		return m_pageCategory.GetMatchAllItems();
+		
+	case FW_ALLOCTO:
+		return m_pageAllocTo.GetMatchAllItems();
+	}
+	
+	// all else
+	ASSERT(0);
+	return 0;
 }
 
 BOOL CFindTaskDlg::GetMatchCase()
@@ -538,9 +579,6 @@ BOOL CFindTaskDlg::GetMatchCase()
 	{
 	case FW_TITLECOMMENTS:
 		return m_pageTitleComments.GetMatchCase();
-		
-	case FW_ALLOCTO:
-		return m_pageAllocTo.GetMatchCase();
 		
 	case FW_ALLOCBY:
 		return m_pageAllocBy.GetMatchCase();
@@ -569,9 +607,6 @@ BOOL CFindTaskDlg::GetMatchWholeWord()
 	{
 	case FW_TITLECOMMENTS:
 		return m_pageTitleComments.GetMatchWholeWord();
-		
-	case FW_ALLOCTO:
-		return m_pageAllocTo.GetMatchWholeWord();
 		
 	case FW_ALLOCBY:
 		return m_pageAllocBy.GetMatchWholeWord();
@@ -826,7 +861,7 @@ void CFindTaskDlg::OnItemActivated(NMHDR* pNMHDR, LRESULT* pResult)
 	FTDRESULT res;
 	DWORD dwKey = m_lcResults.GetItemData(pNMListView->iItem);
 	
-	if (m_mapResults.Lookup(dwKey, res))
+	if (dwKey != HEADERROW && m_mapResults.Lookup(dwKey, res))
 		GetParent()->SendMessage(WM_FTD_SELECTRESULT, dwKey, (LPARAM)&res);
 	
 	*pResult = 0;
@@ -889,7 +924,7 @@ void CFindTaskDlg::OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI)
 	{
 		if (!m_dockMgr.IsDocked())
 		{
-			CDlgUnits dlu(*this);
+			CDlgUnits dlu(this);
 			
 			lpMMI->ptMinTrackSize.x = dlu.ToPixelsX(290);
 			lpMMI->ptMinTrackSize.y = dlu.ToPixelsY(230);
@@ -936,9 +971,14 @@ void CFindTaskDlg::OnSelectall()
 	{
 		FTDRESULT res;
 		DWORD dwKey = m_lcResults.GetItemData(0);
-	
-		VERIFY (m_mapResults.Lookup(dwKey, res));
-		GetParent()->SendMessage(WM_FTD_SELECTRESULT, dwKey, (LPARAM)&res);
+
+		if (dwKey == HEADERROW && m_lcResults.GetItemCount() == 2)
+		{
+			DWORD dwKey = m_lcResults.GetItemData(1);
+
+			VERIFY (m_mapResults.Lookup(dwKey, res));
+			GetParent()->SendMessage(WM_FTD_SELECTRESULT, dwKey, (LPARAM)&res);
+		}
 	}
 	else if (nRes) // > 1
 		GetParent()->SendMessage(WM_FTD_SELECTALL);
@@ -1056,20 +1096,53 @@ void CFindTaskDlg::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 
 	else if (pNMCD->dwDrawStage == CDDS_ITEMPREPAINT)
 	{
-		FTDRESULT res;
 		DWORD dwKey = m_lcResults.GetItemData((int)pNMCD->dwItemSpec);
-		
-		if (m_mapResults.Lookup(dwKey, res) && res.bDone)
-		{
-			// get the users 'done' colour
-			if (AfxGetApp()->GetProfileInt("Preferences", "SpecifyDoneColor", FALSE))
-			{
-				COLORREF crText = (COLORREF)AfxGetApp()->GetProfileInt("Preferences\\Colors", "TaskDone", -1);
 
-				if (crText != (COLORREF)-1)
+		if (dwKey == HEADERROW) // header line
+		{
+			CString sText = m_lcResults.GetItemText((int)pNMCD->dwItemSpec, 0);
+
+			if (!sText.IsEmpty())
+			{
+				CDC* pDC = CDC::FromHandle(pNMCD->hdc);
+
+				CRect rItem;
+				m_lcResults.GetItemRect((int)pNMCD->dwItemSpec, rItem, LVIR_LABEL);
+				rItem.left -= 2;
+
+				int nSave = pDC->SaveDC();
+				
+				pDC->SelectObject(&m_fontBold);
+				pDC->SetTextColor(0);
+				pDC->SetBkColor(GetSysColor(COLOR_WINDOW));
+				pDC->SetBkMode(OPAQUE);
+				pDC->DrawText(sText, rItem, DT_TOP | DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX);
+
+				// draw a horizontal dividing line
+				pDC->DrawText(sText, rItem, DT_TOP | DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX | DT_CALCRECT);
+				pDC->FillSolidRect(rItem.right + 6, rItem.top + rItem.Height() / 2, 600 - rItem.right, 1, GetSysColor(COLOR_3DSHADOW));
+
+				pDC->RestoreDC(nSave);
+			}
+
+			*pResult |= CDRF_SKIPDEFAULT; // always
+		}
+		else // result
+		{
+			FTDRESULT res;
+
+			if (m_mapResults.Lookup(dwKey, res) && res.bDone)
+			{
+				// get the users 'done' colour
+				if (AfxGetApp()->GetProfileInt("Preferences", "SpecifyDoneColor", FALSE))
 				{
-					pLVCD->clrText = crText;
-					*pResult |= CDRF_NEWFONT;
+					COLORREF crText = (COLORREF)AfxGetApp()->GetProfileInt("Preferences\\Colors", "TaskDone", -1);
+
+					if (crText != (COLORREF)-1)
+					{
+						pLVCD->clrText = crText;
+						*pResult |= CDRF_NEWFONT;
+					}
 				}
 			}
 		}
@@ -1105,3 +1178,129 @@ void CFindTaskDlg::OnSearchresults()
 {
 	UpdateData();
 }
+
+BOOL CFindTaskDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
+{
+	// if the cursor is over a non-header row then show the 'hand' pointer
+	// can't use LVS_EX_ONECLICKACTIVATE for this because this *cannot* be
+	// overridden for header items
+	if (pWnd == &m_lcResults && nHitTest == HTCLIENT)
+	{
+		CPoint ptCursor(::GetMessagePos());
+		pWnd->ScreenToClient(&ptCursor);
+
+		int nItem = m_lcResults.HitTest(ptCursor);
+
+		if (nItem != -1 && m_lcResults.GetItemData(nItem) != HEADERROW) // normal result
+		{
+			SetCursor(Misc::HandCursor());
+			return TRUE;
+		}
+	}
+	
+	return CDialog::OnSetCursor(pWnd, nHitTest, message);
+}
+
+void CFindTaskDlg::OnItemchangingResults(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	NM_LISTVIEW* pNMListView = (NM_LISTVIEW*)pNMHDR;
+
+	// we're interested in keyboard selection state changes only
+	if (pNMListView->uChanged & LVIF_STATE)
+	{
+		BOOL bWasSel = (pNMListView->uOldState & LVIS_SELECTED);
+		BOOL bIsSel = (pNMListView->uNewState & LVIS_SELECTED);
+		
+		// has a header row just become selected?
+		if (bIsSel && !bWasSel && pNMListView->lParam == HEADERROW)
+		{
+			if (GetKeyState(VK_LBUTTON) & 0x8000)
+			{
+				// restore previous selection
+				SelectItem(m_nCurSel);
+			}
+			else // keyboard
+			{
+				// we need to get the next valid item in the direction
+				// the user is moving
+				BOOL bDown = (GetSelectedItem() < pNMListView->iItem);
+				int nNextItem = GetNextResult(pNMListView->iItem, bDown);
+				
+				if (nNextItem != -1)
+					SelectItem(nNextItem);
+				else
+				{
+					SelectItem(m_nCurSel);
+
+					// make sure the non-selectable item is visible
+					m_lcResults.EnsureVisible(pNMListView->iItem, FALSE);
+				}
+			}
+			
+			*pResult = TRUE;
+			return;
+		}
+	}
+
+	m_nCurSel = pNMListView->iItem;
+	
+	*pResult = 0;
+}
+
+int CFindTaskDlg::GetNextResult(int nItem, BOOL bDown)
+{
+	int nNext = nItem + (bDown ? 1 : -1); // next item
+
+	while (nNext >= 0 && nNext < m_lcResults.GetItemCount())
+	{
+		if (m_lcResults.GetItemData(nNext) != HEADERROW)
+			return nNext;
+
+		nNext += bDown ? 1 : -1; // next item
+	}
+
+	// no next item
+	return -1;
+}
+
+void CFindTaskDlg::SelectItem(int nItem)
+{
+	m_lcResults.SetItemState(nItem, LVIS_FOCUSED | LVIS_SELECTED, 
+							 		 LVIS_FOCUSED | LVIS_SELECTED);
+
+	m_nCurSel = nItem;
+}
+
+int CFindTaskDlg::GetSelectedItem()
+{
+	return m_nCurSel;
+}
+
+/*
+void CFindTaskDlg::InvalidateVisibleHeaderRows()
+{
+	CRect rClient;
+	m_lcResults.GetClientRect(rClient);
+	
+	int nItem = m_lcResults.GetItemCount();
+	
+	while (nItem--)
+	{
+		if (m_lcResults.GetItemData(nItem) == HEADERROW)
+		{
+			CRect rItem;
+			
+			if (m_lcResults.GetItemRect(nItem, rItem, LVIR_BOUNDS))
+			{
+
+				if (CRect().IntersectRect(rClient, rItem))
+					m_lcResults.InvalidateRect(rItem);
+				
+				else if (rItem.top > rClient.bottom)
+					break; // passed the bottom of the visible list
+			}
+		}
+	}
+
+}
+*/

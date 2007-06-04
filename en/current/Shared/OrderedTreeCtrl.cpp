@@ -29,7 +29,7 @@ COrderedTreeCtrl::COrderedTreeCtrl() :
     // the compiler complains because 'this' is not yet
     // fully constructed.
 #pragma warning (disable: 4355)
-	CTreeCtrlHelper(*this),
+	m_ht(*this),
 #pragma warning (default: 4355)
 
 	m_bShowingPosColumn(TRUE), 
@@ -123,20 +123,26 @@ BOOL COrderedTreeCtrl::PtInHeader(CPoint ptScreen) const
 
 COLORREF COrderedTreeCtrl::GetItemLineColor(HTREEITEM hti)
 {
-	if (m_crAltLines != -1 && ItemLineIsOdd(hti))
+	if (m_crAltLines != -1 && TCH().ItemLineIsOdd(hti))
 		return m_crAltLines;
 	
 	// else
 	return GetSysColor(COLOR_WINDOW);
 }
 
-void COrderedTreeCtrl::ShowGutterPosColumn(BOOL bShow)
+BOOL COrderedTreeCtrl::ShowGutterPosColumn(BOOL bShow)
 {
 	if (m_bShowingPosColumn != bShow)
 	{
 		m_bShowingPosColumn = bShow;
 		m_gutter.RecalcGutter();
+
+		return TRUE;
 	}
+
+	// else no change
+	return FALSE;
+
 }
 
 void COrderedTreeCtrl::SetGridlineColor(COLORREF color)
@@ -187,7 +193,7 @@ void COrderedTreeCtrl::EnableGutterColumnHeaderClicking(UINT nColID, BOOL bEnabl
 LRESULT COrderedTreeCtrl::OnGutterGetFirstVisibleTopLevelItem(WPARAM /*wParam*/, LPARAM lParam)
 {
 	ASSERT (lParam);
-	return (LRESULT)GetFirstVisibleTopLevelItem(*((LPINT)lParam));
+	return (LRESULT)TCH().GetFirstVisibleTopLevelItem(*((LPINT)lParam));
 }
 
 LRESULT COrderedTreeCtrl::OnGutterGetNextItem(WPARAM /*wParam*/, LPARAM lParam)
@@ -197,7 +203,7 @@ LRESULT COrderedTreeCtrl::OnGutterGetNextItem(WPARAM /*wParam*/, LPARAM lParam)
 
 LRESULT COrderedTreeCtrl::OnGutterWantRecalc(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	BuildVisibleIndexMap();
+	TCH().BuildVisibleIndexMap();
 
 	// do not recalc if editing a label
 	if (GetEditControl() != NULL)
@@ -323,10 +329,10 @@ void COrderedTreeCtrl::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, UI
 		BOOL bHasChildren = ItemHasChildren(hti);
 		
 		if (nPos == -1) // it means we have to figure it out for ourselves
-			nPos = GetItemPos(hti, (HTREEITEM)dwParentItem);
+			nPos = TCH().GetItemPos(hti, (HTREEITEM)dwParentItem);
 		
 		if (nLevel == -1) // likewise
-			nLevel = GetItemLevel(hti);
+			nLevel = TCH().GetItemLevel(hti);
 		
 		// default
 		
@@ -341,7 +347,7 @@ void COrderedTreeCtrl::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, UI
 			mapParentPos[dwItem] = sPos;
 		
 		// modify for actual output
-		if (bHasChildren && !IsItemExpanded(hti))
+		if (bHasChildren && !TCH().IsItemExpanded(hti))
 			sPos += "...";
 		
 		else if (nLevel == 0)
@@ -352,7 +358,7 @@ void COrderedTreeCtrl::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, UI
 			int nSaveDC = pDC->SaveDC();
 			
 			// fill background of selected item
-			BOOL bFocused = HasFocus(/*!(GetStyle() & TVS_FULLROWSELECT)*/);
+			BOOL bFocused = TCH().HasFocus(/*!(GetStyle() & TVS_FULLROWSELECT)*/);
 			BOOL bDropHilited = (GetItemState(hti, TVIS_DROPHILITED) & TVIS_DROPHILITED);
 			
 			if (bDropHilited)
@@ -365,7 +371,7 @@ void COrderedTreeCtrl::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, UI
 				else
 					pDC->FillSolidRect(rItem, GetSysColor(COLOR_3DFACE));
 			}
-			else if (m_crAltLines != -1 && ItemLineIsOdd(hti))
+			else if (m_crAltLines != -1 && TCH().ItemLineIsOdd(hti))
 				pDC->FillSolidRect(rItem, m_crAltLines);
 			
 			// draw pos
@@ -400,12 +406,12 @@ BOOL COrderedTreeCtrl::OnItemexpanded(NMHDR* pNMHDR, LRESULT* pResult)
 	if (m_crAltLines != -1)
 	{
 		CRect rClient;
-		CTreeCtrlHelper::GetClientRect(rClient, pNMTreeView->itemNew.hItem);
+		TCH().GetClientRect(rClient, pNMTreeView->itemNew.hItem);
 		InvalidateRect(rClient);
 	}
 	else if (pNMTreeView->itemNew.state & TVIS_EXPANDED)
 	{
-		InvalidateItem(pNMTreeView->itemNew.hItem);
+		TCH().InvalidateItem(pNMTreeView->itemNew.hItem);
 	}
 	
 	m_gutter.RecalcGutter();
@@ -424,7 +430,7 @@ BOOL COrderedTreeCtrl::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 		HTREEITEM hti = (HTREEITEM)pTVCD->nmcd.dwItemSpec;
 
 		// do the odd lines
-		if (m_crAltLines != -1 && ItemLineIsOdd(hti))
+		if (m_crAltLines != -1 && TCH().ItemLineIsOdd(hti))
 		{
 	 		BOOL bFullRow = (GetStyle() & TVS_FULLROWSELECT);
          
@@ -510,7 +516,7 @@ int COrderedTreeCtrl::RecalcColumnWidth(CDC* pDC, UINT nColID, UINT& nWidth)
 		
 		// rebuild visible item map if there are other columns
 		if (m_bShowingPosColumn || m_gutter.GetColumnCount() > 1)
-			BuildVisibleIndexMap();
+			TCH().BuildVisibleIndexMap();
 		
 		return TRUE;
 	}
@@ -595,7 +601,7 @@ LRESULT COrderedTreeCtrl::OnGutterNotifyItemClick(WPARAM /*wParam*/, LPARAM lPar
 	NCGITEMCLICK* pNGIC = (NCGITEMCLICK*)lParam;
 	ASSERT (pNGIC);
 	
-	EndLabelEdit(FALSE); // always
+	TCH().EndLabelEdit(FALSE); // always
 	
 	HTREEITEM hti = (HTREEITEM)pNGIC->dwItem;
 	SelectItem(hti); // always
@@ -608,7 +614,7 @@ LRESULT COrderedTreeCtrl::OnGutterNotifyItemClick(WPARAM /*wParam*/, LPARAM lPar
 		{
 			// kill any label edit that might have been started by
 			// the first button click
-			EndLabelEdit(TRUE);
+			TCH().EndLabelEdit(TRUE);
 			
 			UINT nHitFlags = 0;
 			HitTest(pNGIC->ptClick, &nHitFlags);
@@ -616,11 +622,11 @@ LRESULT COrderedTreeCtrl::OnGutterNotifyItemClick(WPARAM /*wParam*/, LPARAM lPar
 			if (pNGIC->nMsgID != WM_LBUTTONDBLCLK ||
 				!(nHitFlags & (TVHT_ONITEMBUTTON | TVHT_ONITEMLABEL | TVHT_ONITEMICON)))
 			{
-				BOOL bExpanded = IsItemExpanded(hti);
+				BOOL bExpanded = TCH().IsItemExpanded(hti);
 				Expand(hti, bExpanded ? TVE_COLLAPSE : TVE_EXPAND);
 				
 				CRect rItem;
-				CTreeCtrlHelper::GetClientRect(rItem, hti);
+				TCH().GetClientRect(rItem, hti);
 				InvalidateRect(rItem);
 				
 				return TRUE; // handled

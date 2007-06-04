@@ -13,14 +13,13 @@
 #include "preferencesdlg.h"
 #include "findtaskDlg.h"
 #include "todoctrlmgr.h"
-#include "TDImportExportMgr.h"
+#include "TDLImportExportMgr.h"
 #include "TDLContentMgr.h"
 #include "filterbar.h"
 
 #include "..\shared\trayicon.h"
 #include "..\shared\toolbarhelper.h"
 #include "..\shared\filemisc.h"
-#include "..\shared\enstatic.h"
 #include "..\shared\ShortcutManager.h"
 #include "..\shared\driveinfo.h"
 #include "..\shared\entoolbar.h"
@@ -33,7 +32,9 @@
 #include "..\shared\deferWndMove.h"
 #include "..\shared\colorcombobox.h"
 #include "..\shared\enBrowserctrl.h"
-#include "..\3rdparty\menuiconmgr.h"
+
+#include "..\shared\menuiconmgr.h"
+#include "..\3rdparty\statusbarACT.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CToDoListWnd dialog
@@ -51,6 +52,7 @@ enum
 	ADDNEWTASK,     // data is char*
 	SETCOMMENTS,    // data is char*
 	SELECTTASK,     // data is DWORD
+	IMPORTFILE,		// data is char*
 };
 
 // creation flags
@@ -96,14 +98,14 @@ protected:
 	CTaskListDropTarget m_dropTarget;
 	CPreferencesDlg* m_pPrefs;
 	CFindTaskDlg m_findDlg;
-	CTDImportExportMgr m_mgrImportExport;
+	CTDLImportExportMgr m_mgrImportExport;
 	CToDoCtrlMgr m_mgrToDoCtrls;
 	CFont m_fontTree, m_fontComments; // shared by all tasklists
 	CMenuEx m_menubar;
 	CTDLContentMgr m_mgrContent;
 	CEnBrowserCtrl m_IE;
 	CFilterBar m_filterBar;
-	CEnStatic	m_statusBar;
+	CStatusBarACT	m_statusBar;
 	HWND m_hwndLastFocus;
 	CMenuIconMgr m_mgrMenuIcons;
 
@@ -195,12 +197,22 @@ protected:
 	afx_msg void OnUpdateCopyTaskasRef(CCmdUI* pCmdUI);
 	afx_msg void OnCopyTaskasDependency();
 	afx_msg void OnUpdateCopyTaskasDependency(CCmdUI* pCmdUI);
+	afx_msg void OnCopyTaskasRefFull();
+	afx_msg void OnUpdateCopyTaskasRefFull(CCmdUI* pCmdUI);
+	afx_msg void OnCopyTaskasDependencyFull();
+	afx_msg void OnUpdateCopyTaskasDependencyFull(CCmdUI* pCmdUI);
+	afx_msg void OnCopyTaskasPath();
+	afx_msg void OnUpdateCopyTaskasPath(CCmdUI* pCmdUI);
 	afx_msg void OnWindowPosChanging(WINDOWPOS FAR* lpwndpos);
 	afx_msg void OnToolsCheckforupdates();
 	afx_msg void OnShowKeyboardshortcuts();
 	afx_msg void OnEditInsertdatetime();
 	afx_msg void OnUpdateEditInsertdatetime(CCmdUI* pCmdUI);
 	afx_msg void OnSysColorChange();
+	afx_msg void OnEditCleartaskcolor();
+	afx_msg void OnUpdateEditCleartaskcolor(CCmdUI* pCmdUI);
+	afx_msg void OnEditSelectall();
+	afx_msg void OnUpdateEditSelectall(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg LRESULT OnSelchangeFilter(WPARAM wp, LPARAM lp);
 	afx_msg void OnWindow(UINT nCmdID);
@@ -354,8 +366,9 @@ protected:
 	afx_msg void OnTrayIconClick(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnTrayIconDblClk(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnTrayIconRClick(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnNeedUserTooltipText(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnNeedTooltipText(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg BOOL OnOpenRecentFile(UINT nID);
+	afx_msg void OnUpdateSBSelectionCount(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnGetIcon(WPARAM bLargeIcon, LPARAM /*not used*/);
 	afx_msg LRESULT OnToDoCtrlNotifySort(WPARAM wp, LPARAM lp);
 	afx_msg LRESULT OnToDoCtrlNotifyMod(WPARAM wp, LPARAM lp);
@@ -406,21 +419,31 @@ protected:
 	BOOL Export2Html(CFilteredToDoCtrl& tdc, LPCTSTR szFilePath, LPCTSTR szStylesheet = NULL) const;
 	BOOL Export2Html(const CTaskFile& tasks, LPCTSTR szFilePath, LPCTSTR szStylesheet = NULL) const;
 
+	TDC_FILE DelayOpenTaskList(LPCTSTR szFilePath); // 0 = failed, 1 = success, -1 = cancelled
 	TDC_FILE OpenTaskList(LPCTSTR szFilePath, BOOL bNotifyDueTasks = TRUE); // 0 = failed, 1 = success, -1 = cancelled
 	TDC_FILE OpenTaskList(CFilteredToDoCtrl* pCtrl, LPCTSTR szFilePath = NULL, LPCTSTR szArchivePath = NULL, TDC_ARCHIVE nRemove = TDC_REMOVEALL);
 	void ReloadTaskList(int nIndex, BOOL bNotifyDueTasks);
+	BOOL VerifyTaskListOpen(int nIndex, BOOL bWantNotifyDueTasks);
+
+	BOOL ImportFile(LPCTSTR szFilePath);
+
+	void InitShortcutManager();
+	void InitMenuIconManager();
+	void InitUIFont();
+	BOOL LoadMenubar();
+	BOOL InitCheckboxImageList();
+	BOOL InitToolbar();
+	BOOL InitStatusbar();
+
 	BOOL NewTask(LPCTSTR szTitle, TDC_INSERTWHERE nInsertWhere, BOOL bSelect = TRUE, BOOL bEdit = TRUE);
 	TDC_SORTBY GetSortBy(UINT nSortID);
 	UINT GetSortID(TDC_SORTBY nSortBy);
 	void CheckMinWidth();
 	void MinimizeToTray();
 	void Show(BOOL bAllowToggle);
-	BOOL InitCheckboxImageList();
 	BOOL DoDueTaskNotification(const CFilteredToDoCtrl* pCtrl, int nDueBy);
 	BOOL DoDueTaskNotification(int nDueBy); // works on active tasklist
 	void DoExit();
-	void InitShortcutManager();
-	void InitMenuIconManager();
 	void PauseTimeTracking(BOOL bPause = TRUE);
 	void SetTimer(UINT nTimerID, BOOL bOn);
 	void EnsureVisible();
@@ -431,13 +454,11 @@ protected:
 	void DoPreferences(int nInitPage = -1);
 	void DoPrint(BOOL bPreview = FALSE);
 	void HandleLoadTasklistError(TDC_FILE nErr, LPCTSTR szTasklist);
-	void ShowColumn(TDC_COLUMN nColumn, CFilteredToDoCtrl& tdc, BOOL bShow, BOOL bUpdate);
-	BOOL LoadMenubar();
 	void CheckForUpdates(BOOL bManual);
 	void UpdateCwd();
-	void InitUIFont();
+	BOOL WantTabBarVisible() const { return GetTDCCount() > 1 || !Prefs().GetAutoHideTabbar(); }
 
-	enum { CT_ASHTML, CT_ASTEXT, CT_ASREF, CT_ASDEPENDS };
+	enum { CT_ASHTML, CT_ASTEXT, CT_ASREF, CT_ASDEPENDS, CT_ASREFFULL, CT_ASDEPENDSFULL, CT_ASPATH };
 	void CopySelectedTasksToClipboard(int nAsFormat);
 
 	void RefreshFilterControls();
@@ -448,11 +469,11 @@ protected:
 	int ReposTabBar(CDeferWndMove& dwm, const CPoint& ptOrg, int nWidth, BOOL bCalcOnly = FALSE);
 
 	void PrepareEditMenu(CMenu* pMenu);
+	void PrepareSortMenu(CMenu* pMenu);
 
 	int MapFindWhat(FIND_WHAT fw);
-	void AddFindResult(const SEARCHRESULT& result, const SEARCHPARAMS& params, int nTaskList, LPCTSTR szTaskList);
+	void AddFindResult(const SEARCHRESULT& result, const SEARCHPARAMS& params, int nTaskList);
 	
-	BOOL InitToolbar();
 	void PrepareToolbar(int nOption);
 	void SetToolbarOption(int nOption);
 	void AppendTools2Toolbar(BOOL bAppend = TRUE);
@@ -464,9 +485,9 @@ protected:
 	CFilteredToDoCtrl* NewToDoCtrl();
 	BOOL CreateToDoCtrl(CFilteredToDoCtrl* pCtrl);
 	int AddToDoCtrl(CFilteredToDoCtrl* pCtrl, BOOL bResizeDlg = TRUE);
-	inline int GetTDCCount() { return m_mgrToDoCtrls.GetCount(); }
-	BOOL SelectToDoCtrl(LPCTSTR szFilePath, BOOL bCheckPassword);
-	BOOL SelectToDoCtrl(int nIndex, BOOL bCheckPassword);
+	inline int GetTDCCount() const { return m_mgrToDoCtrls.GetCount(); }
+	BOOL SelectToDoCtrl(LPCTSTR szFilePath, BOOL bCheckPassword, int nNotifyDueTasksBy = -1);
+	BOOL SelectToDoCtrl(int nIndex, BOOL bCheckPassword, int nNotifyDueTasksBy = -1);
 	int GetSelToDoCtrl() const;
 	BOOL CreateNewTaskList(BOOL bAddDefTask);
 	BOOL VerifyToDoCtrlPassword() const;
@@ -501,6 +522,11 @@ protected:
 	int GetTasks(int nTDC, BOOL bWantCompleted, BOOL bWantIncomplete,
                BOOL bWantSelected, BOOL bWantSelSubtasks, BOOL bHtmlComments, 
 			   BOOL bTransform, CTaskFile& tasks);
+
+	TDC_ARCHIVE GetAutoArchiveOptions(LPCTSTR szFilePath, CString& sArchivePath) const;
+
+	static void PrepareOpenFilePath(CString& sFilePath);
+	static void EnableTDLProtocol(BOOL bEnable);
 };
 
 //{{AFX_INSERT_LOCATION}}

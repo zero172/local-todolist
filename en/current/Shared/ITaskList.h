@@ -56,7 +56,7 @@ public:
 	virtual unsigned long GetTaskColor(HTASKITEM hTask) const = 0;
 	virtual unsigned long GetTaskPriorityColor(HTASKITEM hTask) const = 0;
 
-	virtual unsigned char GetTaskPriority(HTASKITEM hTask, BOOL bHighest) const = 0;
+	virtual int GetTaskPriority(HTASKITEM hTask, BOOL bHighest) const = 0;
 	virtual unsigned char GetTaskPercentDone(HTASKITEM hTask, BOOL bCalc) const = 0;
 
 	virtual double GetTaskTimeEstimate(HTASKITEM hTask, char& cUnits, BOOL bCalc) const = 0;
@@ -129,7 +129,7 @@ public:
 	virtual time_t GetTaskDueDate(HTASKITEM hTask, BOOL bEarliest) const = 0;
 	virtual const char* GetTaskDueDateString(HTASKITEM hTask, BOOL bEarliest) const = 0;
 	virtual unsigned long GetTaskTextColor(HTASKITEM hTask) const = 0;
-	virtual unsigned char GetTaskRisk(HTASKITEM hTask, BOOL bHighest) const = 0;
+	virtual int GetTaskRisk(HTASKITEM hTask, BOOL bHighest) const = 0;
 	virtual const char* GetTaskExternalID(HTASKITEM hTask) const = 0;
 	
 	virtual bool SetTaskRisk(HTASKITEM hTask, unsigned char nRisk) = 0;

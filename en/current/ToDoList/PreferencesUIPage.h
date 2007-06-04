@@ -63,6 +63,7 @@ public:
 	BOOL GetMultiSelCategoryFilter() const { return m_bMultiSelCategoryFilter; }
 	BOOL GetAutoReFilter() const { return m_bAutoReFilter; }
 	BOOL GetRestoreTasklistFilters() const { return m_bRestoreTasklistFilters; }
+	BOOL GetMultiSelAllocToFilter() const { return m_bMultiSelAllocToFilter; }
 //	BOOL Get() const { return ; }
 
 protected:
@@ -89,6 +90,7 @@ protected:
 	BOOL	m_bMultiSelCategoryFilter;
 	BOOL	m_bAutoReFilter;
 	BOOL	m_bRestoreTasklistFilters;
+	BOOL	m_bMultiSelAllocToFilter;
 	//}}AFX_DATA
 	int		m_nCommentsPos;
 	CComboBox	m_cbCommentsFmt;

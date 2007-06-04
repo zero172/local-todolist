@@ -809,7 +809,9 @@ CRTF_HTMLConverter::CRTFNode CRTF_HTMLConverter::R2H_BuildTree(const CString& st
 	CString strNodeNew; 
 	CString strThisCode;
 	long lLevel=0; //# Of opened '{'
-	for (int iStrPos=0;iStrPos<strNodeText.GetLength();iStrPos++) 
+	int iStrPos;
+
+	for (iStrPos=0;iStrPos<strNodeText.GetLength();iStrPos++) 
 	{
 		CString strChTest=strNodeText[iStrPos];
 		if (strChTest=="{") 

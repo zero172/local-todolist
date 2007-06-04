@@ -102,6 +102,10 @@ PostBuild_Cmds=mkdir ..\ToDoList	mkdir ..\ToDoList\debug	copy debug\mloimport.dl
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat;f90;for;f;fpp"
 # Begin Source File
 
+SOURCE=..\Shared\FILEMISC.CPP
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\Misc.cpp
 # End Source File
 # Begin Source File
@@ -141,10 +145,6 @@ SOURCE=..\3rdParty\XmlNodeWrapper.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl;fi;fd"
-# Begin Source File
-
-SOURCE=..\3rdParty\COMUTIL.H
-# End Source File
 # Begin Source File
 
 SOURCE=..\Shared\HtmlCharMap.h

@@ -177,6 +177,10 @@ SOURCE=..\Shared\enbrowserctrl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\EnCheckComboBox.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\encolordialog.cpp
 # ADD CPP /I "..\ToDoList"
 # End Source File
@@ -188,6 +192,10 @@ SOURCE=..\Shared\EnCommandLineInfo.cpp
 
 SOURCE=..\Shared\enedit.cpp
 # ADD CPP /I "..\ToDoList"
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\enfiledialog.cpp
 # End Source File
 # Begin Source File
 
@@ -210,11 +218,6 @@ SOURCE=..\Shared\entoolbar.cpp
 # Begin Source File
 
 SOURCE=.\ExportDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\Shared\filedialogex.cpp
-# ADD CPP /I "..\ToDoList"
 # End Source File
 # Begin Source File
 
@@ -246,11 +249,11 @@ SOURCE=.\FindBlankPage.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FindCategoryPage.cpp
+SOURCE=.\FindDatePage.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\FindDatePage.cpp
+SOURCE=.\FindItemsPage.cpp
 # End Source File
 # Begin Source File
 
@@ -307,6 +310,10 @@ SOURCE=..\Shared\ImportExportMgr.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\ImportExportUIHelper.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\3rdParty\Ini.cpp
 # End Source File
 # Begin Source File
@@ -327,7 +334,7 @@ SOURCE=..\Shared\MenuEx.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\3rdParty\MenuIconMgr.cpp
+SOURCE=..\Shared\MenuIconMgr.cpp
 # End Source File
 # Begin Source File
 
@@ -436,6 +443,10 @@ SOURCE=..\Shared\Regkey.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\3rdParty\RegUtil.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\RichEditHelper.cpp
 # End Source File
 # Begin Source File
@@ -457,6 +468,10 @@ SOURCE=..\Shared\SpellCheckDlg.cpp
 # Begin Source File
 
 SOURCE=..\3rdParty\StatLink.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\3rdParty\StatusBarACT.cpp
 # End Source File
 # Begin Source File
 
@@ -511,19 +526,23 @@ SOURCE=.\TaskTimeLog.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDColumnListBox.cpp
+SOURCE=.\TDLColumnListBox.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDImportExportMgr.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TDLCategoryComboBox.cpp
+SOURCE=.\TDLColumnSelectionDlg.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\TDLContentMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TDLImportExportMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TDLPrefMigrationDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -695,10 +714,6 @@ SOURCE=..\Shared\ColorDef.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\3rdParty\COMUTIL.H
-# End Source File
-# Begin Source File
-
 SOURCE=..\Shared\ContentCtrl.h
 # End Source File
 # Begin Source File
@@ -747,6 +762,10 @@ SOURCE=..\Shared\enbrowserctrl.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\EnCheckComboBox.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\encolordialog.h
 # End Source File
 # Begin Source File
@@ -756,6 +775,10 @@ SOURCE=..\Shared\EnCommandLineInfo.h
 # Begin Source File
 
 SOURCE=..\Shared\enedit.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\enfiledialog.h
 # End Source File
 # Begin Source File
 
@@ -776,10 +799,6 @@ SOURCE=..\Shared\entoolbar.h
 # Begin Source File
 
 SOURCE=.\ExportDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\Shared\filedialogex.h
 # End Source File
 # Begin Source File
 
@@ -811,11 +830,11 @@ SOURCE=.\FindBlankPage.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\FindCategoryPage.h
+SOURCE=.\FindDatePage.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\FindDatePage.h
+SOURCE=.\FindItemsPage.h
 # End Source File
 # Begin Source File
 
@@ -899,6 +918,10 @@ SOURCE=..\Shared\ImportExportMgr.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\ImportExportUIHelper.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\3rdParty\Ini.h
 # End Source File
 # Begin Source File
@@ -935,7 +958,7 @@ SOURCE=..\Shared\MenuEx.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\3rdParty\MenuIconMgr.h
+SOURCE=..\Shared\MenuIconMgr.h
 # End Source File
 # Begin Source File
 
@@ -1043,6 +1066,10 @@ SOURCE=..\Shared\Regkey.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\3rdParty\RegUtil.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Resource.h
 # End Source File
 # Begin Source File
@@ -1072,6 +1099,10 @@ SOURCE=..\Shared\SpellCheckDlg.h
 # Begin Source File
 
 SOURCE=..\3rdParty\StatLink.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\3rdParty\StatusBarACT.h
 # End Source File
 # Begin Source File
 
@@ -1135,23 +1166,27 @@ SOURCE=.\tdcmsg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDColumnListBox.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\tdcstruct.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDImportExportMgr.h
+SOURCE=.\TDLColumnListBox.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TDLCategoryComboBox.h
+SOURCE=.\TDLColumnSelectionDlg.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\TDLContentMgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TDLImportExportMgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TDLPrefMigrationDlg.h
 # End Source File
 # Begin Source File
 

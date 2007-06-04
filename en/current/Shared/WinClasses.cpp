@@ -39,28 +39,24 @@ CMapStringToPtr CWinClasses::s_mapCtrlClasses;
 
 CString CWinClasses::GetClass(HWND hWnd)
 {
-	static char szWndClass[128] = "";
+	static CString sWndClass;
+	sWndClass.Empty(); // reset each time
 	
 	if (hWnd)
 	{
-		::GetClassName(hWnd, szWndClass, 127);
-		_strlwr(szWndClass);
-		
-		return CString(szWndClass);
+		::GetClassName(hWnd, sWndClass.GetBuffer(128), 128);
+
+		sWndClass.ReleaseBuffer();
+		sWndClass.MakeLower();
 	}
 	
-	return "";
+	return sWndClass;
 }
 
 BOOL CWinClasses::IsClass(HWND hWnd, LPCTSTR szClass)
 {
 	if (hWnd)
-	{
-		char szWndClass[128] = "";
-		
-		::GetClassName(hWnd, szWndClass, 127);
-		return IsClass(szClass, szWndClass);
-	}
+		return IsClass(szClass, GetClass(hWnd));
 	
 	return FALSE;
 }
@@ -133,7 +129,6 @@ BOOL CWinClasses::IsClassEx(LPCTSTR szClass, LPCTSTR szWndClass)
 CString CWinClasses::GetClassEx(HWND hWnd)
 {
 	CString sClass = GetClass(hWnd);
-	sClass.MakeLower();
 	
 	if (sClass.Find("afx") == 0) // its an mfc framework base or derived class
 	{

@@ -27,7 +27,7 @@ CString CPasswordDialog::s_sConfirmFailed(PASSWORD_CONFIRMFAILED);
 CString CPasswordDialog::s_sOK(BTN_OK);
 CString CPasswordDialog::s_sCancel(BTN_CANCEL);
 
-#define WM_POSTINITDIALOG (WM_USER+1)
+#define WM_POSTINITDIALOG (WM_APP+1)
 
 CPasswordDialog::CPasswordDialog(BOOL bConfirm, LPCTSTR szExplanation, CWnd* /*pParent*/)
 	: CRuntimeDlg(), m_bConfirm(bConfirm)

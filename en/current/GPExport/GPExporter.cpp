@@ -75,7 +75,7 @@ void CGPExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, CXm
 		time_t tDue = pSrcTaskFile->GetTaskDueDate(hTask);
 
 		if (tDue > tStart)
-			pXIDestItem->AddItem("duration", (tDue - tStart) / (24 * 60 * 60));
+			pXIDestItem->AddItem("duration", (int)((tDue - tStart) / (24 * 60 * 60)));
 	}
 
 	time_t tDone = pSrcTaskFile->GetTaskDoneDate(hTask);

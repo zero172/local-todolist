@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "todolist.h"
 #include "PreferencesTaskDefPage.h"
+#include "tdcenum.h"
 
 #include "..\shared\enstring.h"
 #include "..\shared\misc.h"
@@ -33,8 +34,8 @@ CPreferencesTaskDefPage::CPreferencesTaskDefPage() :
 	m_nSelAttribUse = -1;
 
 	// load settings
-	m_nDefPriority = AfxGetApp()->GetProfileInt("Preferences", "DefaultPriority", 5); 
-	m_nDefRisk = AfxGetApp()->GetProfileInt("Preferences", "DefaultRisk", 0); 
+	m_nDefPriority = AfxGetApp()->GetProfileInt("Preferences", "DefaultPriority", FT_NOPRIORITY); 
+	m_nDefRisk = AfxGetApp()->GetProfileInt("Preferences", "DefaultRisk", FT_NORISK); 
 	m_sDefAllocTo = AfxGetApp()->GetProfileString("Preferences", "DefaultAllocTo");
 	m_sDefAllocBy = AfxGetApp()->GetProfileString("Preferences", "DefaultAllocBy");
 	m_sDefStatus = AfxGetApp()->GetProfileString("Preferences", "DefaultStatus");
@@ -54,6 +55,8 @@ CPreferencesTaskDefPage::CPreferencesTaskDefPage() :
 	
 	m_eTimeEst.SetUnits(AfxGetApp()->GetProfileInt("Preferences", "DefaultTimeEstUnits", THU_HOURS));
 
+	m_dDefCost = Misc::Atof(AfxGetApp()->GetProfileString("Preferences", "DefaultCost", "0"));
+
 	// attrib use
 	m_aAttribPrefs.Add(ATTRIBPREF(IDS_TDLBC_PRIORITY, PTPA_PRIORITY, -1)); 
 	m_aAttribPrefs.Add(ATTRIBPREF(IDS_TDLBC_RISK, PTPA_RISK, -1)); 
@@ -71,8 +74,6 @@ CPreferencesTaskDefPage::CPreferencesTaskDefPage() :
 	{
 		CString sKey;
 		sKey.Format("Attrib%d", m_aAttribPrefs[nIndex].nAttrib);
-		
-//		PTP_ATTRIB nAttrib = m_aAttribPrefs[nIndex].nAttrib;
 		
 		m_aAttribPrefs[nIndex].bUse = AfxGetApp()->GetProfileInt("Preferences\\AttribUse", sKey, FALSE);
 	}
@@ -101,8 +102,8 @@ void CPreferencesTaskDefPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_DEFAULTCOST, m_eCost);
 	DDX_Control(pDX, IDC_SETDEFAULTCOLOR, m_btDefColor);
 	DDX_Control(pDX, IDC_DEFAULTATTRIBUTES, m_lbAttribUse);
-	DDX_CBIndex(pDX, IDC_DEFAULTPRIORITY, m_nDefPriority);
-	DDX_CBIndex(pDX, IDC_DEFAULTRISK, m_nDefRisk);
+	DDX_CBPriority(pDX, IDC_DEFAULTPRIORITY, m_nDefPriority);
+	DDX_CBRisk(pDX, IDC_DEFAULTRISK, m_nDefRisk);
 	DDX_Text(pDX, IDC_DEFAULTTIMEEST, m_dDefTimeEst);
 	DDX_Text(pDX, IDC_DEFAULTALLOCTO, m_sDefAllocTo);
 	DDX_LBIndex(pDX, IDC_DEFAULTATTRIBUTES, m_nSelAttribUse);
@@ -189,6 +190,10 @@ void CPreferencesTaskDefPage::OnOK()
 	sTimeEst.Format("%f", m_dDefTimeEst);
 	AfxGetApp()->WriteProfileString("Preferences", "DefaultTimeEstimate", sTimeEst);
 	AfxGetApp()->WriteProfileInt("Preferences", "DefaultTimeEstUnits", m_eTimeEst.GetUnits());
+
+	CString sCost;
+	sCost.Format("%f", m_dDefCost);
+	AfxGetApp()->WriteProfileString("Preferences", "DefaultCost", sCost);
 	
 	// attribute usage
 	int nIndex = m_aAttribPrefs.GetSize();
@@ -250,6 +255,11 @@ BOOL CPreferencesTaskDefPage::GetUseParentAttrib(PTP_ATTRIB nAttrib) const
 int CPreferencesTaskDefPage::GetDefaultCategories(CStringArray& aCats) const
 {
 	return Misc::ParseIntoArray(m_sDefCategory, aCats);
+}
+
+int CPreferencesTaskDefPage::GetDefaultAllocTo(CStringArray& aAllocTo) const
+{
+	return Misc::ParseIntoArray(m_sDefAllocTo, aAllocTo);
 }
 
 double CPreferencesTaskDefPage::GetDefaultTimeEst(int& nUnits) const 
