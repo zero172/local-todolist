@@ -1,0 +1,134 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "EncryptDecrypt"=..\EncryptDecrypt\EncryptDecrypt.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "GPExport"=..\GPExport\GPExport.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "MLOImport"=..\MLOImport\MLOImport.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "MySpellCheck"=..\MySpellCheck\MySpellCheck.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "PlainTextImport"=..\PlainTextImport\PlainTextImport.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "RTFContentCtrl"=..\RTFContentCtrl\RTFContentCtrl.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ToDoList"=.\ToDoList.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name EncryptDecrypt
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name GPExport
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name MySpellCheck
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name iCalImportExport
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name RTFContentCtrl
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name PlainTextImport
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name MLOImport
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "iCalImportExport"=..\iCalImportExport\iCalImportExport.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
