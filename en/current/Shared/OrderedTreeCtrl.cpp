@@ -82,6 +82,9 @@ void COrderedTreeCtrl::PreSubclassWindow()
 	m_gutter.AddRecalcMessage(TVM_EXPAND);
 	
 	m_gutter.AddRedrawMessage(WM_KEYUP); // only way to catch keyboard navigation (at present)
+	m_gutter.AddRedrawMessage(WM_SYSKEYUP); // only way to catch ALT+keyboard navigation (at present)
+	m_gutter.AddRedrawMessage(WM_KEYDOWN); // only way to catch keyboard navigation (at present)
+	m_gutter.AddRedrawMessage(WM_SYSKEYDOWN); // only way to catch ALT+keyboard navigation (at present)
 	m_gutter.AddRedrawMessage(TVM_SELECTITEM);
 	m_gutter.AddRedrawMessage(TVM_SORTCHILDREN);
 	m_gutter.AddRedrawMessage(TVM_SORTCHILDRENCB);

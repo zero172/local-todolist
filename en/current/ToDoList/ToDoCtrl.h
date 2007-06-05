@@ -125,7 +125,7 @@ public:
 	void SetDefaultStatusNames(const CStringArray& aNames);
 
 	HTREEITEM NewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere = TDC_INSERTATTOPOFSELTASKPARENT, 
-						BOOL bSelect = TRUE, BOOL bEditText = TRUE, BOOL bSort = FALSE);
+						BOOL bSelect = TRUE, BOOL bEditText = TRUE);
 
 	BOOL SplitSelectedTask(int nNumSubtasks = 2);
 	BOOL CanSplitSelectedTask();
@@ -296,6 +296,7 @@ public:
 	BOOL PtInHeader(CPoint ptScreen) const;
 
 	static void ParseTaskLink(LPCTSTR szLink, DWORD& dwTaskID, CString& sFile);
+	static BOOL IsReservedShortcut(DWORD dwShortcut);
 
 protected:
 	CDateTimeCtrl m_dateStart, m_dateDue, m_dateDone;
@@ -537,7 +538,7 @@ protected:
 
 	HTREEITEM AddItem(const CTaskFile& file, HTASKITEM hTask, HTREEITEM htiParent = NULL, HTREEITEM htiAfter = TVI_LAST, TDC_RESETIDS nResetID = TDCR_NO);
 	BOOL AddToItem(const CTaskFile& tasks, HTREEITEM htiDest, HTREEITEM htiDestAfter, TDC_RESETIDS nResetID);
-	HTREEITEM InsertItem(LPCTSTR szText, HTREEITEM htiParent, HTREEITEM htiAfter, BOOL bSelect, BOOL bEdit, BOOL bSort);
+	HTREEITEM InsertItem(LPCTSTR szText, HTREEITEM htiParent, HTREEITEM htiAfter, BOOL bSelect, BOOL bEdit/*, BOOL bSort*/);
 
 	BOOL Load(const CTaskFile& file, LPCTSTR szArchivePath = NULL, 
 				TDC_ARCHIVE nRemove = TDC_REMOVEALL, BOOL bRemoveFlagged = TRUE);

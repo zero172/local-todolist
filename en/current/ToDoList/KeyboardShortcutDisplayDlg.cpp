@@ -59,8 +59,8 @@ BOOL CKeyboardShortcutDisplayDlg::OnInitDialog()
 	CRect rList;
 	m_lcShortcuts.GetClientRect(rList);
 
-	m_lcShortcuts.InsertColumn(0, "", LVCFMT_LEFT, 100);
-	m_lcShortcuts.InsertColumn(1, "", LVCFMT_LEFT, rList.Width() - 100 - GetSystemMetrics(SM_CXVSCROLL));
+	m_lcShortcuts.InsertColumn(0, "", LVCFMT_LEFT, 130);
+	m_lcShortcuts.InsertColumn(1, "", LVCFMT_LEFT, rList.Width() - 130 - GetSystemMetrics(SM_CXVSCROLL));
 
 	for (int nItem = 0; nItem < m_aMapping.GetSize(); nItem++)
 	{

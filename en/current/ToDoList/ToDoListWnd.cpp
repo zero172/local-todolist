@@ -103,6 +103,34 @@ enum
 		INTERVAL_TIMETRACKING = 5000,
 };
 
+struct SHORTCUT
+{
+	DWORD dwShortcut;
+	UINT nIDShortcut;
+};
+
+static SHORTCUT MISC_SHORTCUTS[] = 
+{
+	{ MAKELONG('B', HOTKEYF_ALT | HOTKEYF_EXT), IDS_SETFOCUS2TASLIST },
+	{ 0, 0 },	
+	{ MAKELONG(VK_UP, HOTKEYF_CONTROL | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_DOWN, HOTKEYF_CONTROL | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_PRIOR, HOTKEYF_CONTROL | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_NEXT, HOTKEYF_CONTROL | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ 0, 0 },	
+	{ MAKELONG(VK_UP, HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_DOWN, HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_PRIOR, HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_NEXT, HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ 0, 0 },	
+	{ MAKELONG(VK_UP, HOTKEYF_CONTROL | HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_DOWN, HOTKEYF_CONTROL | HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_PRIOR, HOTKEYF_CONTROL | HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION },
+	{ MAKELONG(VK_NEXT, HOTKEYF_CONTROL | HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION }
+};
+
+static UINT NUM_MISCSHORTCUTS = sizeof(MISC_SHORTCUTS) / sizeof(SHORTCUT);
+
 /////////////////////////////////////////////////////////////////////////////
 
 CToDoListWnd::CToDoListWnd() : CFrameWnd(), 
@@ -705,8 +733,16 @@ void CToDoListWnd::OnShowKeyboardshortcuts()
 		// add a few misc items that don't appear in the menus
 		CString sMisc;
 
-		sMisc.Format("%s|%s", m_mgrShortcuts.GetShortcutText(MAKELONG('B', HOTKEYF_ALT)), CEnString(IDS_SETFOCUS2TASLIST));
-		aMapping.Add(sMisc);
+		for (int nItem = 0; nItem < NUM_MISCSHORTCUTS; nItem++)
+		{
+			if (MISC_SHORTCUTS[nItem].dwShortcut)
+				sMisc.Format("%s|%s", m_mgrShortcuts.GetShortcutText(MISC_SHORTCUTS[nItem].dwShortcut), 
+									CEnString(MISC_SHORTCUTS[nItem].nIDShortcut));
+			else
+				sMisc.Empty();
+
+			aMapping.Add(sMisc);
+		}
 	
 		CKeyboardShortcutDisplayDlg dialog(aMapping, '|');
 
@@ -779,11 +815,26 @@ BOOL CToDoListWnd::PreTranslateMessage(MSG* pMsg)
 	if (ProcessDialogControlShortcut(pMsg))
 		return TRUE;
 	
-	// try active task list
+	// process for app level shortcuts first so we can handle
+	// reserved shortcuts
+	DWORD dwShortcut = 0;
+	UINT nCmdID = m_mgrShortcuts.ProcessMessage(pMsg, &dwShortcut);
+	
+	// if it's a reserved shortcut let's notify the user to change it
+	if (CToDoCtrl::IsReservedShortcut(dwShortcut))
+	{
+		int nRet = MessageBox(IDS_RESERVEDSHORTCUT_MSG, IDS_RESERVEDSHORTCUT_TITLE, MB_YESNO);
+
+		if (nRet == IDYES)
+			DoPreferences(PREFPAGE_SHORTCUT);
+
+		// and keep eating it until the user changes it
+		return TRUE;
+	}
+
+	// now try active task list
 	if (GetTDCCount() && GetToDoCtrl().PreTranslateMessage(pMsg))
 		return TRUE;
-	
-	UINT nCmdID = m_mgrShortcuts.ProcessMessage(pMsg);
 	
 	if (nCmdID)
 	{
@@ -2921,7 +2972,7 @@ void CToDoListWnd::EnsureVisible()
 
 void CToDoListWnd::OnAbout() 
 {
-	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2</b>",
+	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.1</b>",
 		CEnString(IDS_ABOUTHEADING), CEnString(IDS_ABOUTCOPYRIGHT), 1, 2, 8);
 	
 	dialog.DoModal();

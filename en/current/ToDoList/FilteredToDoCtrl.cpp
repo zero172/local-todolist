@@ -385,8 +385,8 @@ BOOL CFilteredToDoCtrl::MatchRisk(const CTaskFile& tasks, HTASKITEM ht) const
 			return FALSE;
 		
 		// match exactly on 'none'
-		else if (m_filter.nPriority == FT_NORISK)
-			return (tasks.GetTaskPriority(ht, FALSE) == FT_NORISK);
+		else if (m_filter.nRisk == FT_NORISK)
+			return (tasks.GetTaskRisk(ht, FALSE) == FT_NORISK);
 		else
 			return (m_filter.nRisk <= tasks.GetTaskRisk(ht, FALSE));
 	}
@@ -637,9 +637,9 @@ TODOITEM* CFilteredToDoCtrl::NewTask()
 }
 
 HTREEITEM CFilteredToDoCtrl::NewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere, 
-									BOOL bSelect, BOOL bEditText, BOOL bSort)
+									BOOL bSelect, BOOL bEditText)
 {
-	return CToDoCtrl::NewTask(szText, nWhere, bSelect, bEditText, bSort);
+	return CToDoCtrl::NewTask(szText, nWhere, bSelect, bEditText);
 }
 
 void CFilteredToDoCtrl::SetModified(BOOL bMod, TDC_ATTRIBUTE nAttrib)

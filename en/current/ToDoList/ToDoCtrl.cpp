@@ -3243,7 +3243,7 @@ BOOL CToDoCtrl::GotoSelectedTaskFileRef()
 }
 
 HTREEITEM CToDoCtrl::NewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere, BOOL bSelect, 
-							 BOOL bEditText, BOOL bSort)
+							 BOOL bEditText)
 {
 	if (IsReadOnly())
 		return NULL;
@@ -3285,7 +3285,7 @@ HTREEITEM CToDoCtrl::NewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere, BOOL bSelec
 			break;
 		}
 	}
-	else // detrmine the actual pos to insert
+	else // determine the actual pos to insert
 	{
 		switch (nWhere)
 		{
@@ -3337,7 +3337,7 @@ HTREEITEM CToDoCtrl::NewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere, BOOL bSelec
 		}
 	}
 		
-	return InsertItem(szText, htiParent, htiAfter, bSelect, bEditText, bSort);
+	return InsertItem(szText, htiParent, htiAfter, bSelect, bEditText);
 }
 
 TODOITEM* CToDoCtrl::NewTask()
@@ -3346,7 +3346,7 @@ TODOITEM* CToDoCtrl::NewTask()
 }
 
 HTREEITEM CToDoCtrl::InsertItem(LPCTSTR szText, HTREEITEM htiParent, HTREEITEM htiAfter, 
-								BOOL bSelect, BOOL bEdit, BOOL bSort)
+								BOOL bSelect, BOOL bEdit)
 {
 	m_htiLastAdded = NULL;
 	
@@ -3409,10 +3409,11 @@ HTREEITEM CToDoCtrl::InsertItem(LPCTSTR szText, HTREEITEM htiParent, HTREEITEM h
 		}
 		
 		m_dwNextUniqueID++;
-		SetModified(TRUE, TDCA_NONE);
+		SetModified(TRUE, TDCA_NONE); 
 		
-		// resort if necessary
-		if (bSort && IsSortable())
+		// resort if necessary because TDCA_NONE in the call to SetModified 
+		// will not cause a resort
+		if (HasStyle(TDCS_RESORTONMODIFY) && IsSortable())
 			m_data.Sort(m_nSortBy, m_bSortAscending, htiParent);
 
 		m_tree.SelectItem(htiNew);
@@ -4218,7 +4219,7 @@ TDC_FILE CToDoCtrl::Save(CTaskFile& tasks/*out*/, LPCTSTR szFilePath, BOOL bChec
 			CTaskFile temp;
 			CXmlParseController xpc(TDL_FILEVERSION);
 			
-			if (temp.Load(szFilePath/*, NULL*/, &xpc, FALSE)) // FALSE => don't decrypt
+			if (temp.Load(szFilePath, &xpc, FALSE)) // FALSE => don't decrypt
 			{
 				if (temp.GetFileVersion() > m_nFileVersion)
 				{
@@ -5498,6 +5499,8 @@ void CToDoCtrl::Sort(TDC_SORTBY nBy)
 {
 	if (nBy == TDC_SORTDISABLED || nBy == TDC_SORTUNDEF)
 	{
+		TDC_SORTBY nPrevSortBy = m_nSortBy;
+
 		m_tree.SetGutterColumnSort(0, NCGSORT_NONE);
 		m_nSortBy = nBy;
 
@@ -5505,7 +5508,10 @@ void CToDoCtrl::Sort(TDC_SORTBY nBy)
 		UpdateColumnHeaderClicking();
 
 		// mark as modified so that current 'POS' gets saved
-		SetModified();
+		// if the sort has actually changed
+		if (nPrevSortBy != nBy)
+			SetModified();
+
 		return;
 	}
 
@@ -5586,6 +5592,39 @@ LRESULT CToDoCtrl::OnTreeDragDrop(WPARAM /*wParam*/, LPARAM /*lParam*/)
 	}
 	
 	return nRes;
+}
+
+BOOL CToDoCtrl::IsReservedShortcut(DWORD dwShortcut)
+{
+	// check this is not a reserved shortcut used by the tree or a.n.other ctrl
+	switch (dwShortcut)
+	{
+	case MAKELONG(VK_UP, HOTKEYF_EXT):
+	case MAKELONG(VK_PRIOR, HOTKEYF_EXT):
+	case MAKELONG(VK_DOWN, HOTKEYF_EXT):
+	case MAKELONG(VK_NEXT, HOTKEYF_EXT):
+
+	case MAKELONG(VK_UP, HOTKEYF_CONTROL | HOTKEYF_EXT):
+	case MAKELONG(VK_PRIOR, HOTKEYF_CONTROL | HOTKEYF_EXT):
+	case MAKELONG(VK_DOWN, HOTKEYF_CONTROL | HOTKEYF_EXT):
+	case MAKELONG(VK_NEXT, HOTKEYF_CONTROL | HOTKEYF_EXT):
+
+	case MAKELONG(VK_UP, HOTKEYF_SHIFT | HOTKEYF_EXT):
+	case MAKELONG(VK_PRIOR, HOTKEYF_SHIFT | HOTKEYF_EXT):
+	case MAKELONG(VK_DOWN, HOTKEYF_SHIFT | HOTKEYF_EXT):
+	case MAKELONG(VK_NEXT, HOTKEYF_SHIFT | HOTKEYF_EXT):
+
+	case MAKELONG(VK_UP, HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_EXT):
+	case MAKELONG(VK_PRIOR, HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_EXT):
+	case MAKELONG(VK_DOWN, HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_EXT):
+	case MAKELONG(VK_NEXT, HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_EXT):
+
+	case MAKELONG(VK_DELETE, HOTKEYF_CONTROL | HOTKEYF_EXT):
+		return TRUE;
+	}
+
+	// all else
+	return FALSE;
 }
 
 BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg) 
@@ -5673,9 +5712,9 @@ BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg)
 						HTREEITEM htiNext = NULL;
 						
 						if (pMsg->wParam == VK_NEXT)
-							tch.GetNextPageVisibleItem(hti);
+							htiNext = tch.GetNextPageVisibleItem(hti);
 						else
-							tch.GetNextVisibleItem(hti);
+							htiNext = tch.GetNextVisibleItem(hti);
 						
 						if (htiNext)
 						{

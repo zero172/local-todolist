@@ -4,11 +4,13 @@
 #include "stdafx.h"
 #include "todolist.h"
 #include "PreferencesShortcutsPage.h"
+#include "todoctrl.h"
 
 #include "..\shared\winclasses.h"
 #include "..\shared\wclassdefines.h"
 #include "..\shared\enstring.h"
 #include "..\shared\holdredraw.h"
+#include "..\shared\treectrlhelper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -185,11 +187,20 @@ void CPreferencesShortcutsPage::OnSelchangedShortcuts(NMHDR* pNMHDR, LRESULT* pR
 	BOOL bCanHaveShortcut = !m_tcCommands.ItemHasChildren(pNMTreeView->itemNew.hItem);
 
 	m_hkNew.EnableWindow(bCanHaveShortcut);
-	GetDlgItem(IDC_ASSIGNSHORTCUT)->EnableWindow(bCanHaveShortcut);
 	GetDlgItem(IDC_CURLABEL)->EnableWindow(bCanHaveShortcut);
 	GetDlgItem(IDC_NEWLABEL)->EnableWindow(bCanHaveShortcut);
 
-	m_sOtherCmdID.Empty();
+	// test for reserved shortcut
+	// and disable assign button as feedback
+	if (bCanHaveShortcut && CToDoCtrl::IsReservedShortcut(dwShortcut))
+	{
+		bCanHaveShortcut = FALSE;
+		m_sOtherCmdID.LoadString(IDS_PSP_RESERVED);
+	}
+	else
+		m_sOtherCmdID.Empty();
+
+	GetDlgItem(IDC_ASSIGNSHORTCUT)->EnableWindow(bCanHaveShortcut);
 	UpdateData(FALSE);
 	
 	*pResult = 0;
@@ -269,6 +280,8 @@ void CPreferencesShortcutsPage::OnAssignshortcut()
 		m_tcCommands.RecalcGutter();
 		m_tcCommands.RedrawGutter();
 
+		CTreeCtrlHelper(m_tcCommands).InvalidateItem(htiSel);
+
 		UpdateData(FALSE);
 	}
 }
@@ -281,10 +294,10 @@ void CPreferencesShortcutsPage::OnChangeShortcut()
 		return;
 
 	UINT nCmdID = m_tcCommands.GetItemData(htiSel);
-	
+
 	WORD wVKeyCode = 0, wModifiers = 0;
 	m_hkNew.GetHotKey(wVKeyCode, wModifiers);
-	
+
 	// validate modifiers but only if a 'main' key has been pressed
 	if (wVKeyCode)
 	{
@@ -298,16 +311,25 @@ void CPreferencesShortcutsPage::OnChangeShortcut()
 	}
 
 	DWORD dwShortcut = MAKELONG(wVKeyCode, wModifiers);
-	
+
 	// if anyone has this shortcut we show who it is
+	BOOL bReserved = FALSE;
 	HTREEITEM htiOther = NULL;
+
 	m_mapShortcut2HTI.Lookup(dwShortcut, htiOther);
-	
+
 	if (htiOther && m_tcCommands.GetItemData(htiOther) != nCmdID)
 		m_sOtherCmdID.Format(IDS_PSP_CURRENTLYASSIGNED, m_tcCommands.GetItemText(htiOther));
+
+	else if (CToDoCtrl::IsReservedShortcut(dwShortcut))
+	{
+		m_sOtherCmdID.LoadString(IDS_PSP_RESERVED);
+		bReserved = TRUE;
+	}
 	else
 		m_sOtherCmdID.Empty();
 
+	GetDlgItem(IDC_ASSIGNSHORTCUT)->EnableWindow(!bReserved);
 	UpdateData(FALSE);
 }
 
@@ -330,7 +352,7 @@ LRESULT CPreferencesShortcutsPage::OnGutterDrawItem(WPARAM /*wParam*/, LPARAM lP
 			BOOL bSelected = pNCGDI->bSelected;
 			BOOL bFocused = CTreeCtrlHelper(m_tcCommands).HasFocus();
 			COLORREF crTextColor = GetSysColor((bSelected && bFocused) ? COLOR_HIGHLIGHTTEXT : COLOR_WINDOWTEXT);
-			
+
 			// bkcolor
 			if (bSelected)
 			{
@@ -348,10 +370,19 @@ LRESULT CPreferencesShortcutsPage::OnGutterDrawItem(WPARAM /*wParam*/, LPARAM lP
 			if (dwShortcut)
 			{
 				rItem.left += 3;
-				
-				pNCGDI->pDC->SetTextColor(crTextColor);
+
+				// test for reserved shortcut and mark in red
+				if (CToDoCtrl::IsReservedShortcut(dwShortcut))
+					pNCGDI->pDC->SetTextColor(255);
+				else
+					pNCGDI->pDC->SetTextColor(crTextColor);
+
 				pNCGDI->pDC->SetBkMode(TRANSPARENT);
-				pNCGDI->pDC->DrawText(m_pShortcutMgr->GetShortcutText(dwShortcut), rItem, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
+
+				CString sText = m_pShortcutMgr->GetShortcutText(dwShortcut);
+
+				if (!sText.IsEmpty())
+					pNCGDI->pDC->DrawText(sText, rItem, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
 
 				rItem.left -= 3;
 			}
@@ -463,6 +494,17 @@ void CPreferencesShortcutsPage::OnTreeCustomDraw(NMHDR* pNMHDR, LRESULT* pResult
 
 			*pResult |= CDRF_DODEFAULT;
 		}
+		else // test for reserved shortcut
+		{
+			DWORD dwShortcut = 0;
+			m_mapID2Shortcut.Lookup(pTVCD->nmcd.lItemlParam, dwShortcut);
+
+			if (CToDoCtrl::IsReservedShortcut(dwShortcut))
+			{
+				pTVCD->clrText = 255;
+				*pResult |= CDRF_DODEFAULT;
+			}
+		}
 	}
 	else if (pNMCD->dwDrawStage == CDDS_ITEMPOSTPAINT)
 	{
@@ -542,7 +584,6 @@ BOOL CPreferencesShortcutsPage::PreTranslateMessage(MSG* pMsg)
 		}
 		break;
 	}
-
 	
 	return CPropertyPage::PreTranslateMessage(pMsg);
 }

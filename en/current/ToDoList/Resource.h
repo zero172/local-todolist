@@ -1153,6 +1153,10 @@
 #define IDS_OPENSHARINGVIOLATION        58056
 #define IDS_SAVESHARINGVIOLATION        58057
 #define IDS_BACKUPFILEFOUND             58058
+#define IDS_PSP_RESERVED                58059
+#define IDS_RESERVEDSHORTCUT_TITLE      58060
+#define IDS_RESERVEDSHORTCUT_MSG        58061
+#define IDS_TASKLISTEXTENDEDSELECTION   58062
 
 // Next default values for new objects
 // 

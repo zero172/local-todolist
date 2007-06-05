@@ -13,7 +13,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const COLORREF NO_COLOR = NO_COLOR;
+const COLORREF NO_COLOR = (COLORREF)-1;
 
 /////////////////////////////////////////////////////////////////////////////
 // CEnToolBar
@@ -31,7 +31,7 @@ BEGIN_MESSAGE_MAP(CEnToolBar, CToolBar)
 	//{{AFX_MSG_MAP(CEnToolBar)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
-ON_NOTIFY_REFLECT_EX(NM_CUSTOMDRAW, OnCustomDraw)
+ON_NOTIFY_REFLECT(NM_CUSTOMDRAW, OnCustomDraw)
 ON_WM_SETTINGCHANGE()
 END_MESSAGE_MAP()
 

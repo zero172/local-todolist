@@ -24,18 +24,6 @@ enum
 	VK_Z = 0x5A,
 };
 
-// edit shortcuts
-DWORD EDIT_SHRTCUTS[] = 
-{
-	MAKELONG('C', HOTKEYF_CONTROL), // copy
-	MAKELONG('V', HOTKEYF_CONTROL), // paste
-	MAKELONG('X', HOTKEYF_CONTROL), // cut
-	MAKELONG('Z', HOTKEYF_CONTROL), // undo
-	MAKELONG('\t', HOTKEYF_CONTROL), // tab
-	MAKELONG(VK_LEFT, HOTKEYF_CONTROL | HOTKEYF_EXT), // left one word
-	MAKELONG(VK_RIGHT, HOTKEYF_CONTROL | HOTKEYF_EXT), // right one word
-};
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -193,7 +181,7 @@ DWORD CShortcutManager::GetShortcut(WORD wVirtKeyCode, BOOL bExtended) const
 	return MAKELONG(wVirtKeyCode, wModifiers);
 }
 
-UINT CShortcutManager::ProcessMessage(MSG* pMsg) const
+UINT CShortcutManager::ProcessMessage(const MSG* pMsg, DWORD* pShortcut) const
 {
 	// only process accelerators if we are enabled and visible
 	if (!IsWindowEnabled() || !IsWindowVisible())
@@ -252,20 +240,11 @@ UINT CShortcutManager::ProcessMessage(MSG* pMsg) const
 			// and the shortcut clashes
 			if (m_wInvalidComb & HKCOMB_EDITCTRLS)
 			{
-				CString sClass = CWinClasses::GetClass(pMsg->hwnd);
-				
-				if (CWinClasses::IsClass(sClass, WC_EDIT) ||
-					CWinClasses::IsClass(sClass, WC_RICHEDIT) ||
-					CWinClasses::IsClass(sClass, WC_RICHEDIT20))
+				if (CWinClasses::IsEditControl(pMsg->hwnd))
 				{
 					// 1. check does not clash with edit shortcuts
-					int nShortcut = sizeof (EDIT_SHRTCUTS) / sizeof(DWORD);
-					
-					while (nShortcut--)
-					{
-						if (dwShortcut == EDIT_SHRTCUTS[nShortcut])
-							return FALSE;
-					}
+					if (IsEditShortcut(dwShortcut))
+						return FALSE;
 					
 					//WORD wVirtKeyCode = LOWORD(dwShortcut);
 					WORD wModifiers = HIWORD(dwShortcut);
@@ -284,11 +263,33 @@ UINT CShortcutManager::ProcessMessage(MSG* pMsg) const
 			// return command ID
 			if (m_bAutoSendCmds)
 				SendMessage(WM_COMMAND, nCmdID);
+
+			if (pShortcut)
+				*pShortcut = dwShortcut;
 			
 			return nCmdID;
 		}
 	}
 	
+	return FALSE;
+}
+
+BOOL CShortcutManager::IsEditShortcut(DWORD dwShortcut)
+{
+	switch (dwShortcut)
+	{
+	case MAKELONG('C', HOTKEYF_CONTROL): // copy
+	case MAKELONG('V', HOTKEYF_CONTROL): // paste
+	case MAKELONG('X', HOTKEYF_CONTROL): // cut
+	case MAKELONG('Z', HOTKEYF_CONTROL): // undo
+	case MAKELONG('\t', HOTKEYF_CONTROL): // tab
+	case MAKELONG(VK_LEFT, HOTKEYF_CONTROL | HOTKEYF_EXT): // left one word
+	case MAKELONG(VK_RIGHT, HOTKEYF_CONTROL | HOTKEYF_EXT): // right one word
+	case MAKELONG(VK_DELETE, 0):
+		return TRUE;
+	}
+
+	// all else
 	return FALSE;
 }
 

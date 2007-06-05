@@ -28,7 +28,7 @@ public:
 	BOOL DeleteSelectedTask() { return CToDoCtrl::DeleteSelectedTask(); }
 
 	HTREEITEM NewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere = TDC_INSERTATTOPOFSELTASKPARENT, 
-					BOOL bSelect = TRUE, BOOL bEditText = TRUE, BOOL bSort = FALSE);
+					BOOL bSelect = TRUE, BOOL bEditText = TRUE);
 
 	void SetModified(BOOL bMod = TRUE) { CToDoCtrl::SetModified(bMod); }
 	BOOL IsTaskDone(DWORD dwTaskID) const;

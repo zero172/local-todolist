@@ -35,7 +35,7 @@ IDR_MANIFEST            24      DISCARDABLE     "res\\todolist.exe.manifest"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,2,0,0
+ FILEVERSION 5,2,1,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -54,7 +54,7 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 2, 0, 0\0"
+            VALUE "FileVersion", "5, 2, 1, 0\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-07\0"
             VALUE "LegalTrademarks", "\0"
@@ -1074,16 +1074,16 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,18,117,10
 END
 
-IDD_KEYBOARDSHORTCUTDISPLAYDIALOG DIALOG DISCARDABLE  0, 0, 277, 227
+IDD_KEYBOARDSHORTCUTDISPLAYDIALOG DIALOG DISCARDABLE  0, 0, 323, 227
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Active Keyboard Shortcuts"
 FONT 8, "Tahoma"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,221,206,50,14
+    DEFPUSHBUTTON   "OK",IDOK,266,206,50,14
     CONTROL         "List1",IDC_SHORTCUTS,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | 
-                    WS_BORDER | WS_TABSTOP,7,7,263,192
-    PUSHBUTTON      "Copy All",IDC_COPYSHORTCUTS,165,206,50,14
+                    WS_BORDER | WS_TABSTOP,7,7,309,192
+    PUSHBUTTON      "Copy All",IDC_COPYSHORTCUTS,210,206,50,14
 END
 
 IDD_REC_TASK_DAILY_PAGE DIALOG DISCARDABLE  0, 0, 186, 27
@@ -1716,7 +1716,7 @@ BEGIN
     IDD_KEYBOARDSHORTCUTDISPLAYDIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 270
+        RIGHTMARGIN, 316
         TOPMARGIN, 7
         BOTTOMMARGIN, 220
     END
@@ -3187,6 +3187,11 @@ BEGIN
     IDS_SAVESHARINGVIOLATION 
                             "'%s' could not be saved because another user is\ncurrently accessing the file.\n\nPlease try again in a moment."
     IDS_BACKUPFILEFOUND     "ToDoList has detected a backed up version of the file '%s', \nwhich indicates that there was previously a problem saving the tasklist.\n\nWould you like to restore the backup?"
+    IDS_PSP_RESERVED        "This shortcut is reserved. Please choose an alternative."
+    IDS_RESERVEDSHORTCUT_TITLE "Reserved Keyboard Shortcut"
+    IDS_RESERVEDSHORTCUT_MSG 
+                            "The keyboard shortcut you have just used is now reserved for use by ToDoList.\n\nWould you like to change it to something else?"
+    IDS_TASKLISTEXTENDEDSELECTION "Tasklist extended selection"
 END
 
 #endif    // English (Australia) resources
