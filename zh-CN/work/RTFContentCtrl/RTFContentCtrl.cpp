@@ -81,7 +81,7 @@ bool CRTFContentCtrlApp::GetTypeID(GUID& id)
 
 const char* CRTFContentCtrlApp::GetTypeDescription()
 {
-	return _T("Rich Text");
+	return _T("带格式文本");
 }
 
 IContentControl* CRTFContentCtrlApp::CreateCtrl(unsigned short nCtrlID, unsigned long nStyle, 
