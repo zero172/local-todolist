@@ -47,7 +47,7 @@ static TDCCONTROL TDCCONTROLS[] =
 {
 	{ WC_STATIC,	IDS_TDC_FIELD_PROJECT, 0, 0, 0,3,28,8, IDC_PROJECTLABEL },
 	{ WC_EDIT,		0, ES_AUTOHSCROLL | WS_TABSTOP, 0, 28,1,142,13, IDC_PROJECTNAME },
-	{ WC_STATIC,	IDS_TDC_FIELD_TASKLIST, WS_NOTVISIBLE, 0, 0,0,0,0, (UINT)IDC_STATIC },
+	{ WC_STATIC,	IDS_TDC_FIELD_TASKLIST, /*WS_NOTVISIBLE*/0, 0, 0,0,0,0, (UINT)IDC_STATIC },
 	{ WC_TREEVIEW,	0, TVS_EDITLABELS | WS_TABSTOP | TVS_SHOWSELALWAYS | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS, 0, 0,16,190,108, IDC_TASKLIST },
 	{ WC_STATIC,	IDS_TDC_FIELD_PRIORITY, SS_CENTERIMAGE, 0, 119,131,22,8, IDC_PRIORITYLABEL },
 	{ WC_COMBOBOX,	0, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS, 0, 159,128,65,300, IDC_PRIORITY },
@@ -1071,6 +1071,8 @@ void CToDoCtrl::OnTreeSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	LPNMTREEVIEW pNMTV = (LPNMTREEVIEW)pNMHDR;
 	HTREEITEM hti = pNMTV->itemNew.hItem;
 	
+	*pResult = 0;
+	
 	BOOL bCtrl = (GetKeyState(VK_CONTROL) & 0x8000);
 	BOOL bShift = (GetKeyState(VK_SHIFT) & 0x8000);
 	
@@ -1114,11 +1116,21 @@ void CToDoCtrl::OnTreeSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 		
 		m_wKeyPress = 0;
 	}
+	// handle user clicking in the tree but not on an item
+	// just set the focus back to the tree and do not update anything
+	else if (hti == NULL)
+	{
+		hti = GetSelectedItem();
+		ASSERT (hti);
+
+		if (hti)
+			m_tree.SetItemState(hti, TVIS_SELECTED, TVIS_SELECTED);
+
+		return;
+	}
 	
 	UpdateControls(hti); // load newly selected item
 	UpdateSelectedTaskPath();
-	
-	*pResult = 0;
 }
 
 void CToDoCtrl::UpdateSelectedTaskPath()
@@ -5619,6 +5631,7 @@ BOOL CToDoCtrl::IsReservedShortcut(DWORD dwShortcut)
 	case MAKELONG(VK_DOWN, HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_EXT):
 	case MAKELONG(VK_NEXT, HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_EXT):
 
+	case MAKELONG(VK_SPACE, HOTKEYF_CONTROL):
 	case MAKELONG(VK_DELETE, HOTKEYF_CONTROL | HOTKEYF_EXT):
 		return TRUE;
 	}
@@ -5629,6 +5642,11 @@ BOOL CToDoCtrl::IsReservedShortcut(DWORD dwShortcut)
 
 BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg) 
 {
+	if (pMsg->message == WM_SYSKEYDOWN && pMsg->wParam == 'B')
+	{
+		int a = 5;
+	}
+
 	// handle plain 'TAB' key when the comments field has the focus
 	// because certain types of windows will eat it
 	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_TAB &&
@@ -5698,77 +5716,81 @@ BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg)
 				// <ctrl>+<shift>+cursor here
 				BOOL bCtrl = (GetKeyState(VK_CONTROL) & 0x8000);
 				BOOL bShift = (GetKeyState(VK_SHIFT) & 0x8000);
-				
-				// get the real currently selected item
-				HTREEITEM hti = m_tree.GetSelectedItem();
-				CTreeCtrlHelper tch(m_tree);
-				
-				switch (pMsg->wParam)
+				BOOL bAlt = (GetKeyState(VK_MENU) & 0x8000);
+
+				if (!bAlt)
 				{
-				case VK_NEXT:  
-				case VK_DOWN:
-					if (bCtrl)
-					{
-						HTREEITEM htiNext = NULL;
-						
-						if (pMsg->wParam == VK_NEXT)
-							htiNext = tch.GetNextPageVisibleItem(hti);
-						else
-							htiNext = tch.GetNextVisibleItem(hti);
-						
-						if (htiNext)
-						{
-							m_tree.SelectItem(htiNext);
-							
-							// toggle items if shift is also down, but not the one 
-							// we're just moving on to
-							if (bShift)
-							{
-								HTREEITEM htiPrev = tch.GetPrevVisibleItem(htiNext, FALSE);
-								MultiSelectItems(htiPrev, hti, -1);
-							}
-						}
-						
-						return TRUE;
-					}
-					break;
+					// get the real currently selected item
+					HTREEITEM hti = m_tree.GetSelectedItem();
+					CTreeCtrlHelper tch(m_tree);
 					
-				case VK_UP:
-				case VK_PRIOR: 
-					if (bCtrl)
+					switch (pMsg->wParam)
 					{
-						HTREEITEM htiPrev = NULL;
-						
-						if (pMsg->wParam == VK_PRIOR)
-							tch.GetPrevPageVisibleItem(hti);
-						else
-							tch.GetPrevVisibleItem(hti);
-						
-						if (htiPrev)
+					case VK_NEXT:  
+					case VK_DOWN:
+						if (bCtrl)
 						{
-							m_tree.SelectItem(htiPrev);
+							HTREEITEM htiNext = NULL;
 							
-							// toggle items if shift is also down, but not the one 
-							// we're just moving on to
-							if (bShift)
+							if (pMsg->wParam == VK_NEXT)
+								htiNext = tch.GetNextPageVisibleItem(hti);
+							else
+								htiNext = tch.GetNextVisibleItem(hti);
+							
+							if (htiNext)
 							{
-								HTREEITEM htiNext = tch.GetNextVisibleItem(htiPrev, FALSE);
-								MultiSelectItems(htiNext, hti, -1);
+								m_tree.SelectItem(htiNext);
+								
+								// toggle items if shift is also down, but not the one 
+								// we're just moving on to
+								if (bShift)
+								{
+									HTREEITEM htiPrev = tch.GetPrevVisibleItem(htiNext, FALSE);
+									MultiSelectItems(htiPrev, hti, -1);
+								}
 							}
+							
+							return TRUE;
 						}
+						break;
 						
-						return TRUE;
+					case VK_UP:
+					case VK_PRIOR: 
+						if (bCtrl)
+						{
+							HTREEITEM htiPrev = NULL;
+							
+							if (pMsg->wParam == VK_PRIOR)
+								tch.GetPrevPageVisibleItem(hti);
+							else
+								tch.GetPrevVisibleItem(hti);
+							
+							if (htiPrev)
+							{
+								m_tree.SelectItem(htiPrev);
+								
+								// toggle items if shift is also down, but not the one 
+								// we're just moving on to
+								if (bShift)
+								{
+									HTREEITEM htiNext = tch.GetNextVisibleItem(htiPrev, FALSE);
+									MultiSelectItems(htiNext, hti, -1);
+								}
+							}
+							
+							return TRUE;
+						}
+						break;
+						
+					case VK_SPACE:
+						if (bCtrl && !bShift)
+						{
+							// toggle real selected item state
+							MultiSelectItem(hti, -1);
+							return TRUE;
+						}
+						break;
 					}
-					break;
-					
-				case VK_SPACE:
-					if (bCtrl)
-					{
-						// toggle real selected item state
-						MultiSelectItem(hti, -1);
-						return TRUE;
-					}
-					break;
 				}
 				
 				// see if the tree wants it
@@ -5833,7 +5855,8 @@ BOOL CToDoCtrl::MoveSelectedTask(TDDH_MOVE nDirection)
 	Flush();
 
 	{
-		CHoldRedraw hr(*this);
+		// prevent redrawing on the tree as this also prevents gutter updates
+		CHoldRedraw hr(m_tree);
 
 		m_treeDragDrop.MoveSelection(nDirection);
 	}
@@ -6191,7 +6214,9 @@ LRESULT CToDoCtrl::OnGutterDrawItem(WPARAM /*wParam*/, LPARAM lParam)
 				if (font.GetSafeHandle())
 				{
 					CFont* pOldFont = pNCGDI->pDC->SelectObject(&font);
-					DrawGutterItemText(pNCGDI->pDC, CLOCKBTN, rItem, pNCGDI->nTextAlign, crTextColor);
+
+					DrawGutterItemText(pNCGDI->pDC, CString((TCHAR)CLOCKBTN), rItem, pNCGDI->nTextAlign, crTextColor);
+
 					pNCGDI->pDC->SelectObject(pOldFont);
 				}
 				else
@@ -8020,9 +8045,9 @@ BOOL CToDoCtrl::AddItem(HTREEITEM hti, CTaskFile& file, HTASKITEM hParentTask,
 			if (bHtmlComments && !pTDI->sCustomComments.IsEmpty())
 			{
 				CString sHtml;
-				m_mgrContent.ConvertContentToHtml(pTDI->sCustomComments, sHtml, m_idCommentsType);
-				
-				file.SetTaskHtmlComments(hTask, sHtml, bTransform);
+
+				if (m_mgrContent.ConvertContentToHtml(pTDI->sCustomComments, sHtml, m_idCommentsType))
+					file.SetTaskHtmlComments(hTask, sHtml, bTransform);
 			}
 			
 			if (!pTDI->sComments.IsEmpty())
