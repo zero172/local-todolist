@@ -337,7 +337,7 @@ struct FTDCFILTER
 		if (bOn)
 			dwFlags |= dwFlag;
 		else
-			dwFlags &= ~dwFlags;
+			dwFlags &= ~dwFlag;
 	}
 
 	BOOL MatchAllocTo(const CStringArray& aAllocTos) const

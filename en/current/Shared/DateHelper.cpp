@@ -19,7 +19,7 @@ static char THIS_FILE[]=__FILE__;
 
 int CDateHelper::CalcDaysFromTo(const COleDateTime& dateFrom, const COleDateTime& dateTo, BOOL bInclusive)
 {
-	int nDiff = (int)dateTo.m_dt - (int)dateFrom.m_dt;
+	int nDiff = (int)(floor(dateTo) - floor(dateFrom));
 
 	return nDiff + (bInclusive ? 1 : 0);
 }
@@ -120,7 +120,7 @@ double CDateHelper::GetDate(DH_DATE nDate)
 		break;
 	}
 
-	return (double)(int)date;
+	return floor(date);
 }
 
 int CDateHelper::CalcWeekdaysFromTo(const COleDateTime& dateFrom, const COleDateTime& dateTo, BOOL bInclusive)

@@ -625,7 +625,11 @@ void CEnEdit::DrawButton(CDC* pDC, const CRect& rWindow, int nBtn, const CPoint&
 	}
 }
 
-LRESULT CEnEdit::OnNcHitTest(CPoint point) 
+#if _MSC_VER >= 1400
+LRESULT CEnEdit::OnNcHitTest(CPoint point)
+#else
+UINT CEnEdit::OnNcHitTest(CPoint point)
+#endif
 {
 	int nBtn = ButtonHitTest(point);
 

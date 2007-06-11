@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "enbrowserctrl.h"
 //fabio_2005
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
 #	include <comdef.h>
 #else
 #	include <comutil.h>

@@ -46,6 +46,7 @@
 #include <shlwapi.h>
 #include <windowsx.h>
 #include <direct.h>
+#include <math.h>
 
 #ifdef _AFXDLL
 #  define COMPILE_MULTIMON_STUBS
@@ -129,7 +130,7 @@ static SHORTCUT MISC_SHORTCUTS[] =
 	{ MAKELONG(VK_NEXT, HOTKEYF_CONTROL | HOTKEYF_SHIFT | HOTKEYF_EXT), IDS_TASKLISTEXTENDEDSELECTION }
 };
 
-static UINT NUM_MISCSHORTCUTS = sizeof(MISC_SHORTCUTS) / sizeof(SHORTCUT);
+static int NUM_MISCSHORTCUTS = sizeof(MISC_SHORTCUTS) / sizeof(SHORTCUT);
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -2669,17 +2670,17 @@ TDC_FILE CToDoListWnd::DelayOpenTaskList(LPCTSTR szFilePath)
 	}
 	
 	int nCtrl = m_mgrToDoCtrls.AddToDoCtrl(pCtrl, FALSE); // FALSE == not yet loaded
-
+	
 	// update due item status
 	if (dtEarliest.m_dt != 0.0)
 	{
 		TDCM_DUESTATUS nStatus = TDCM_FUTURE;
 		COleDateTime dtToday = COleDateTime::GetCurrentTime();
 
-		if ((int)dtEarliest.m_dt < (int)dtToday.m_dt)
+		if (floor(dtEarliest) < floor(dtToday))
 			nStatus = TDCM_PAST;
 
-		else if ((int)dtEarliest.m_dt == (int)dtToday.m_dt)
+		else if (floor(dtEarliest) == floor(dtToday))
 			nStatus = TDCM_TODAY;
 
 		m_mgrToDoCtrls.SetDueItemStatus(nCtrl, nStatus);
@@ -2972,7 +2973,7 @@ void CToDoListWnd::EnsureVisible()
 
 void CToDoListWnd::OnAbout() 
 {
-	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.1</b>",
+	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.4</b>",
 		CEnString(IDS_ABOUTHEADING), CEnString(IDS_ABOUTCOPYRIGHT), 1, 2, 8);
 	
 	dialog.DoModal();
@@ -4094,7 +4095,7 @@ void CToDoListWnd::OnTimerDueItems(int nCtrl)
 	SEARCHPARAMS spDue, spDueToday;
 	SEARCHRESULT result;
 	
-	double dToday = (double)((int)COleDateTime::GetCurrentTime().m_dt);
+	double dToday = floor(COleDateTime::GetCurrentTime());
 
 	spDue.dwFlags = 0;
 	spDue.nFindWhat = FIND_DUEDATE;
@@ -6747,13 +6748,33 @@ void CToDoListWnd::OnUpdateSpellchecktitle(CCmdUI* pCmdUI)
 void CToDoListWnd::OnFileEncrypt() 
 {
 	CFilteredToDoCtrl& tdc = GetToDoCtrl();
-	
+
 	if (!tdc.IsReadOnly())
 	{
+		BOOL bWasEncrypted = tdc.IsEncrypted();
+		CString sPassword = tdc.GetPassword();
+
 		// if the tasklist is already encrypted then verify password
 		// before allowing change
-		if (!tdc.IsEncrypted() || VerifyToDoCtrlPassword())
+		if (!bWasEncrypted || VerifyToDoCtrlPassword())
 			tdc.EnableEncryption(!tdc.IsEncrypted());
+
+		// make sure we disable encryption on the archive too
+		if (bWasEncrypted)
+		{
+			CString sArchive = m_mgrToDoCtrls.GetArchivePath(GetSelToDoCtrl());
+
+			if (FileMisc::FileExists(sArchive))
+			{
+				CTaskFile archive(sPassword);
+
+				if (archive.Load(sArchive))
+				{
+					archive.SetPassword(NULL); // remove password
+					archive.Save(sArchive);
+				}
+			}
+		}
 	}
 }
 

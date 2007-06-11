@@ -95,7 +95,11 @@ protected:
 	// message handlers
 	DECLARE_MESSAGE_MAP()
 	afx_msg HBRUSH CtlColor(CDC* pDC, UINT nCtlColor);
+#if _MSC_VER >= 1400
 	afx_msg LRESULT OnNcHitTest(CPoint point);
+#else
+	afx_msg UINT OnNcHitTest(CPoint point);
+#endif
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg UINT OnGetDlgCode();

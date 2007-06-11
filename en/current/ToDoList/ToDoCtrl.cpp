@@ -6191,7 +6191,7 @@ LRESULT CToDoCtrl::OnGutterDrawItem(WPARAM /*wParam*/, LPARAM lParam)
 				if (font.GetSafeHandle())
 				{
 					CFont* pOldFont = pNCGDI->pDC->SelectObject(&font);
-					DrawGutterItemText(pNCGDI->pDC, "¹", rItem, pNCGDI->nTextAlign, crTextColor);
+					DrawGutterItemText(pNCGDI->pDC, CLOCKBTN, rItem, pNCGDI->nTextAlign, crTextColor);
 					pNCGDI->pDC->SelectObject(pOldFont);
 				}
 				else

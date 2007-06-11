@@ -86,8 +86,12 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnNcPaint();
-	afx_msg LRESULT OnNcHitTest(CPoint point);
 	//}}AFX_MSG
+#if _MSC_VER >= 1400
+	afx_msg LRESULT OnNcHitTest(CPoint point);
+#else
+	afx_msg UINT OnNcHitTest(CPoint point);
+#endif
 	afx_msg void OnEnable(BOOL bEnable);
 	afx_msg LRESULT OnSetReadOnly(WPARAM /*wp*/, LPARAM /*lp*/);
 	afx_msg LRESULT OnHotChange(WPARAM /*wp*/, LPARAM /*lp*/);

@@ -77,7 +77,6 @@ END_MESSAGE_MAP()
 void COrderedTreeCtrl::PreSubclassWindow() 
 {
 	m_gutter.AddRecalcMessage(TVM_INSERTITEM);
-	m_gutter.AddRecalcMessage(TVM_INSERTITEM);
 	m_gutter.AddRecalcMessage(TVM_DELETEITEM);
 	m_gutter.AddRecalcMessage(TVM_EXPAND);
 	

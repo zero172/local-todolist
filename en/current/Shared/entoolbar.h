@@ -45,7 +45,7 @@ protected:
 	//{{AFX_MSG(CEnToolBar)
 	// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
-	afx_msg BOOL OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	DECLARE_MESSAGE_MAP()
 		

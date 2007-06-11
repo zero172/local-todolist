@@ -669,14 +669,11 @@ void CIni::GetKeyNames(LPCTSTR lpSection, CStringArray *pArray) const
 		return;
 
 	pArray->RemoveAll();
-	//fabio_2005
-#if _MSC_VER >= 1400
-	const int LEN = GetKeyNames(lpSection, NULL, 0);
-#else
-	const LEN = GetKeyNames(lpSection, NULL, 0);
-#endif
 
+	//fabio_2005
+	const int LEN = GetKeyNames(lpSection, NULL, 0);
 	LPTSTR psz = new TCHAR[LEN + 1];
+
 	GetKeyNames(lpSection, psz, LEN);
 	ParseDNTString(psz, __SubStrAdd, (LPVOID)pArray);
 	delete [] psz;

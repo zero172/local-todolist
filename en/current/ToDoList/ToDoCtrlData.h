@@ -35,7 +35,7 @@ public:
 	BOOL IsDue(const COleDateTime& dateDueBy) const;
 	
 	void SetModified();
-	void ResetCalcs(); 
+	void ResetCalcs() const; 
 
 	CString GetFirstCategory() const;
 	CString GetFirstAllocTo() const;
@@ -230,7 +230,7 @@ public:
 	void UpdateHTIMapEntry(CHTIMap& mapHTI, HTREEITEM hti) const;
 	BOOL IsTaskFullyDone(HTREEITEM hti, const TODOITEM* pTDI, BOOL bCheckSiblings) const;
 	
-	void ResetCachedCalculations();
+	void ResetCachedCalculations() const;
 	
 	BOOL IsTaskTimeTrackable(HTREEITEM hti) const;
 	BOOL IsTaskDone(HTREEITEM hti, DWORD dwExtraCheck = TDCCHECKNONE) const;

@@ -153,7 +153,7 @@ void TODOITEM::SetModified()
 	tLastMod = COleDateTime::GetCurrentTime(); 
 }
 
-void TODOITEM::ResetCalcs() 
+void TODOITEM::ResetCalcs() const 
 {
 	nCalcPriority = nCalcPercent = nCalcRisk = -1;
 	dCalcTimeEstimate = dCalcTimeSpent = dCalcCost = -1;
@@ -465,8 +465,8 @@ BOOL CToDoCtrlData::TaskMatches(HTREEITEM hti, const SEARCHPARAMS& params, SEARC
 
 BOOL CToDoCtrlData::TaskMatches(const COleDateTime& date, const SEARCHPARAMS& params, SEARCHRESULT& result)
 {
-	if (date.m_dt >= (double)(int)params.dateFrom.m_dt && 
-		date.m_dt <= (double)(int)params.dateTo.m_dt)
+	if (date.m_dt >= floor(params.dateFrom.m_dt) && 
+		date.m_dt <= floor(params.dateTo.m_dt))
 	{
 		result.dateMatch = date;
 		return TRUE;
@@ -1432,7 +1432,7 @@ int CToDoCtrlData::GetItemPos(HTREEITEM hti, HTREEITEM htiSearch) const
 	return 0; // not found
 }
 
-void CToDoCtrlData::ResetCachedCalculations()
+void CToDoCtrlData::ResetCachedCalculations() const
 {
 	// sets the bNeedRecalc flag on all items
 	POSITION pos = m_mapTDItems.GetStartPosition();
@@ -1442,9 +1442,7 @@ void CToDoCtrlData::ResetCachedCalculations()
 	while (pos)
 	{
 		m_mapTDItems.GetNextAssoc(pos, dwID, pTDI);
-		
 		pTDI->ResetCalcs();
-		m_mapTDItems[dwID] = pTDI;
 	}
 }
 
@@ -1758,6 +1756,13 @@ double CToDoCtrlData::GetEarliestDueDate() const
 		hti = m_tree.GetNextItem(hti, TVGN_NEXT);
 	}
 
+	// we need to reset the cached calculation in the case where
+	// the user is *not* including child due dates in the parents'
+	// due date because the call to GetEarliestDueDate with TRUE
+	// will have overwritten it
+	if (!HasStyle(TDCS_USEEARLIESTDUEDATE))
+		ResetCachedCalculations();
+	
 	return (dEarliest == 1e307) ? 0.0 : dEarliest;
 }
 
@@ -2068,7 +2073,7 @@ BOOL CToDoCtrlData::IsTaskDue(HTREEITEM hti, const TODOITEM* pTDI, BOOL bToday) 
 
 	if (bToday)
 	{
-		double dToday = (int)COleDateTime::GetCurrentTime(); // 12 midnight
+		double dToday = floor(COleDateTime::GetCurrentTime()); // 12 midnight
 		bDue = (dDue >= dToday && dDue < dToday+ 1);
 	}
 	else

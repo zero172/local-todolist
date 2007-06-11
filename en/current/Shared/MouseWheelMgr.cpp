@@ -35,7 +35,7 @@ BOOL CMouseWheelMgr::OnMouse(UINT uMouseMsg, const MOUSEHOOKSTRUCTEX& info)
    if (uMouseMsg == WM_MOUSEWHEEL)
    {
 	   //fabio_2005
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
 
       HWND hwndPt = ::WindowFromPoint(info.pt);
 

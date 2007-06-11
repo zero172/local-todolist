@@ -1629,10 +1629,10 @@ bool CTaskFile::SetTaskDate(HTASKITEM hTask, LPCTSTR szDateItem, const COleDateT
 {
 	CXmlItem* pXITask = NULL;
 	GET_TASK(pXITask, hTask, false);
-
-	double dDate = bIncTime ? tVal.m_dt : floor(tVal.m_dt);
-
-   return (pXITask->SetItemValue(szDateItem, dDate) != NULL);
+	
+	double dDate = bIncTime ? tVal.m_dt : floor(tVal);
+	
+	return (pXITask->SetItemValue(szDateItem, dDate) != NULL);
 }
 
 bool CTaskFile::SetTaskDate(HTASKITEM hTask, LPCTSTR szDateItem, time_t tVal, BOOL bIncTime)

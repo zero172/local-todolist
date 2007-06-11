@@ -368,31 +368,28 @@ int CToDoCtrlMgr::AddToDoCtrl(CFilteredToDoCtrl* pCtrl, BOOL bLoaded)
 void CToDoCtrlMgr::RestoreFilter(CFilteredToDoCtrl* pCtrl)
 {
 	CString sFilePath(pCtrl->GetFilePath());
-	
+
 	if (!sFilePath.IsEmpty())
 	{
 		CString sKey;
-		
 		sFilePath.Replace('\\', '_');
 		sKey.Format("FileStates\\%s\\Filter", sFilePath);
-		
+
 		FTDCFILTER filter;
-		
+
 		filter.nFilter = (FILTER_TYPE)AfxGetApp()->GetProfileInt(sKey, "Filter", FT_ALL);
 		filter.nPriority = AfxGetApp()->GetProfileInt(sKey, "Priority", FT_ANYPRIORITY);
 		filter.nRisk = AfxGetApp()->GetProfileInt(sKey, "Risk", FT_ANYRISK);
-//		filter.sAllocTo = AfxGetApp()->GetProfileString(sKey, "AllocTo");
 		filter.sAllocBy = AfxGetApp()->GetProfileString(sKey, "AllocBy");
-	
+		filter.sStatus = AfxGetApp()->GetProfileString(sKey, "Status");
+
 		// cats
 		filter.SetFlag(FT_ANYCATEGORY, AfxGetApp()->GetProfileInt(sKey, "AnyCategory", FALSE));
-		
 		CString sCategory = AfxGetApp()->GetProfileString(sKey, "Category");
 		Misc::ParseIntoArray(sCategory, filter.aCategories, TRUE);
 
 		// alloc to
 		filter.SetFlag(FT_ANYALLOCTO, AfxGetApp()->GetProfileInt(sKey, "AnyAllocTo", FALSE));
-		
 		CString sAllocTo = AfxGetApp()->GetProfileString(sKey, "AllocTo");
 		Misc::ParseIntoArray(sAllocTo, filter.aAllocTo, TRUE);
 		
@@ -407,19 +404,19 @@ void CToDoCtrlMgr::SaveFilter(const CFilteredToDoCtrl* pCtrl) const
 	if (!sFilePath.IsEmpty())
 	{
 		CString sKey;
-
 		sFilePath.Replace('\\', '_');
 		sKey.Format("FileStates\\%s\\Filter", sFilePath);
-			
+
 		FTDCFILTER filter;
 		pCtrl->GetFilter(filter);
 
 		AfxGetApp()->WriteProfileInt(sKey, "Filter", filter.nFilter);
 		AfxGetApp()->WriteProfileInt(sKey, "Priority", filter.nPriority);
 		AfxGetApp()->WriteProfileInt(sKey, "Risk", filter.nRisk);
-//		AfxGetApp()->WriteProfileString(sKey, "AllocTo", filter.sAllocTo);
-		AfxGetApp()->WriteProfileString(sKey, "AllocTo", Misc::FormatArray(filter.aAllocTo));
 		AfxGetApp()->WriteProfileString(sKey, "AllocBy", filter.sAllocBy);
+		AfxGetApp()->WriteProfileString(sKey, "Status", filter.sStatus);
+		AfxGetApp()->WriteProfileString(sKey, "AllocTo", Misc::FormatArray(filter.aAllocTo));
+		AfxGetApp()->WriteProfileInt(sKey, "AnyAllocTo", filter.HasFlag(FT_ANYALLOCTO));
 		AfxGetApp()->WriteProfileString(sKey, "Category", Misc::FormatArray(filter.aCategories));
 		AfxGetApp()->WriteProfileInt(sKey, "AnyCategory", filter.HasFlag(FT_ANYCATEGORY));
 	}

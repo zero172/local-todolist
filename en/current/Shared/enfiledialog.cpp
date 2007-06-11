@@ -16,12 +16,14 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CEnFileDialog, CFileDialog)
 
 // Windows 2000 version of OPENFILENAME
+#if _MSC_VER < 1300
 struct OPENFILENAMEEX : public OPENFILENAME 
 { 
   void *        pvReserved;
   DWORD         dwReserved;
   DWORD         FlagsEx;
 };
+#endif		
 
 CEnFileDialog::CEnFileDialog(BOOL bOpenFileDialog, LPCTSTR lpszDefExt, 
 							 LPCTSTR lpszFileName, DWORD dwFlags, 
@@ -29,12 +31,13 @@ CEnFileDialog::CEnFileDialog(BOOL bOpenFileDialog, LPCTSTR lpszDefExt,
 	CFileDialog(bOpenFileDialog, lpszDefExt, lpszFileName, 
 				dwFlags, lpszFilter, pParentWnd)
 {
+#if _MSC_VER < 1300
 	DWORD dwVersion = ::GetVersion();
 	DWORD dwWinMajor = (DWORD)(LOBYTE(LOWORD(dwVersion)));
 
 	if ((BYTE)dwWinMajor >= 5)
 		m_ofn.lStructSize = sizeof(OPENFILENAMEEX);
-		
+#endif		
 }
 
 

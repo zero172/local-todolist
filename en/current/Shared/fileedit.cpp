@@ -356,7 +356,11 @@ CRect CFileEdit::GetIconRect() const
 	return rButton;
 }
 
-LRESULT CFileEdit::OnNcHitTest(CPoint point) 
+#if _MSC_VER >= 1400
+LRESULT CFileEdit::OnNcHitTest(CPoint point)
+#else
+UINT CFileEdit::OnNcHitTest(CPoint point)
+#endif
 {
 	if (GetIconRect().PtInRect(point))
 		return HTBORDER;

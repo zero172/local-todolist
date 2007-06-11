@@ -206,7 +206,7 @@ void CEnToolBar::RefreshDisabledImageList(CEnBitmapEx* pBitmap, COLORREF crMask)
 	}
 }
 //fabio_2005
-BOOL CEnToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
+void CEnToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
     *pResult = CDRF_DODEFAULT;
     LPNMTBCUSTOMDRAW lpNMCustomDraw = ( LPNMTBCUSTOMDRAW )pNMHDR;
@@ -246,8 +246,6 @@ BOOL CEnToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
     default:
        break;
     }
-    
-    return FALSE; // continue routing
 }
 
 void CEnToolBar::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)

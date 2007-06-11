@@ -51,7 +51,7 @@ enum
 
 //
 //fabio_2005
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
 #else
 struct MOUSEHOOKSTRUCTEX
 {
@@ -308,7 +308,7 @@ protected:
 
 			if (mgr.ClassMatches(pInfo->hwnd))
 			{
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
 
 				//fabio_2005	
 			   //fabio	
