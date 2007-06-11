@@ -84,7 +84,6 @@ CString& CTaskListHtmlExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM h
 	// handle locale specific decimal separator
 	setlocale(LC_NUMERIC, "");
 
-
 	// if depth == 0 then we're at the root so just add sub-tasks
 	// else insert pItem first
 	if (nDepth > 0)
@@ -149,9 +148,9 @@ CString& CTaskListHtmlExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM h
 
 		FormatAttribute(pTasks, hTask, TDL_TASKCREATIONDATESTRING, " (created: %s)", sCreateDate);
 		FormatAttribute(pTasks, hTask, TDL_TASKCREATEDBY, " (created by: %s)", sCreateBy);
-		FormatAttribute(pTasks, hTask, TDL_TASKALLOCTO, " (allocated to: %s)", sAllocTo);
+		FormatAttributeList(pTasks, hTask, TDL_TASKNUMALLOCTO, TDL_TASKALLOCTO, " (allocated to: %s)", sAllocTo);
 		FormatAttribute(pTasks, hTask, TDL_TASKALLOCBY, " (allocated by: %s)", sAllocBy);
-		FormatAttribute(pTasks, hTask, TDL_TASKCATEGORY, " (category: %s)", sCategory);
+		FormatAttributeList(pTasks, hTask, TDL_TASKNUMCATEGORY, TDL_TASKCATEGORY, " (category: %s)", sCategory);
 		FormatAttribute(pTasks, hTask, TDL_TASKSTATUS, " (status: %s)", sStatus);
 		FormatAttribute(pTasks, hTask, TDL_TASKRISK, " (risk: %s)", sRisk);
 		FormatAttribute(pTasks, hTask, TDL_TASKEXTERNALID, " (ext.ID: %s)", sExtID);
@@ -171,6 +170,7 @@ CString& CTaskListHtmlExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM h
 		if (pTasks->TaskHasAttribute(hTask, TDL_TASKHTMLCOMMENTS))
 		{
 			CString sItemComments = pTasks->GetTaskAttribute(hTask, TDL_TASKHTMLCOMMENTS);
+			sItemComments.TrimRight();
 
 			if (!sItemComments.IsEmpty())
 			{
@@ -184,17 +184,22 @@ CString& CTaskListHtmlExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM h
 		else if (pTasks->TaskHasAttribute(hTask, TDL_TASKCOMMENTS))
 		{
 			CString sItemComments = pTasks->GetTaskComments(hTask);
-			TXT2XML(sItemComments); // TODO
+			sItemComments.TrimRight();
 
-			sComments.Format(bDone ? "<br><font color='#c4c4c4'>[%s] </font>" : "<br><font color='#606060'>[%s] </font>", 
-							sItemComments);
+			if (!sItemComments.IsEmpty())
+			{
+				TXT2XML(sItemComments); // TODO
 
-			// replace carriage returns with <br>
-			sComments.Replace(ENDL, "<br>");
-			sComments.Replace("\n", "<br>");
+				sComments.Format(bDone ? "<br><font color='#c4c4c4'>[%s] </font>" : "<br><font color='#606060'>[%s] </font>", 
+								sItemComments);
 
-			// replace tab characters with multiple &nbsp;
-			sComments.Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+				// replace carriage returns with <br>
+				sComments.Replace(ENDL, "<br>");
+				sComments.Replace("\n", "<br>");
+
+				// replace tab characters with multiple &nbsp;
+				sComments.Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;");
+			}
 		}
 
 		CString sFormat;
@@ -297,3 +302,29 @@ BOOL CTaskListHtmlExporter::FormatAttribute(const ITaskList6* pTasks, HTASKITEM 
 
 	return FALSE;
 }
+
+BOOL CTaskListHtmlExporter::FormatAttributeList(const ITaskList6* pTasks, HTASKITEM hTask, 
+										   LPCTSTR szNumAttribName, LPCTSTR szAttribName, 
+                                           LPCTSTR szFormat, CString& sAttribText)
+{
+	int nItemCount = atoi(pTasks->GetTaskAttribute(hTask, szNumAttribName));
+
+	if (nItemCount <= 1)
+		return FormatAttribute(pTasks, hTask, szAttribName, szFormat, sAttribText);
+
+	// else more than one (use plus sign as delimiter)
+	CString sAttribs = pTasks->GetTaskAttribute(hTask, szAttribName);
+	
+	for (int nItem = 1; nItem < nItemCount; nItem++)
+	{
+		CString sAttribName;
+		sAttribName.Format("%s%d", szAttribName, nItem);
+		
+		sAttribs += '+';
+		sAttribs += pTasks->GetTaskAttribute(hTask, sAttribName);
+	}
+	
+	sAttribText.Format(szFormat, sAttribs);
+	return TRUE;
+}
+

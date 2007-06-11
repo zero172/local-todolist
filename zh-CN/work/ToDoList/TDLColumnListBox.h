@@ -11,7 +11,7 @@
 #include <afxtempl.h>
 
 /////////////////////////////////////////////////////////////////////////////
-// CTDColumnListBox window
+// CTDLColumnListBox window
 
 enum TDLB_COLUMN
 {
@@ -44,55 +44,65 @@ enum TDLB_COLUMN
 	// add new items _ONLY_ at end
 };
 
-class CTDColumnListBox : public CCheckListBox
+class CTDLColumnListBox : public CCheckListBox
 {
 // Construction
 public:
-	CTDColumnListBox();
+	CTDLColumnListBox();
 
-	void SetColumnState(TDLB_COLUMN nCol, BOOL bOn);
-	BOOL GetColumnState(TDLB_COLUMN nCol) const;
+	void SetColumnVisible(TDLB_COLUMN nCol, BOOL bVisible = TRUE);
+	BOOL IsColumnVisible(TDLB_COLUMN nCol) const;
+
+	void SetAllColumnsVisible(BOOL bVisible = TRUE);
+
+	void SetVisibleColumns(const CTDCColumnArray& aColumns);
+	int GetVisibleColumns(CTDCColumnArray& aColumns) const;
 
 // Attributes
 protected:
-	struct COLUMNSTATE
+	struct COLUMNVIS
 	{
-		COLUMNSTATE() {}
-		COLUMNSTATE(UINT nIDName, TDLB_COLUMN col, BOOL on) 
+		COLUMNVIS() {}
+		COLUMNVIS(UINT nIDName, TDLB_COLUMN col, TDC_COLUMN tdcCol, BOOL bVis) 
 		{ 
 			sName.LoadString(nIDName); 
 			nCol = col; 
-			bOn = on; 
+			nTDCCol = tdcCol;
+			bVisible = bVis; 
 		}
 
 		CString sName;
 		TDLB_COLUMN nCol;
-		BOOL bOn;
+		TDC_COLUMN nTDCCol;
+		BOOL bVisible;
 	};
-	CArray<COLUMNSTATE, COLUMNSTATE&> m_aColumns;
+	CArray<COLUMNVIS, COLUMNVIS&> m_aColumns;
 
 // Operations
 public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CTDColumnListBox)
+	//{{AFX_VIRTUAL(CTDLColumnListBox)
 	protected:
 	virtual void PreSubclassWindow();
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	virtual ~CTDColumnListBox();
+	virtual ~CTDLColumnListBox();
 
 	// Generated message map functions
 protected:
-	//{{AFX_MSG(CTDColumnListBox)
+	//{{AFX_MSG(CTDLColumnListBox)
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 	afx_msg BOOL OnReflectCheckChange();
 	afx_msg LRESULT OnInitListBox(WPARAM wp, LPARAM lp);
 	DECLARE_MESSAGE_MAP()
+
+	int FindColumn(TDLB_COLUMN nCol) const;
+	int FindColumn(TDC_COLUMN nCol) const;
 
 };
 

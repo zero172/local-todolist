@@ -5,7 +5,9 @@
 #include "todolist.h"
 #include "PreferencesTaskPage.h"
 
-#include <locale.h>
+#include "..\shared\Misc.h"
+
+//#include <locale.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -183,32 +185,39 @@ void CPreferencesTaskPage::OnUsehighestpriority()
 
 double CPreferencesTaskPage::GetHoursInOneDay() const
 {
+	double dHours = Misc::Atof(m_sHoursInDay);
+/*
 	// handle locale specific decimal separator
 	setlocale(LC_NUMERIC, "");
 
 	double dHours = atof(m_sHoursInDay);
 
-	if (dHours <= 0 || dHours > 24)
-		dHours = 8;
-
 	// restore decimal separator to '.'
 	setlocale(LC_NUMERIC, "English");
+*/
+
+	if (dHours <= 0 || dHours > 24)
+		dHours = 8;
 
 	return dHours;
 }
 
 double CPreferencesTaskPage::GetDaysInOneWeek() const
 {
+	double dDays = Misc::Atof(m_sDaysInWeek);
+
+/*
 	// handle locale specific decimal separator
 	setlocale(LC_NUMERIC, "");
 
 	double dDays = atof(m_sDaysInWeek);
 
-	if (dDays <= 0 || dDays > 7)
-		dDays = 5;
-
 	// restore decimal separator to '.'
 	setlocale(LC_NUMERIC, "English");
+*/
+
+	if (dDays <= 0 || dDays > 7)
+		dDays = 5;
 
 	return dDays;
 }

@@ -13,7 +13,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const COLORREF NO_COLOR = NO_COLOR;
+const COLORREF NO_COLOR = (COLORREF)-1;
 
 /////////////////////////////////////////////////////////////////////////////
 // CEnToolBar
@@ -186,17 +186,17 @@ void CEnToolBar::RefreshDisabledImageList(CEnBitmapEx* pBitmap, COLORREF crMask)
 		// create 'nice' disabled imagelist 
 		if (GrayScale(pBitmap, crMask))
 		{
-         if (crMask == NO_COLOR) // map 3d colors
-	         pBitmap->RemapSysColors();
-         else
-            pBitmap->ReplaceColor(crMask, GetSysColor(COLOR_3DFACE));
-	
+			if (crMask == NO_COLOR) // map 3d colors
+				pBitmap->RemapSysColors();
+			else
+				pBitmap->ReplaceColor(crMask, GetSysColor(COLOR_3DFACE));
+			
 			// button size
 			int nCx = m_sizeImage.cx, nCy = m_sizeImage.cy;
 			
 			m_ilDisabled.DeleteImageList();
 			m_ilDisabled.Create(nCx, nCy, ILC_COLOR32, 0, 1);
-
+			
 			m_ilDisabled.Add(pBitmap, NO_COLOR);
 			
 			GetToolBarCtrl().SetDisabledImageList(&m_ilDisabled);
@@ -205,7 +205,7 @@ void CEnToolBar::RefreshDisabledImageList(CEnBitmapEx* pBitmap, COLORREF crMask)
 		}
 	}
 }
-
+//fabio_2005
 void CEnToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 {
     *pResult = CDRF_DODEFAULT;
@@ -246,12 +246,39 @@ void CEnToolBar::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
     default:
        break;
     }
-
-    //return FALSE; // continue routing
 }
 
 void CEnToolBar::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
+	// toolbar button sizes get screwed if any button has the drop style applied
+	// at the time this is handled. to get round it we remove any such button styles
+	// and then readd them after the default processing
+	CUIntArray aDropBtns;
+	int nBtn = GetToolBarCtrl().GetButtonCount();
 
+	while (nBtn--)
+	{
+		UINT nBtnID = GetItemID(nBtn);
+		DWORD dwStyle = GetButtonStyle(nBtn);
+		
+		if (dwStyle & TBSTYLE_DROPDOWN)
+		{
+			SetButtonStyle(nBtn, dwStyle & ~TBSTYLE_DROPDOWN);
+			aDropBtns.Add(nBtnID);
+		}
+	}
+
+	// default processing
 	CToolBar::OnSettingChange(uFlags, lpszSection);
+
+	// restore styles
+	int nItem = aDropBtns.GetSize();
+
+	while (nItem--)
+	{
+		int nBtn = CommandToIndex(aDropBtns[nItem]);
+		DWORD dwStyle = GetButtonStyle(nBtn);
+	
+		SetButtonStyle(nBtn, dwStyle | TBSTYLE_DROPDOWN);
+	}
 }

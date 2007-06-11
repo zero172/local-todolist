@@ -1,4 +1,4 @@
-// TDImportExportMgr.h: interface for the CTDImportExportMgr class.
+// TDImportExportMgr.h: interface for the CTDLImportExportMgr class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -13,11 +13,11 @@
 
 enum { EXP2HTML, EXP2TXT, EXP2CSV };
 
-class CTDImportExportMgr : public CImportExportMgr  
+class CTDLImportExportMgr : public CImportExportMgr  
 {
 public:
-	CTDImportExportMgr();
-	virtual ~CTDImportExportMgr();
+	CTDLImportExportMgr();
+	virtual ~CTDLImportExportMgr();
 
 	BOOL ExportTaskListToHtml(const ITaskList* pSrcTasks, LPCTSTR szDestFile) const;
 	CString ExportTaskListToHtml(const ITaskList* pSrcTasks) const;

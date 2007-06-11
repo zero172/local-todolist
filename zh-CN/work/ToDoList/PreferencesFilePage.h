@@ -16,7 +16,7 @@
 
 enum
 {
-	PFP_INVALID = -1,
+	PFP_DONTNOTIFY = -1,
 	PFP_DUETODAY,
 	PFP_DUETOMORROW,
 	PFP_DUETHISWEEK,
@@ -41,8 +41,8 @@ public:
 	BOOL GetRemoveArchivedTasks() const { return m_bRemoveArchivedTasks; }
 	BOOL GetRemoveOnlyOnAbsoluteCompletion() const { return m_bRemoveOnlyOnAbsoluteCompletion; }
 	CString GetAutoExportFolderPath() const;
-	int GetNotifyDueByOnLoad() const { return m_bNotifyDueOnLoad ? m_nNotifyDueByOnLoad : PFP_INVALID; }
-	int GetNotifyDueByOnSwitch() const { return m_bNotifyDueOnSwitch ? m_nNotifyDueByOnSwitch : PFP_INVALID; }
+	int GetNotifyDueByOnLoad() const { return m_bNotifyDueOnLoad ? m_nNotifyDueByOnLoad : PFP_DONTNOTIFY; }
+	int GetNotifyDueByOnSwitch() const { return m_bNotifyDueOnSwitch ? m_nNotifyDueByOnSwitch : PFP_DONTNOTIFY; }
 	BOOL GetDisplayDueTasksInHtml() const { return m_bDisplayDueTasksInHtml; }
 	BOOL GetRefreshFindOnLoad() const { return m_bRefreshFindOnLoad; }
 	BOOL GetDueTaskTitlesOnly() const { return m_bDueTaskTitlesOnly; }
@@ -53,6 +53,7 @@ public:
 	BOOL GetAutoSaveUnsaved() const { return !m_bDontAutoSaveUnsaved; }
 	BOOL GetDontRemoveFlagged() const { return m_bDontRemoveFlagged; }
 	BOOL GetExpandTasksOnLoad() const { return m_bExpandTasks; }
+	BOOL GetCheckForChangesBeforeSaving() const { return m_bCheckForChangesBeforeSaving; }
 //	BOOL Get() const { return m_b; }
 
 protected:
@@ -78,6 +79,7 @@ protected:
 	BOOL	m_bDontAutoSaveUnsaved;
 	BOOL	m_bDontRemoveFlagged;
 	BOOL	m_bExpandTasks;
+	BOOL	m_bCheckForChangesBeforeSaving;
 	//}}AFX_DATA
 	BOOL	m_bNotifyDueOnLoad, m_bNotifyDueOnSwitch;
 	int		m_nNotifyDueByOnLoad, m_nNotifyDueByOnSwitch;

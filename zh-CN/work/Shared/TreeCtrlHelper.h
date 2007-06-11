@@ -42,6 +42,8 @@ public:
 	int GetItemPos(HTREEITEM hti, HTREEITEM htiParent);
 	int GetItemLevel(HTREEITEM hti);
 
+	HTREEITEM FindItem(DWORD dwItemData, HTREEITEM htiStart) const;
+
 	BOOL IsItemBold(HTREEITEM hti);
 	void SetItemBold(HTREEITEM hti, BOOL bBold = TRUE);
 	void SetTopLevelItemsBold(BOOL bBold = TRUE);
@@ -55,8 +57,8 @@ public:
 	HTREEITEM GetFirstVisibleTopLevelItem(int& nPos); // return 0 if no items
 	HTREEITEM GetTopLevelParentItem(HTREEITEM hti);
 
-	int BuildVisibleIndexMap() { return BuildVisibleIndexMap(m_mapVisibleIndices); }
-	BOOL ItemLineIsOdd(HTREEITEM hti) { return ItemLineIsOdd(m_mapVisibleIndices, hti); }
+	int BuildVisibleIndexMap() { return BuildVisibleIndexMap(VIMap()); }
+	BOOL ItemLineIsOdd(HTREEITEM hti) { return ItemLineIsOdd(VIMap(), hti); }
 
 	int BuildVisibleIndexMap(CMapIndices& index);
 	BOOL ItemLineIsOdd(CMapIndices& index, HTREEITEM hti);
@@ -78,10 +80,13 @@ public:
 
 protected:
 	CTreeCtrl& m_tree;
-	CMapIndices m_mapVisibleIndices;
+	mutable CMapIndices* m_pVisibleIndices;
 
 protected:
 	void AddVisibleItemToIndex(CMapIndices& index, HTREEITEM hti);
+
+	CMapIndices& VIMap();
+	const CMapIndices& VIMap() const;
 };
 
 #endif // !defined(AFX_TREECTRLHELPER_H__F6652DBE_3770_4E1C_A246_057AD6AD16B7__INCLUDED_)

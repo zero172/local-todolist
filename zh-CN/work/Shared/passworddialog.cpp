@@ -27,7 +27,7 @@ CString CPasswordDialog::s_sConfirmFailed(PASSWORD_CONFIRMFAILED);
 CString CPasswordDialog::s_sOK(BTN_OK);
 CString CPasswordDialog::s_sCancel(BTN_CANCEL);
 
-#define WM_POSTINITDIALOG (WM_USER+1)
+#define WM_POSTINITDIALOG (WM_APP+1)
 
 CPasswordDialog::CPasswordDialog(BOOL bConfirm, LPCTSTR szExplanation, CWnd* /*pParent*/)
 	: CRuntimeDlg(), m_bConfirm(bConfirm)
@@ -44,17 +44,17 @@ CPasswordDialog::CPasswordDialog(BOOL bConfirm, LPCTSTR szExplanation, CWnd* /*p
 
 	int nLines = CalcLinesRequired(szExplanation, EDITEND - 7);
 	const int YOFFSET = m_bConfirm ? 19 : 0;
-	const int YEXPOFFSET = (NULL == szExplanation) ? 0 : (nLines * 9 + 9);
+	const int YEXPOFFSET = (NULL == szExplanation) ? 0 : (nLines * 8 + 8);
 
 	if (szExplanation)
-	    AddRCControl("LTEXT", "", szExplanation, 0, 0,7,7, EDITEND - 7, (nLines * 9), (UINT)IDC_STATIC);
+	    AddRCControl("LTEXT", "", szExplanation, 0, 0,7,7, EDITEND - 7, (nLines * 8), (UINT)IDC_STATIC);
 
-    AddRCControl("LTEXT", "", s_sPasswordPrompt, 0, 0,7,9 + YEXPOFFSET,PROMPTLEN,9, (UINT)IDC_STATIC);
+    AddRCControl("LTEXT", "", s_sPasswordPrompt, 0, 0,7,9 + YEXPOFFSET,PROMPTLEN,8, (UINT)IDC_STATIC);
     AddRCControl("EDITTEXT", "", "", WS_TABSTOP | ES_PASSWORD | ES_AUTOHSCROLL, 0, EDITSTART,7 + YEXPOFFSET,110,14, IDC_PASSWORD);
 
 	if (m_bConfirm)
 	{
-		AddRCControl("LTEXT", "", s_sConfirmPrompt, 0, 0,7, 28 + YEXPOFFSET,PROMPTLEN,9, (UINT)IDC_STATIC);
+		AddRCControl("LTEXT", "", s_sConfirmPrompt, 0, 0,7, 28 + YEXPOFFSET,PROMPTLEN,8, (UINT)IDC_STATIC);
 		AddRCControl("EDITTEXT", "", "", WS_TABSTOP | ES_PASSWORD | ES_AUTOHSCROLL, 0, EDITSTART,25 + YEXPOFFSET,110,14, IDC_CONFIRMATION);
 	}
 

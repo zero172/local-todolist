@@ -4,8 +4,8 @@
 
 #include "stdafx.h"
 #include "MenuIconMgr.h"
-#include "..\shared\enbitmapex.h"
-#include "..\shared\themed.h"
+#include "enbitmapex.h"
+#include "themed.h"
 
 typedef unsigned long ULONG_PTR; 
 
@@ -25,6 +25,17 @@ CMenuIconMgr::CMenuIconMgr()
 
 CMenuIconMgr::~CMenuIconMgr()
 {
+	// cleanup icons
+	POSITION pos = m_mapID2Icon.GetStartPosition();
+
+	while (pos)
+	{
+		UINT nCmdID;
+		HICON hIcon = NULL;
+
+		m_mapID2Icon.GetNextAssoc(pos, nCmdID, hIcon);
+		::DestroyIcon(hIcon);
+	}
 }
 
 BOOL CMenuIconMgr::Initialize(CWnd* pWnd)
@@ -64,11 +75,6 @@ int CMenuIconMgr::AddImages(const CToolBar& toolbar)
 
 int CMenuIconMgr::AddImages(const CUIntArray& aCmdIDs, const CImageList& il)
 {
-	return AddImages(aCmdIDs, il, FALSE);
-}
-
-int CMenuIconMgr::AddImages(const CUIntArray& aCmdIDs, const CImageList& il, BOOL bSelected)
-{
 	ASSERT (aCmdIDs.GetSize() == il.GetImageCount());
 	
 	if (aCmdIDs.GetSize() != il.GetImageCount())
@@ -78,12 +84,7 @@ int CMenuIconMgr::AddImages(const CUIntArray& aCmdIDs, const CImageList& il, BOO
 	CImageList* pIL = const_cast<CImageList*>(&il);
 	
 	for (int nBtn = 0; nBtn < nBtnCount; nBtn++)
-	{
-		if (bSelected)
-			m_mapID2IconSelected[aCmdIDs[nBtn]] = pIL->ExtractIcon(nBtn);
-		else
-			m_mapID2Icon[aCmdIDs[nBtn]] = pIL->ExtractIcon(nBtn);
-	}	   
+		SetImage(aCmdIDs[nBtn], pIL->ExtractIcon(nBtn));
 	   
 	return nBtnCount;
 	
@@ -98,28 +99,8 @@ int CMenuIconMgr::AddImages(const CUIntArray& aCmdIDs, UINT nIDBitmap, int nCx,
 	if (il.Create(nCx, 16, ILC_COLOR32 | ILC_MASK, 0, 1) && bm.LoadBitmap(nIDBitmap))
 	{
 		il.Add(&bm, crMask);
-		
-		int nCount = AddImages(aCmdIDs, il, FALSE);
-		
-		if (nCount)
-		{
-			il.DeleteImageList();
-			il.Create(nCx, 16, ILC_COLOR32, 0, 1);
-			
-			bm.DeleteObject();
-			bm.LoadBitmap(nIDBitmap);
-			
-			if (CThemed().IsValid())
-				bm.ReplaceColor(crMask, GetSysColor(COLOR_MENUHILIGHT));
-			else
-				bm.ReplaceColor(crMask, GetSysColor(COLOR_HIGHLIGHT));
-			
-			il.Add(&bm, NOCOLOR);
-			
-			AddImages(aCmdIDs, il, TRUE);
-		}
-		
-		return nCount;
+
+		return AddImages(aCmdIDs, il);;
 	}
 	
 	return 0;
@@ -135,15 +116,6 @@ BOOL CMenuIconMgr::ChangeImageID(UINT nCmdID, UINT nNewCmdID)
 		m_mapID2Icon.RemoveKey(nCmdID);
 		m_mapID2Icon[nNewCmdID] = hIcon;
 		
-		// selected icon
-		hIcon = LoadItemImage(nCmdID, TRUE);
-		
-		if (hIcon)
-		{
-			m_mapID2IconSelected.RemoveKey(nCmdID);
-			m_mapID2IconSelected[nNewCmdID] = hIcon;
-		}
-		
 		return TRUE;
 	}
 	
@@ -151,28 +123,30 @@ BOOL CMenuIconMgr::ChangeImageID(UINT nCmdID, UINT nNewCmdID)
 	return FALSE;
 }
 
-HICON CMenuIconMgr::LoadItemImage(UINT nCmdID, BOOL /*bSelected*/) 
+HICON CMenuIconMgr::LoadItemImage(UINT nCmdID) 
 {
 	HICON hIcon = NULL;
 	
-	m_mapID2Icon.Lookup(nCmdID, hIcon); // always
-	
-/*
-	if (bSelected)
-		m_mapID2IconSelected.Lookup(nCmdID, hIcon); // always
-	
-	if (!hIcon)
-		hIcon = (HICON)::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(nCmdID), IMAGE_ICON, 0, 0, LR_DEFAULTCOLOR | LR_SHARED);
-*/
+	m_mapID2Icon.Lookup(nCmdID, hIcon);
 	
 	return hIcon;
 }
 
-BOOL CMenuIconMgr::AddImage(UINT nCmdID, HICON hIcon)
+BOOL CMenuIconMgr::SetImage(UINT nCmdID, HICON hIcon)
 {
-	if (hIcon && nCmdID)
+	if (nCmdID)
 	{
-		m_mapID2Icon[nCmdID] = hIcon;
+		if (hIcon)
+			m_mapID2Icon[nCmdID] = hIcon;
+		else
+		{
+			// cleanup icon
+			if (m_mapID2Icon.Lookup(nCmdID, hIcon))
+				::DestroyIcon(hIcon);
+
+			m_mapID2Icon.RemoveKey(nCmdID);
+		}
+
 		return TRUE;
 	}
 	
@@ -184,7 +158,12 @@ LRESULT CMenuIconMgr::WindowProc(HWND /*hRealWnd*/, UINT msg, WPARAM wp, LPARAM 
 	switch (msg)
 	{
 	case WM_INITMENUPOPUP:
-		OnInitMenuPopup(CMenu::FromHandle((HMENU)wp), LOWORD(lp), HIWORD(lp));
+		if (!HIWORD(lp)) // let windows look after the system menu 
+		{
+			LRESULT lr = CSubclassWnd::Default();
+			OnInitMenuPopup(CMenu::FromHandle((HMENU)wp));
+			return lr;
+		}
 		break;
 		
 	case WM_DRAWITEM:
@@ -206,7 +185,7 @@ BOOL CMenuIconMgr::OnDrawItem(int /*nIDCtl*/, LPDRAWITEMSTRUCT lpdis)
     if (lpdis == NULL || lpdis->CtlType != ODT_MENU)
         return FALSE; // not for a menu
 	
-    HICON hIcon = LoadItemImage(lpdis->itemID, (lpdis->itemState & ODS_SELECTED));
+    HICON hIcon = LoadItemImage(lpdis->itemID);
 	
     if (hIcon)
     {
@@ -218,6 +197,10 @@ BOOL CMenuIconMgr::OnDrawItem(int /*nIDCtl*/, LPDRAWITEMSTRUCT lpdis)
 		
         ::DrawIconEx(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, hIcon, 
 					bitmap.bmWidth, bitmap.bmHeight, 0, NULL, DI_IMAGE | DI_MASK);
+	
+		// cleanup
+		::DeleteObject(iconinfo.hbmColor);
+		::DeleteObject(iconinfo.hbmMask);
 
 		return TRUE;
     }
@@ -225,11 +208,10 @@ BOOL CMenuIconMgr::OnDrawItem(int /*nIDCtl*/, LPDRAWITEMSTRUCT lpdis)
 	return FALSE;
 }
 
-void CMenuIconMgr::OnInitMenuPopup(CMenu* pMenu, UINT /*nIndex*/, BOOL bSysMenu)
+void CMenuIconMgr::OnInitMenuPopup(CMenu* pMenu)
 {
-    if (bSysMenu)
-        pMenu = GetCWnd()->GetSystemMenu(FALSE);
-	
+	ASSERT (pMenu);
+
     MENUINFO mnfo;
     mnfo.cbSize = sizeof(mnfo);
     mnfo.fMask = MIM_STYLE;
@@ -251,8 +233,6 @@ void CMenuIconMgr::OnInitMenuPopup(CMenu* pMenu, UINT /*nIndex*/, BOOL bSysMenu)
 		
         if (hIcon && !(minfo.fType & MFT_OWNERDRAW))
         {
-			TRACE ("CMenuIconMgr::OnInitMenuPopup(%s, %d)\n", sItem, minfo.wID);
-			
             minfo.fMask = MIIM_BITMAP | MIIM_DATA;
             minfo.hbmpItem = HBMMENU_CALLBACK;
 			
@@ -273,7 +253,6 @@ BOOL CMenuIconMgr::OnMeasureItem(int /*nIDCtl*/, LPMEASUREITEMSTRUCT lpmis)
 	
     if (hIcon)
     {
-		
         ICONINFO iconinfo;
         ::GetIconInfo(hIcon, &iconinfo);
 		
@@ -282,6 +261,10 @@ BOOL CMenuIconMgr::OnMeasureItem(int /*nIDCtl*/, LPMEASUREITEMSTRUCT lpmis)
 		
         lpmis->itemWidth = bitmap.bmWidth;
         lpmis->itemHeight = bitmap.bmHeight;
+	
+		// cleanup
+		::DeleteObject(iconinfo.hbmColor);
+		::DeleteObject(iconinfo.hbmMask);
 		
 		return TRUE;
     }

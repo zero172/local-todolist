@@ -7,16 +7,16 @@
 // TDLCategoryComboBox.h : header file
 //
 
-#include "..\shared\checkcombobox.h"
+#include "checkcombobox.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// CTDLCategoryComboBox window
+// CEnCheckComboBox window
 
-class CTDLCategoryComboBox : public CCheckComboBox
+class CEnCheckComboBox : public CCheckComboBox
 {
 	// Construction
 public:
-	CTDLCategoryComboBox(BOOL bEnable = TRUE);
+	CEnCheckComboBox(BOOL bMulti = TRUE, UINT nIDNoneString = 0, UINT nIDAnyString = 0);
 	
 	BOOL EnableMultiSelection(BOOL bEnable = TRUE);
 	BOOL GetCheck(int nIndex) const;
@@ -26,10 +26,11 @@ public:
 
 protected:
 	BOOL m_bMultiSel;
+	UINT m_nIDNoneString, m_nIDAnyString;
 	
 	// Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CTDLCategoryComboBox)
+	//{{AFX_VIRTUAL(CEnCheckComboBox)
 public:
 	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 protected:
@@ -45,11 +46,11 @@ protected:
 	
 	// Implementation
 public:
-	virtual ~CTDLCategoryComboBox();
+	virtual ~CEnCheckComboBox();
 	
 	// Generated message map functions
 protected:
-	//{{AFX_MSG(CTDLCategoryComboBox)
+	//{{AFX_MSG(CEnCheckComboBox)
 	//}}AFX_MSG
 	afx_msg void OnLBSelChange();
 	

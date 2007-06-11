@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "fileedit.h"
 #include "folderdialog.h"
-#include "filedialogex.h"
+#include "enfiledialog.h"
 #include "filemisc.h"
 
 #include <shlwapi.h>
@@ -264,7 +264,7 @@ void CFileEdit::OnBtnClick(UINT nID)
 				BOOL bOpenFileDlg = !HasStyle(FES_SAVEAS);
 				DWORD dwFlags = bOpenFileDlg ? OFN_FILEMUSTEXIST : OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
 
-				CFileDialogEx dialog(bOpenFileDlg, NULL, sFilename, dwFlags, m_sFilter);
+				CEnFileDialog dialog(bOpenFileDlg, NULL, sFilename, dwFlags, m_sFilter);
 				
 				dialog.m_ofn.lpstrTitle = FILEEDIT_BROWSE_TITLE;
 				
@@ -296,7 +296,6 @@ void CFileEdit::OnBtnClick(UINT nID)
 				if (!m_sCurFolder.IsEmpty())
 					_chdir(m_sCurFolder);
 
-//				int nRes = (int)ShellExecute(*this, NULL, sPath, NULL, NULL, SW_SHOWNORMAL); 
 				int nRes = (int)FileMisc::Run(*this, sPath, m_sCurFolder, SW_SHOWNORMAL); 
 
 				if (nRes < 32)
@@ -357,7 +356,11 @@ CRect CFileEdit::GetIconRect() const
 	return rButton;
 }
 
-UINT CFileEdit::OnNcHitTest(CPoint point) 
+#if _MSC_VER >= 1400
+LRESULT CFileEdit::OnNcHitTest(CPoint point)
+#else
+UINT CFileEdit::OnNcHitTest(CPoint point)
+#endif
 {
 	if (GetIconRect().PtInRect(point))
 		return HTBORDER;
@@ -367,7 +370,6 @@ UINT CFileEdit::OnNcHitTest(CPoint point)
 
 void CFileEdit::OnNeedTooltip(UINT /*id*/, NMHDR* pNMHDR, LRESULT* pResult)
 {
-	// to be thorough we will need to handle UNICODE versions of the message also
 	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
 	*pResult = 0;
 

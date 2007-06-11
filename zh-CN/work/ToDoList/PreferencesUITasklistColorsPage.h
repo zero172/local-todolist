@@ -17,7 +17,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesUITasklistColorsPage dialog
 
-const COLORREF TASKDONECOLOR = RGB(192, 192, 192);
+const COLORREF TASKDONECOLOR = RGB(128, 128, 128);
 const COLORREF TASKDUECOLOR = RGB(255, 0, 0);
 enum { COLOROPT_CATEGORY, COLOROPT_PRIORITY, COLOROPT_DEFAULT };
 
@@ -40,7 +40,7 @@ public:
 
 	BOOL GetColorPriority() const { return m_bColorPriority; }
 	int GetTextColorOption() const { return m_nTextColorOption; }
-	BOOL GetHidePriorityNumber() const { return m_bHidePriorityNumber && m_bColorPriority; }
+	BOOL GetHidePriorityNumber() const { return m_bHidePriorityNumber/* && m_bColorPriority*/; }
 	int GetPriorityColors(CDWordArray& aColors) const;
 	int GetCategoryColors(CCatColorArray& aColors) const;
 	BOOL GetTreeFont(CString& sFaceName, int& nPointSize) const;
@@ -48,7 +48,7 @@ public:
 	COLORREF GetGridlineColor() const { return m_bSpecifyGridColor ? m_crGridlines : -1; }
 	COLORREF GetTaskDoneColor() const { return m_bSpecifyDoneColor ? m_crDone : TASKDONECOLOR; }
 	COLORREF GetAlternateLineColor() const { return m_bAlternateLineColor ? m_crAltLine : -1; }
-	COLORREF GetTaskDueColor() const { return m_bSpecifyDueColor ? m_crDue : -1; }
+	void GetTaskDueColors(COLORREF& crDue, COLORREF& crDueToday) const;
 	BOOL GetColorTaskBackground() const { return m_bColorTaskBackground; }
 	BOOL GetCommentsUseTreeFont() const { return m_bSpecifyTreeFont && m_bCommentsUseTreeFont; }
 
@@ -66,12 +66,14 @@ protected:
 	CString	m_sSelCategory;
 	BOOL	m_bSpecifyDueColor;
 	//}}AFX_DATA
+	BOOL	m_bSpecifyDueTodayColor;
 	BOOL	m_bSpecifyGridColor;
 	BOOL	m_bSpecifyDoneColor;
 	CColorButton	m_btCatColor;
 	CColorButton	m_btDoneColor;
 	CColorButton	m_btGridlineColor;
 	CColorButton	m_btDueColor;
+	CColorButton	m_btDueTodayColor;
 	CComboBox	m_cbTreeFontSize, m_cbCommentsFontSize;
 	CFontComboBox	m_cbTreeFonts, m_cbCommentsFonts;
 	BOOL	m_bSpecifyTreeFont;
@@ -94,7 +96,7 @@ protected:
 	COLORREF m_crGridlines, m_crDone;
 	CColorButton	m_btAltLineColor;
 	COLORREF m_crAltLine;
-	COLORREF m_crDue;
+	COLORREF m_crDue, m_crDueToday;
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -120,6 +122,8 @@ protected:
 	afx_msg void OnSetduetaskcolor();
 	//}}AFX_MSG
 	virtual BOOL OnInitDialog();
+	afx_msg void OnDuetodaytaskcolor();
+	afx_msg void OnSetduetodaytaskcolor();
 	afx_msg void OnSpecifytreefont();
 	afx_msg void OnSetgridlinecolor();
 	afx_msg void OnSpecifygridlinecolor();

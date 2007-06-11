@@ -1,10 +1,10 @@
-// TDImportExportMgr.cpp: implementation of the CTDImportExportMgr class.
+// TDImportExportMgr.cpp: implementation of the CTDLImportExportMgr class.
 //
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
 #include "todolist.h"
-#include "TDImportExportMgr.h"
+#include "TDLImportExportMgr.h"
 #include "tasklisthtmlexporter.h"
 #include "tasklisttxtexporter.h"
 #include "tasklistcsvexporter.h"
@@ -19,17 +19,17 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CTDImportExportMgr::CTDImportExportMgr()
+CTDLImportExportMgr::CTDLImportExportMgr()
 {
 
 }
 
-CTDImportExportMgr::~CTDImportExportMgr()
+CTDLImportExportMgr::~CTDLImportExportMgr()
 {
 
 }
 
-void CTDImportExportMgr::Initialize()
+void CTDLImportExportMgr::Initialize()
 {
 	// add html and text exporters first
 	if (!m_bInitialized)
@@ -42,12 +42,12 @@ void CTDImportExportMgr::Initialize()
 	CImportExportMgr::Initialize();
 }
 
-BOOL CTDImportExportMgr::ExportTaskListToHtml(const ITaskList* pSrcTasks, LPCTSTR szDestFile) const
+BOOL CTDLImportExportMgr::ExportTaskListToHtml(const ITaskList* pSrcTasks, LPCTSTR szDestFile) const
 {
 	return ExportTaskList(pSrcTasks, szDestFile, EXP2HTML);
 }
 
-CString CTDImportExportMgr::ExportTaskListToHtml(const ITaskList* pSrcTasks) const
+CString CTDLImportExportMgr::ExportTaskListToHtml(const ITaskList* pSrcTasks) const
 {
 	char szTempFile[MAX_PATH], szTempPath[MAX_PATH];
 		
@@ -74,12 +74,12 @@ CString CTDImportExportMgr::ExportTaskListToHtml(const ITaskList* pSrcTasks) con
 	return sFile;
 }
 
-BOOL CTDImportExportMgr::ExportTaskListToText(const ITaskList* pSrcTasks, LPCTSTR szDestFile) const
+BOOL CTDLImportExportMgr::ExportTaskListToText(const ITaskList* pSrcTasks, LPCTSTR szDestFile) const
 {
 	return ExportTaskList(pSrcTasks, szDestFile, EXP2TXT);
 }
 
-CString CTDImportExportMgr::ExportTaskListToText(const ITaskList* pSrcTasks) const
+CString CTDLImportExportMgr::ExportTaskListToText(const ITaskList* pSrcTasks) const
 {
 	char szTempFile[MAX_PATH], szTempPath[MAX_PATH];
 		
@@ -106,12 +106,12 @@ CString CTDImportExportMgr::ExportTaskListToText(const ITaskList* pSrcTasks) con
 	return sFile;
 }
 
-BOOL CTDImportExportMgr::ExportTaskListToCsv(const ITaskList* pSrcTasks, LPCTSTR szDestFile) const
+BOOL CTDLImportExportMgr::ExportTaskListToCsv(const ITaskList* pSrcTasks, LPCTSTR szDestFile) const
 {
 	return ExportTaskList(pSrcTasks, szDestFile, EXP2CSV);
 }
 
-CString CTDImportExportMgr::ExportTaskListToCsv(const ITaskList* pSrcTasks) const
+CString CTDLImportExportMgr::ExportTaskListToCsv(const ITaskList* pSrcTasks) const
 {
 	char szTempFile[MAX_PATH], szTempPath[MAX_PATH];
 		

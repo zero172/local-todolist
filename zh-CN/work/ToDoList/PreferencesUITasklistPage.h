@@ -7,7 +7,7 @@
 // PreferencesUITasklistPage.h : header file
 //
 
-#include "TDColumnListBox.h"
+#include "TDLColumnListBox.h"
 
 #include "..\shared\dialoghelper.h"
 #include "..\shared\groupline.h"
@@ -24,8 +24,9 @@ public:
 
 	BOOL GetShowInfoTips() const { return m_bShowInfoTips; }
 	BOOL GetShowComments() const { return m_bShowComments; }
-	BOOL GetShowColumn(TDLB_COLUMN nColumn) const;
-	BOOL GetShowButtonsInTree() const { return m_bShowButtonsInTree; }
+//	BOOL GetShowColumn(TDLB_COLUMN nColumn) const;
+	int GetVisibleColumns(CTDCColumnArray& aColumns) const;
+	void SetVisibleColumns(const CTDCColumnArray& aColumns);
 	BOOL GetShowPathInHeader() const { return m_bShowPathInHeader; }
 	BOOL GetStrikethroughDone() const { return m_bStrikethroughDone; }
 	BOOL GetFullRowSelection() const { return m_bFullRowSelection; }
@@ -62,12 +63,11 @@ protected:
 	BOOL	m_bStrikethroughDone;
 	BOOL	m_bFullRowSelection;
 	BOOL	m_bTreeCheckboxes;
-	CTDColumnListBox m_lbColumnVisibility;
+	CTDLColumnListBox m_lbColumnVisibility;
 	BOOL	m_bShowInfoTips;
 	BOOL	m_bShowComments;
 	BOOL	m_bShowPercentColumn;
 	BOOL	m_bShowPriorityColumn;
-	BOOL	m_bShowButtonsInTree;
 	int		m_nSelColumnVisibility;
 	BOOL	m_bHideZeroTimeCost;
 	BOOL	m_bHideStartDueForDoneTasks;
@@ -96,6 +96,8 @@ protected:
 	//}}AFX_MSG
 	virtual BOOL OnInitDialog();
 	DECLARE_MESSAGE_MAP()
+
+	void SaveColumns() const;
 
 };
 

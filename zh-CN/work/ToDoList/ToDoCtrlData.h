@@ -35,9 +35,10 @@ public:
 	BOOL IsDue(const COleDateTime& dateDueBy) const;
 	
 	void SetModified();
-	void ResetCalcs(); 
+	void ResetCalcs() const; 
 
 	CString GetFirstCategory() const;
+	CString GetFirstAllocTo() const;
 
 	BOOL GetNextOccurence(COleDateTime& dtNext) const;
 
@@ -49,7 +50,8 @@ public:
 	COleDateTime dateStart, dateDue, dateDone, dateCreated;
 	int nPriority;
 	double dCost;
-	CString sAllocTo, sAllocBy;
+	CStringArray aAllocTo;
+	CString sAllocBy;
 	CString sStatus;
 	CStringArray aCategories;
 	CString sCreatedBy;
@@ -90,7 +92,8 @@ public:
 	
 	inline UINT GetTaskCount() const { return m_mapTDItems.GetCount(); }
 	inline DWORD GetTaskID(HTREEITEM hti) const { return hti ? m_tree.GetItemData(hti) : 0; }
-	inline HTREEITEM GetItem(DWORD dwID) const { return FindItem(dwID, NULL); }
+	
+	HTREEITEM GetItem(DWORD dwID) const;
 	
 	TODOITEM* NewTask(const TODOITEM* pTDIRef = NULL);
 	TODOITEM* GetTask(DWORD dwID) const;
@@ -98,8 +101,11 @@ public:
 	void DeleteTask(DWORD dwID);
 	void DeleteAllTasks(BOOL bIncTree = TRUE);
 	void AddTask(DWORD dwID, TODOITEM* pTDI);
+
+	double GetEarliestDueDate() const;
 	
 	void Sort(TDC_SORTBY nBy, BOOL bAscending, HTREEITEM htiRoot = NULL);
+	void SetSortDueTodayHigh(BOOL bHigh);
 	
 	// Gets
 	CString GetTaskTitle(DWORD dwID) const;
@@ -112,7 +118,7 @@ public:
 	double GetTaskTimeEstimate(DWORD dwID, int& nUnits) const;
 	double GetTaskTimeSpent(DWORD dwID, int& nUnits) const;
 	double GetTaskCost(DWORD dwID) const;
-	CString GetTaskAllocTo(DWORD dwID) const;
+	int GetTaskAllocTo(DWORD dwID, CStringArray& aAllocTo) const;
 	CString GetTaskAllocBy(DWORD dwID) const;
 	CString GetTaskCreatedBy(DWORD dwID) const;
 	CString GetTaskStatus(DWORD dwID) const;
@@ -131,7 +137,7 @@ public:
 	double GetTaskTimeEstimate(HTREEITEM hti, int& nUnits) const;
 	double GetTaskTimeSpent(HTREEITEM hti, int& nUnits) const;
 	int GetTaskPercent(HTREEITEM hti) const;
-	CString GetTaskAllocTo(HTREEITEM hti) const;
+	int GetTaskAllocTo(HTREEITEM hti, CStringArray& aAllocTo) const;
 	CString GetTaskAllocBy(HTREEITEM hti) const;
 	CString GetTaskStatus(HTREEITEM hti) const;
 	int GetTaskCategories(HTREEITEM hti, CStringArray& aCategories) const;
@@ -147,14 +153,13 @@ public:
 	COleDateTime GetTaskDate(HTREEITEM hti, TDC_DATE nDate) const;
 	BOOL GetTaskRecurrence(HTREEITEM hti, TDIRECURRENCE& tr) const;
 	CString GetTaskVersion(HTREEITEM hti) const;
-
 	
 	int GetTaskDependents(DWORD dwTaskID, CDWordArray& aDependents) const;
 	int GetTaskDependencies(DWORD dwTaskID, CDWordArray& aDepends) const;
 	BOOL HasCircularDependencies(DWORD dwTaskID) const;
 
-	BOOL IsTaskDue(HTREEITEM hti) const;
-	double GetEarliestDueDate(HTREEITEM hti) const;
+	BOOL IsTaskDue(HTREEITEM hti, BOOL bToday = FALSE) const;
+	double GetEarliestDueDate(HTREEITEM hti, BOOL bCheckChildren) const;
 	int GetHighestPriority(HTREEITEM hti, BOOL bIncludeDue = TRUE) const;
 	int GetHighestRisk(HTREEITEM hti) const;
 	int CalcPercentDone(HTREEITEM hti) const;
@@ -163,11 +168,21 @@ public:
 	double CalcTimeSpent(HTREEITEM hti, int nUnits) const;
 	BOOL GetSubtaskTotals(HTREEITEM hti, int& nSubtasksTotal, int& nSubtasksDone) const;
 	CString GetTaskPath(HTREEITEM hti, int nMaxElementLen = -1) const; // nMaxElementLen relates to each element of the path
-	CString GetLongestExternalID(HTREEITEM hti) const;
-	CString GetLongestCategory(HTREEITEM hti) const;
+
+	CString GetLongestVisibleExternalID(HTREEITEM hti) const;
+	CString GetLongestVisibleCategory(HTREEITEM hti) const;
+	CString GetLongestVisibleAllocTo(HTREEITEM hti) const;
+
+	CString GetLongestVisibleExternalID() const;
+	CString GetLongestVisibleCategory() const;
+	CString GetLongestVisibleAllocTo() const;
 	
-	BOOL IsTaskDue(HTREEITEM hti, const TODOITEM* tdi) const;
-	double GetEarliestDueDate(HTREEITEM hti, const TODOITEM* pTDI) const;
+	CString GetLongestVisibleExternalID(HTREEITEM hti, const TODOITEM* pTDI) const;
+	CString GetLongestVisibleCategory(HTREEITEM hti, const TODOITEM* pTDI) const;
+	CString GetLongestVisibleAllocTo(HTREEITEM hti, const TODOITEM* pTDI) const;
+
+	BOOL IsTaskDue(HTREEITEM hti, const TODOITEM* tdi, BOOL bToday = FALSE) const;
+	double GetEarliestDueDate(HTREEITEM hti, const TODOITEM* pTDI, BOOL bCheckChildren) const;
 	int GetHighestPriority(HTREEITEM hti, const TODOITEM* pTDI, BOOL bIncludeDue = TRUE) const;
 	int GetHighestRisk(HTREEITEM hti, const TODOITEM* pTDI) const;
 	double CalcCost(HTREEITEM hti, const TODOITEM* pTDI) const;
@@ -177,24 +192,22 @@ public:
 	int CalcPercentFromTime(HTREEITEM hti, const TODOITEM* pTDI) const; // spent / estimate
 	BOOL GetSubtaskTotals(HTREEITEM hti, const TODOITEM* pTDI, 
 							int& nSubtasksTotal, int& nSubtasksDone) const;
-	CString GetLongestExternalID(HTREEITEM hti, const TODOITEM* pTDI) const;
-	CString GetLongestCategory(HTREEITEM hti, const TODOITEM* pTDI) const;
 	
 	// Sets. 0 = failed, 1 = success, -1 = success (no change)
 	int SetTaskDate(DWORD dwID, TDC_DATE nDate, const COleDateTime& date);
 	int OffsetTaskDate(DWORD dwID, TDC_DATE nDate, int nAmount, int nUnits);
 	int SetTaskDone(DWORD dwID, BOOL bDone, int& nPrevPercent);
 	int SetTaskColor(DWORD dwID, COLORREF color);
+	int ClearTaskColor(DWORD dwID) { SetTaskColor(dwID, (COLORREF)-1); }
 	int SetTaskComments(DWORD dwID, LPCTSTR szComments);
 	int SetTaskCustomComments(DWORD dwID, const CString& sComments); // can't be LPCTSTR cos not NULL terminated
 	int SetTaskPercent(DWORD dwID, int nPercent);
 	int SetTaskTimeEstimate(DWORD dwID, const double& dTime, int nUnits = TDITU_HOURS);
 	int SetTaskTimeSpent(DWORD dwID, const double& dTime, int nUnits = TDITU_HOURS);
 	int SetTaskCost(DWORD dwID, const double& dCost);
-	int SetTaskAllocTo(DWORD dwID, LPCTSTR szAllocTo);
+	int SetTaskAllocTo(DWORD dwID, const CStringArray& aAllocTo);
 	int SetTaskAllocBy(DWORD dwID, LPCTSTR szAllocBy);
 	int SetTaskStatus(DWORD dwID, LPCTSTR szStatus);
-	int SetTaskCategory(DWORD dwID, LPCTSTR szCategory);
 	int SetTaskCategories(DWORD dwID, const CStringArray& aCategories);
 	int SetTaskDependency(DWORD dwID, LPCTSTR szDepends);
 	int SetTaskExtID(DWORD dwID, LPCTSTR szID);
@@ -217,7 +230,7 @@ public:
 	void UpdateHTIMapEntry(CHTIMap& mapHTI, HTREEITEM hti) const;
 	BOOL IsTaskFullyDone(HTREEITEM hti, const TODOITEM* pTDI, BOOL bCheckSiblings) const;
 	
-	void ResetCachedCalculations();
+	void ResetCachedCalculations() const;
 	
 	BOOL IsTaskTimeTrackable(HTREEITEM hti) const;
 	BOOL IsTaskDone(HTREEITEM hti, DWORD dwExtraCheck = TDCCHECKNONE) const;
@@ -236,11 +249,9 @@ protected:
 	CTDIMap m_mapTDItems; // the real data
 	CTreeCtrl& m_tree; // CToDoCtrl tree
 	const CWordArray& m_aStyles; // CToDoCtrl styles
+	BOOL m_bSortDueTodayHigh;
 	
 protected:
-	static int ParseSearchString(LPCTSTR szLookFor, CStringArray& aWords);
-	static BOOL FindWord(LPCTSTR szWord, LPCTSTR szText, BOOL bMatchCase, BOOL bMatchWholeWord);
-	
 	DWORD FindFirstTask(HTREEITEM hti, const SEARCHPARAMS& params, SEARCHRESULT& result) const;
 	int FindTasks(HTREEITEM hti, const SEARCHPARAMS& params, CResultArray& aResults) const;
 	BOOL TaskMatches(HTREEITEM hti, const SEARCHPARAMS& params, SEARCHRESULT& result) const;
@@ -253,9 +264,8 @@ protected:
 	static BOOL TaskMatches(const CString& sText, const SEARCHPARAMS& params, SEARCHRESULT& result);
 	static BOOL TaskMatches(const double& dValue, const SEARCHPARAMS& params, SEARCHRESULT& result);
 	static BOOL TaskMatches(int nValue, const SEARCHPARAMS& params, SEARCHRESULT& result);
-	static BOOL TaskMatches(const CStringArray& aCats, const SEARCHPARAMS& params, SEARCHRESULT& result);
+	static BOOL TaskMatches(const CStringArray& aItems, const SEARCHPARAMS& params, SEARCHRESULT& result);
 	
-	HTREEITEM FindItem(DWORD dwID, HTREEITEM htiStart) const;
 	inline BOOL HasStyle(int nStyle) const { return m_aStyles[nStyle] ? TRUE : FALSE; }
 	
 	// for sorting
@@ -271,6 +281,9 @@ protected:
 	};
 	
 	void Sort(HTREEITEM hti, const TDSORTSTRUCT& ss);
+	int CompareTasks(TODOITEM* pTDI1, HTREEITEM hti1, TODOITEM* pTDI2, HTREEITEM hti2, 
+					 TDC_SORTBY nSortBy, BOOL bAscending);
+
 	static int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort); 
 	static int Compare(const COleDateTime& date1, const COleDateTime& date2);
 	static int Compare(const CString& sText1, const CString& sText2, BOOL bCheckEmpty = FALSE);

@@ -61,19 +61,19 @@ public:
    // returns the new item
 	CXmlItem* AddItem(LPCTSTR szName, LPCTSTR sValue = NULL, BOOL bCData = FALSE);
 	CXmlItem* AddItem(LPCTSTR szName, int nValue);
-	CXmlItem* AddItem(LPCTSTR szName, const double& dValue);
+	CXmlItem* AddItem(LPCTSTR szName, double dValue);
 	CXmlItem* AddItem(const CXmlItem& xi, BOOL bCopySiblings); // item and all attributes are copied
 	CXmlItem* AddItem(CXmlItem* pXI); 
 
    // returns the new or existing item
 	CXmlItem* SetItemValue(LPCTSTR szName, LPCTSTR sValue, BOOL bCData = FALSE);
 	CXmlItem* SetItemValue(LPCTSTR szName, int nValue);
-	CXmlItem* SetItemValue(LPCTSTR szName, const double& dValue);
+	CXmlItem* SetItemValue(LPCTSTR szName, double dValue);
 
 	BOOL SetName(LPCTSTR sName); // can't have any siblings
 	void SetValue(LPCTSTR sValue);
 	void SetValue(int nValue);
-	void SetValue(const double& dValue);
+	void SetValue(double dValue);
 
 	BOOL RemoveItem(CXmlItem* pXIChild); // must be a direct child (does not destroy item)
 	BOOL DeleteItem(CXmlItem* pXIChild); // must be a direct child
@@ -201,9 +201,13 @@ public:
 
 	CXmlItem* AddItem(LPCTSTR szName, LPCTSTR szValue = "");
 	CXmlItem* AddItem(LPCTSTR szName, int nValue);
-	CXmlItem* AddItem(LPCTSTR szName, const double& dValue);
+	CXmlItem* AddItem(LPCTSTR szName, double dValue);
 
 	BOOL DeleteItem(CXmlItem* pXI);
+
+	CXmlItem* SetItemValue(LPCTSTR szName, LPCTSTR sValue, BOOL bCData = FALSE);
+	CXmlItem* SetItemValue(LPCTSTR szName, int nValue);
+	CXmlItem* SetItemValue(LPCTSTR szName, double dValue);
 
 	LPCTSTR GetItemValue(LPCTSTR szItemName, LPCTSTR szSubItemName = NULL) const;
 	int GetItemValueI(LPCTSTR szItemName, LPCTSTR szSubItemName = NULL) const;

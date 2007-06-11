@@ -87,8 +87,10 @@ CPreferencesUITasklistColorsPage::CPreferencesUITasklistColorsPage() :
 	m_crGridlines = AfxGetApp()->GetProfileInt("Preferences\\Colors", "Gridlines", GRIDLINECOLOR);
 	m_bSpecifyDoneColor = AfxGetApp()->GetProfileInt("Preferences", "SpecifyDoneColor", TRUE);
 	m_bSpecifyDueColor = AfxGetApp()->GetProfileInt("Preferences", "SpecifyDueColor", FALSE);
+	m_bSpecifyDueTodayColor = AfxGetApp()->GetProfileInt("Preferences", "SpecifyDueTodayColor", FALSE);
 	m_crDone = AfxGetApp()->GetProfileInt("Preferences\\Colors", "TaskDone", TASKDONECOLOR);
 	m_crDue = AfxGetApp()->GetProfileInt("Preferences\\Colors", "TaskDue", TASKDUECOLOR);
+	m_crDueToday = AfxGetApp()->GetProfileInt("Preferences\\Colors", "TaskDueToday", TASKDUECOLOR);
 	m_bColorTaskBackground = AfxGetApp()->GetProfileInt("Preferences", "ColorTaskBackground", FALSE);
 	m_bCommentsUseTreeFont = AfxGetApp()->GetProfileInt("Preferences", "CommentsUseTreeFont", FALSE);
 	m_bHLSColorGradient = AfxGetApp()->GetProfileInt("Preferences", "HLSColorGradient", TRUE);
@@ -122,7 +124,9 @@ void CPreferencesUITasklistColorsPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SETCATEGORYCOLOR, m_btCatColor);
 	DDX_Check(pDX, IDC_DUETASKCOLOR, m_bSpecifyDueColor);
 	//}}AFX_DATA_MAP
+	DDX_Check(pDX, IDC_DUETODAYTASKCOLOR, m_bSpecifyDueTodayColor);
 	DDX_Control(pDX, IDC_SETDUETASKCOLOR, m_btDueColor);
+	DDX_Control(pDX, IDC_SETDUETODAYTASKCOLOR, m_btDueTodayColor);
 	DDX_Control(pDX, IDC_SETDONECOLOR, m_btDoneColor);
 	DDX_Control(pDX, IDC_SETGRIDLINECOLOR, m_btGridlineColor);
 	DDX_Control(pDX, IDC_TREEFONTSIZE, m_cbTreeFontSize);
@@ -197,6 +201,8 @@ BEGIN_MESSAGE_MAP(CPreferencesUITasklistColorsPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_COLORTEXTBYPRIORITY, OnChangeTextColorOption)
 	ON_BN_CLICKED(IDC_SETDUETASKCOLOR, OnSetduetaskcolor)
 	//}}AFX_MSG_MAP
+	ON_BN_CLICKED(IDC_DUETODAYTASKCOLOR, OnDuetodaytaskcolor)
+	ON_BN_CLICKED(IDC_SETDUETODAYTASKCOLOR, OnSetduetodaytaskcolor)
 	ON_BN_CLICKED(IDC_SPECIFYTREEFONT, OnSpecifytreefont)
 	ON_BN_CLICKED(IDC_SETGRIDLINECOLOR, OnSetgridlinecolor)
 	ON_BN_CLICKED(IDC_SPECIFYGRIDLINECOLOR, OnSpecifygridlinecolor)
@@ -222,7 +228,7 @@ BOOL CPreferencesUITasklistColorsPage::OnInitDialog()
 
 	GetDlgItem(IDC_GRADIENTPRIORITYCOLORS)->EnableWindow(m_bColorPriority);
 	GetDlgItem(IDC_INDIVIDUALPRIORITYCOLORS)->EnableWindow(m_bColorPriority);
-	GetDlgItem(IDC_HIDEPRIORITYNUMBER)->EnableWindow(m_bColorPriority);
+//	GetDlgItem(IDC_HIDEPRIORITYNUMBER)->EnableWindow(m_bColorPriority);
 	GetDlgItem(IDC_PRIORITYCOLORS)->EnableWindow(m_bColorPriority && !m_bGradientPriorityColors);
 	GetDlgItem(IDC_USEHLSGRADIENT)->EnableWindow(m_bColorPriority && m_bGradientPriorityColors);
 	GetDlgItem(IDC_CATEGORYCOLORS)->EnableWindow(m_nTextColorOption == COLOROPT_CATEGORY);
@@ -244,6 +250,7 @@ BOOL CPreferencesUITasklistColorsPage::OnInitDialog()
 	m_btDoneColor.EnableWindow(m_bSpecifyDoneColor);
 	m_btAltLineColor.EnableWindow(m_bAlternateLineColor);
 	m_btDueColor.EnableWindow(m_bSpecifyDueColor);
+	m_btDueTodayColor.EnableWindow(m_bSpecifyDueTodayColor);
 	m_btCatColor.EnableWindow(m_nTextColorOption == COLOROPT_CATEGORY && !m_sSelCategory.IsEmpty());
 	
 	m_btGridlineColor.SetColor(m_crGridlines);
@@ -253,6 +260,7 @@ BOOL CPreferencesUITasklistColorsPage::OnInitDialog()
 	m_btDoneColor.SetColor(m_crDone);
 	m_btAltLineColor.SetColor(m_crAltLine);
 	m_btDueColor.SetColor(m_crDue);
+	m_btDueTodayColor.SetColor(m_crDueToday);
 
 	// category colors
 	if (!m_sSelCategory.IsEmpty())
@@ -312,7 +320,7 @@ void CPreferencesUITasklistColorsPage::OnColorPriority()
 
 	GetDlgItem(IDC_GRADIENTPRIORITYCOLORS)->EnableWindow(m_bColorPriority);
 	GetDlgItem(IDC_INDIVIDUALPRIORITYCOLORS)->EnableWindow(m_bColorPriority);
-	GetDlgItem(IDC_HIDEPRIORITYNUMBER)->EnableWindow(m_bColorPriority);
+//	GetDlgItem(IDC_HIDEPRIORITYNUMBER)->EnableWindow(m_bColorPriority);
 
 	OnChangePriorityColorOption(); // to handle the other controls
 
@@ -389,12 +397,6 @@ int CPreferencesUITasklistColorsPage::GetPriorityColors(CDWordArray& aColors) co
 				}
 			}
 		}
-
-		// add 'due' color
-		if (m_bSpecifyDueColor)
-			aColors.Add(m_crDue);
-		else
-			aColors.Add(aColors[10]);
 	}
 	else
 	{
@@ -410,15 +412,15 @@ int CPreferencesUITasklistColorsPage::GetPriorityColors(CDWordArray& aColors) co
 		aColors.Add(RGB(48, 48, 48));		// 8
 		aColors.Add(RGB(24, 24, 24));		// 9
 		aColors.Add(0);						// 10
-
-		// add 'due' color
-		if (m_bSpecifyDueColor)
-			aColors.Add(m_crDue);
-		else
-			aColors.Add(TASKDUECOLOR);
 	}
 	
 	return aColors.GetSize(); 
+}
+
+void CPreferencesUITasklistColorsPage::GetTaskDueColors(COLORREF& crDue, COLORREF& crDueToday) const 
+{ 
+	crDue = m_bSpecifyDueColor ? m_crDue : -1; 
+	crDueToday = m_bSpecifyDueTodayColor ? m_crDueToday : -1; 
 }
 
 int CPreferencesUITasklistColorsPage::GetCategoryColors(CCatColorArray& aColors) const
@@ -491,6 +493,8 @@ void CPreferencesUITasklistColorsPage::OnOK()
 	AfxGetApp()->WriteProfileInt("Preferences\\Colors", "TaskDone", m_crDone);
 	AfxGetApp()->WriteProfileInt("Preferences", "SpecifyDueColor", m_bSpecifyDueColor);
 	AfxGetApp()->WriteProfileInt("Preferences\\Colors", "TaskDue", m_crDue);
+	AfxGetApp()->WriteProfileInt("Preferences", "SpecifyDueTodayColor", m_bSpecifyDueTodayColor);
+	AfxGetApp()->WriteProfileInt("Preferences\\Colors", "TaskDueToday", m_crDueToday);
 	AfxGetApp()->WriteProfileInt("Preferences", "ColorTaskBackground", m_bColorTaskBackground);
 	AfxGetApp()->WriteProfileInt("Preferences", "CommentsUseTreeFont", m_bCommentsUseTreeFont);
 	AfxGetApp()->WriteProfileInt("Preferences", "HLSColorGradient", m_bHLSColorGradient);
@@ -713,7 +717,19 @@ void CPreferencesUITasklistColorsPage::OnDuetaskcolor()
 	m_btDueColor.EnableWindow(m_bSpecifyDueColor);
 }
 
+void CPreferencesUITasklistColorsPage::OnDuetodaytaskcolor() 
+{
+	UpdateData();	
+	
+	m_btDueTodayColor.EnableWindow(m_bSpecifyDueTodayColor);
+}
+
 void CPreferencesUITasklistColorsPage::OnSetduetaskcolor() 
 {
 	m_crDue = m_btDueColor.GetColor();
+}
+
+void CPreferencesUITasklistColorsPage::OnSetduetodaytaskcolor() 
+{
+	m_crDueToday = m_btDueTodayColor.GetColor();
 }

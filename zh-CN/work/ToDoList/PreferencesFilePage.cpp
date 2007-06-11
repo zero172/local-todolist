@@ -28,6 +28,7 @@ CPreferencesFilePage::CPreferencesFilePage() :
 
 	//{{AFX_DATA_INIT(CPreferencesFilePage)
 	m_bExpandTasks = FALSE;
+	m_bCheckForChangesBeforeSaving = FALSE;
 	//}}AFX_DATA_INIT
 	m_bNotifyDueOnLoad = AfxGetApp()->GetProfileInt("Preferences", "NotifyDue", FALSE);
 	m_bNotifyDueOnSwitch = AfxGetApp()->GetProfileInt("Preferences", "NotifyDueOnSwitch", FALSE);
@@ -52,6 +53,7 @@ CPreferencesFilePage::CPreferencesFilePage() :
 	m_bDontAutoSaveUnsaved = AfxGetApp()->GetProfileInt("Preferences", "DontAutoSaveUnsaved", FALSE);
 	m_bDontRemoveFlagged = AfxGetApp()->GetProfileInt("Preferences", "DontRemoveFlagged", FALSE);
 	m_bExpandTasks = AfxGetApp()->GetProfileInt("Preferences", "ExpandTasks", FALSE);
+	m_bCheckForChangesBeforeSaving = AfxGetApp()->GetProfileInt("Preferences", "CheckForChangesBeforeSaving", TRUE);
 //	m_b = AfxGetApp()->GetProfileInt("Preferences", "", FALSE);
 
 	m_sExportFolderPath.TrimLeft();
@@ -88,6 +90,7 @@ void CPreferencesFilePage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DONTAUTOSAVEUNSAVED, m_bDontAutoSaveUnsaved);
 	DDX_Check(pDX, IDC_DONTREMOVEFLAGGED, m_bDontRemoveFlagged);
 	DDX_Check(pDX, IDC_EXPANDTASKS, m_bExpandTasks);
+	DDX_Check(pDX, IDC_CHECKFORCHANGESBEFOESAVING, m_bCheckForChangesBeforeSaving);
 	//}}AFX_DATA_MAP
 	DDX_CBIndex(pDX, IDC_NOTIFYDUEBYONLOAD, m_nNotifyDueByOnLoad);
 	DDX_CBIndex(pDX, IDC_NOTIFYDUEBYONSWITCH, m_nNotifyDueByOnSwitch);
@@ -215,6 +218,7 @@ void CPreferencesFilePage::OnOK()
 	AfxGetApp()->WriteProfileInt("Preferences", "DontAutoSaveUnsaved", m_bDontAutoSaveUnsaved);
 	AfxGetApp()->WriteProfileInt("Preferences", "DontRemoveFlagged", m_bDontRemoveFlagged);
 	AfxGetApp()->WriteProfileInt("Preferences", "ExpandTasks", m_bExpandTasks);
+	AfxGetApp()->WriteProfileInt("Preferences", "CheckForChangesBeforeSaving", m_bCheckForChangesBeforeSaving);
 
 //	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
 }

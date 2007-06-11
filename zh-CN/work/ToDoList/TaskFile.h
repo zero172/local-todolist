@@ -22,9 +22,10 @@ public:
 	CTaskFile(LPCTSTR szPassword = NULL);
 	virtual ~CTaskFile();
 
-	BOOL Load(LPCTSTR szFilePath, LPCTSTR szRootItemName = NULL, IXmlParse* pCallback = NULL, BOOL bDecrypt = TRUE);
-	virtual BOOL LoadEx(LPCTSTR szRootItemName = NULL, IXmlParse* pCallback = NULL);
+	BOOL Load(LPCTSTR szFilePath, IXmlParse* pCallback = NULL, BOOL bDecrypt = TRUE);
+	virtual BOOL LoadEx(IXmlParse* pCallback = NULL);
 	virtual BOOL SaveEx();
+	virtual BOOL LoadHeader(LPCTSTR szFilePath);
 
 	virtual BOOL Decrypt(LPCTSTR szPassword = NULL); 
 
@@ -46,6 +47,9 @@ public:
 	void SortTasksByPos();
 	BOOL SetCharSet(LPCTSTR szCharSet);
 	BOOL SetFileName(LPCTSTR szFilename);
+
+	BOOL SetEarliestDueDate(const COleDateTime& date);
+	BOOL GetEarliestDueDate(COleDateTime& date) const;
 
 	BOOL SetCustomCommentsType(const GUID& guid); 
 	BOOL GetCustomCommentsType(GUID& guid) const; 
@@ -80,6 +84,12 @@ public:
 	BOOL SetTaskCategories(HTASKITEM hTask, const CStringArray& aCategories);
 	int  GetTaskCategories(HTASKITEM hTask, CStringArray& aCategories) const;
 
+	BOOL SetTaskDependencies(HTASKITEM hTask, const CStringArray& aDepends);
+	int  GetTaskDependencies(HTASKITEM hTask, CStringArray& aDepends) const;
+
+	BOOL SetTaskAllocatedTo(HTASKITEM hTask, const CStringArray& aAllocTo);
+	int  GetTaskAllocatedTo(HTASKITEM hTask, CStringArray& aAllocTo) const;
+
 	BOOL SetTaskCustomComments(HTASKITEM hTask, const CString& sContent);
 	BOOL GetTaskCustomComments(HTASKITEM hTask, CString& sContent) const;
 	BOOL SetTaskHtmlComments(HTASKITEM hTask, const CString& sContent, BOOL bForTransform);
@@ -94,6 +104,19 @@ public:
 
 	BOOL SetReportAttributes(LPCTSTR szTitle, LPCTSTR szDate = NULL);
 	BOOL HideAttribute(HTASKITEM hTask, const char* szAttrib, BOOL bHide = TRUE);
+
+	bool SetTaskPriority(HTASKITEM hTask, int nPriority);
+	bool SetTaskRisk(HTASKITEM hTask, int nRisk);
+
+	//////////////////////////////////////////////////////////////
+	// ITaskList7 implementation 
+	unsigned char GetTaskDependencyCount(HTASKITEM hTask) const;
+	bool AddTaskDependency(HTASKITEM hTask, const char* szDepends);
+	const char* GetTaskDependency(HTASKITEM hTask, int nIndex) const;
+
+	unsigned char GetTaskAllocatedToCount(HTASKITEM hTask) const;
+	bool AddTaskAllocatedTo(HTASKITEM hTask, const char* szAllocTo);
+	const char* GetTaskAllocatedTo(HTASKITEM hTask, int nIndex) const;
 
 	//////////////////////////////////////////////////////////////
 	// ITaskList6 implementation 
@@ -129,7 +152,7 @@ public:
 	time_t GetTaskDueDate(HTASKITEM hTask, BOOL bEarliest) const;
 	const char* GetTaskDueDateString(HTASKITEM hTask, BOOL bEarliest) const;
 	unsigned long GetTaskTextColor(HTASKITEM hTask) const;
-	unsigned char GetTaskRisk(HTASKITEM hTask, BOOL bHighest) const;
+	int GetTaskRisk(HTASKITEM hTask, BOOL bHighest) const;
 	const char* GetTaskExternalID(HTASKITEM hTask) const;
 
 	bool SetTaskRisk(HTASKITEM hTask, unsigned char nRisk);
@@ -184,7 +207,7 @@ public:
 	unsigned long GetTaskColor(HTASKITEM hTask) const;
 	unsigned long GetTaskPriorityColor(HTASKITEM hTask) const;
 
-	unsigned char GetTaskPriority(HTASKITEM hTask, BOOL bHighest) const;
+	int GetTaskPriority(HTASKITEM hTask, BOOL bHighest) const;
 	unsigned char GetTaskPercentDone(HTASKITEM hTask, BOOL bCalc) const;
 
 	double GetTaskTimeEstimate(HTASKITEM hTask, char& cUnits, BOOL bCalc) const;
@@ -260,6 +283,7 @@ protected:
 	COleDateTime GetTaskDateOle(HTASKITEM hTask, LPCTSTR szDateItem, BOOL bIncTime) const;
 	unsigned char GetTaskUChar(HTASKITEM hTask, LPCTSTR szUCharItem) const;
 	unsigned long GetTaskULong(HTASKITEM hTask, LPCTSTR szULongItem) const;
+	int GetTaskInt(HTASKITEM hTask, LPCTSTR szIntItem) const;
 	const char* GetTaskCChar(HTASKITEM hTask, LPCTSTR szCCharItem) const;
 	double GetTaskDouble(HTASKITEM hTask, LPCTSTR szDoubleItem) const;
 
@@ -267,10 +291,20 @@ protected:
 	bool SetTaskDate(HTASKITEM hTask, LPCTSTR szDateItem, const COleDateTime& tVal, BOOL bIncTime);
 	bool SetTaskUChar(HTASKITEM hTask, LPCTSTR szUCharItem, unsigned char cVal);
 	bool SetTaskULong(HTASKITEM hTask, LPCTSTR szULongItem, unsigned long lVal);
+	bool SetTaskInt(HTASKITEM hTask, LPCTSTR szIntItem, int iVal);
 	bool SetTaskCChar(HTASKITEM hTask, LPCTSTR szCCharItem, const char* szVal, BOOL bCData = FALSE);
 	bool SetTaskDouble(HTASKITEM hTask, LPCTSTR szDoubleItem, double dVal);
 	bool SetTaskTime(HTASKITEM hTask, LPCTSTR szTimeItem, double dTime,
 					 LPCTSTR szUnitsItem, char cUnits);
+
+	bool AddTaskArrayItem(HTASKITEM hTask, const char* szNumItemTag, 
+						  const char* szItemTag, const char* szItem);
+	const char* GetTaskArrayItem(HTASKITEM hTask, const char* szNumItemTag, 
+				  				 const char* szItemTag, int nIndex) const;
+	BOOL SetTaskArray(HTASKITEM hTask, const char* szNumItemTag, 
+				  	 const char* szItemTag, const CStringArray& aItems);
+	int GetTaskArray(HTASKITEM hTask, const char* szNumItemTag, 
+				  	 const char* szItemTag, CStringArray& aItems) const;
 
 	virtual CXmlItem* NewItem(LPCTSTR szName = NULL);
 

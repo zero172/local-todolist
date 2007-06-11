@@ -10,6 +10,7 @@
 #include "..\3rdParty\sha2.h"
 
 #pragma warning(disable:4244)
+#pragma warning(disable:4701)
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction

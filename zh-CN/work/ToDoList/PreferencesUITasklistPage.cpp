@@ -47,17 +47,16 @@ CPreferencesUITasklistPage::CPreferencesUITasklistPage() :
 		CString sKey;
 		sKey.Format("Col%d", nColumn);
 
-		BOOL bDefault = m_lbColumnVisibility.GetColumnState(nColumn);
+		BOOL bDefault = m_lbColumnVisibility.IsColumnVisible(nColumn);
 		BOOL bVisible = AfxGetApp()->GetProfileInt("Preferences\\ColumnVisibility", sKey, bDefault);
 
-		m_lbColumnVisibility.SetColumnState(nColumn, bVisible);
+		m_lbColumnVisibility.SetColumnVisible(nColumn, bVisible);
 	}
 
 	// prefs
 	m_bShowInfoTips = AfxGetApp()->GetProfileInt("Preferences", "ShowInfoTips", TRUE);
 	m_bShowComments = AfxGetApp()->GetProfileInt("Preferences", "ShowComments", TRUE);
 	m_bDisplayFirstCommentLine = AfxGetApp()->GetProfileInt("Preferences", "DisplayFirstCommentLine", TRUE);
-	m_bShowButtonsInTree = AfxGetApp()->GetProfileInt("Preferences", "ShowButtonsInTree", TRUE);
 	m_bStrikethroughDone = AfxGetApp()->GetProfileInt("Preferences", "StrikethroughDone", TRUE);
 	m_bShowPathInHeader = AfxGetApp()->GetProfileInt("Preferences", "ShowPathInHeader", TRUE);
 	m_bFullRowSelection = AfxGetApp()->GetProfileInt("Preferences", "FullRowSelection", FALSE);
@@ -101,7 +100,6 @@ void CPreferencesUITasklistPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COLUMNVISIBILITY, m_lbColumnVisibility);
 	DDX_Check(pDX, IDC_SHOWINFOTIPS, m_bShowInfoTips);
 	DDX_Check(pDX, IDC_SHOWCOMMENTS, m_bShowComments);
-	DDX_Check(pDX, IDC_SHOWBUTTONSINTREE, m_bShowButtonsInTree);
 	DDX_LBIndex(pDX, IDC_COLUMNVISIBILITY, m_nSelColumnVisibility);
 	DDX_Text(pDX, IDC_INFOTIPCOMMENTSMAX, m_nMaxInfoTipCommentsLength);
 	DDX_Check(pDX, IDC_HIDEUNDEFINEDTIMEST, m_bHideZeroTimeCost);
@@ -147,17 +145,26 @@ int CPreferencesUITasklistPage::GetMaxInfoTipCommentsLength() const
 	return -1;
 }
 
+/*
 BOOL CPreferencesUITasklistPage::GetShowColumn(TDLB_COLUMN nColumn) const
 { 
-	return m_lbColumnVisibility.GetColumnState(nColumn);
+	return m_lbColumnVisibility.IsColumnVisible(nColumn);
+}
+*/
+
+int CPreferencesUITasklistPage::GetVisibleColumns(CTDCColumnArray& aColumns) const
+{
+	return m_lbColumnVisibility.GetVisibleColumns(aColumns);
 }
 
-void CPreferencesUITasklistPage::OnOK() 
+void CPreferencesUITasklistPage::SetVisibleColumns(const CTDCColumnArray& aColumns) 
 {
-	CPropertyPage::OnOK();
-	
-	// save settings
-	// column visibility
+	m_lbColumnVisibility.SetVisibleColumns(aColumns);
+	SaveColumns();
+}
+
+void CPreferencesUITasklistPage::SaveColumns() const
+{
 	int nIndex = sizeof(COLUMNS) / sizeof(TDLB_COLUMN);
 	
 	while (nIndex--)
@@ -168,8 +175,16 @@ void CPreferencesUITasklistPage::OnOK()
 		sKey.Format("Col%d", nColumn);
 
 		AfxGetApp()->WriteProfileInt("Preferences\\ColumnVisibility", sKey, 
-									m_lbColumnVisibility.GetColumnState(nColumn));
+									m_lbColumnVisibility.IsColumnVisible(nColumn));
 	}
+}
+
+void CPreferencesUITasklistPage::OnOK() 
+{
+	CPropertyPage::OnOK();
+	
+	// column visibility
+	SaveColumns();
 
 	// save settings
 	AfxGetApp()->WriteProfileInt("Preferences", "ShowInfoTips", m_bShowInfoTips);
@@ -177,7 +192,6 @@ void CPreferencesUITasklistPage::OnOK()
 	AfxGetApp()->WriteProfileInt("Preferences", "DisplayFirstCommentLine", m_bDisplayFirstCommentLine);
 	AfxGetApp()->WriteProfileInt("Preferences", "ShowPercentColumn", m_bShowPercentColumn);
 	AfxGetApp()->WriteProfileInt("Preferences", "ShowPriorityColumn", m_bShowPriorityColumn);
-	AfxGetApp()->WriteProfileInt("Preferences", "ShowButtonsInTree", m_bShowButtonsInTree);
 	AfxGetApp()->WriteProfileInt("Preferences", "StrikethroughDone", m_bStrikethroughDone);
 	AfxGetApp()->WriteProfileInt("Preferences", "ShowPathInHeader", m_bShowPathInHeader);
 	AfxGetApp()->WriteProfileInt("Preferences", "FullRowSelection", m_bFullRowSelection);

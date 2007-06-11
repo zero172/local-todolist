@@ -8,13 +8,12 @@
 //
 
 #include "..\shared\tabbedcombobox.h"
-#include "..\shared\checkcombobox.h"
 #include "..\shared\dialoghelper.h"
+#include "..\shared\encheckcombobox.h"
 
 #include "tdcstruct.h"
 #include "tdlprioritycombobox.h"
 #include "tdlriskcombobox.h"
-#include "tdlcategorycombobox.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CFilterBar dialog
@@ -36,7 +35,8 @@ public:
 	void SetFilterLabelAlignment(BOOL bLeft);
 	void SetPriorityColors(const CDWordArray& aColors);
 	int CalcHeight(int nWidth);
-	void ShowFilter(TDC_COLUMN nType, BOOL bShow, BOOL bUpdate = TRUE);
+	void SetVisibleFilters(const CTDCColumnArray& aFilters);
+//	void ShowFilter(TDC_COLUMN nType, BOOL bShow, BOOL bUpdate = TRUE);
 	BOOL FilterMatches(const FTDCFILTER& filter) { return (filter == m_filter); }
 
 	void EnableMultiCategorySelection(BOOL bEnable = TRUE);
@@ -48,10 +48,12 @@ protected:
 	//}}AFX_DATA
 	CTabbedComboBox	m_cbTaskFilter;
 	int		m_nFilterWhat;
-	CComboBox	m_cbAllocToFilter;
-	CComboBox	m_cbAllocByFilter;
-	CTDLCategoryComboBox	m_cbCategoryFilter;
-	CComboBox	m_cbStatusFilter;
+	CEnCheckComboBox	m_cbAllocToFilter;
+//	CComboBox	m_cbAllocByFilter;
+	CEnCheckComboBox	m_cbAllocByFilter;
+	CEnCheckComboBox	m_cbCategoryFilter;
+//	CComboBox	m_cbStatusFilter;
+	CEnCheckComboBox	m_cbStatusFilter;
 	CTDLPriorityComboBox	m_cbPriorityFilter;
 	CTDLRiskComboBox	m_cbRiskFilter;
 	FTDCFILTER m_filter;

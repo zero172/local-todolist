@@ -186,7 +186,7 @@ int CRecurringTaskEdit::CalcMaxRegularityWidth(CDC* pDC, BOOL bIncOnce)
 /////////////////////////////////////////////////////////////////////////////
 // CRecurringTaskOptionDlg dialog
 
-#define WM_VALUECHANGE (WM_USER + 1)
+#define WM_VALUECHANGE (WM_APP+1)
 
 CRecurringTaskOptionDlg::CRecurringTaskOptionDlg(const TDIRECURRENCE& tr, const COleDateTime& dtDefault, CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_RECURRING_TASK_DIALOG, pParent)

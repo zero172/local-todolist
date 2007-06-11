@@ -114,11 +114,11 @@ SOURCE=..\Shared\EnBitmapEx.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\entoolbar.cpp
+SOURCE=..\Shared\enfiledialog.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\filedialogex.cpp
+SOURCE=..\Shared\entoolbar.cpp
 # End Source File
 # Begin Source File
 
@@ -251,11 +251,11 @@ SOURCE=..\Shared\EnBitmapEx.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\entoolbar.h
+SOURCE=..\Shared\enfiledialog.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\filedialogex.h
+SOURCE=..\Shared\entoolbar.h
 # End Source File
 # Begin Source File
 

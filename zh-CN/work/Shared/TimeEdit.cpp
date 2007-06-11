@@ -90,7 +90,13 @@ CTimeEdit::CTimeEdit(int nUnits, int nMaxDecPlaces) : m_nUnits(nUnits), m_nMaxDe
 
 		if (tu.szLabel[0] == 0) // empty string
 		{
+			//fabio_2005
+#if _MSC_VER >= 1400
+			strncpy_s(tu.szLabel, UNITLABELS[nUnit], LABELLEN - 1);
+#else
 			strncpy(tu.szLabel, UNITLABELS[nUnit], LABELLEN - 1);
+#endif
+
 			tu.szLabel[LABELLEN - 1] = 0;
 		}
 	}
@@ -179,7 +185,8 @@ void CTimeEdit::OnBtnClick(UINT nID)
 	
 	if (menu.CreatePopupMenu())
 	{			
-		for (int nUnit = 0; nUnit < NUM_UNITS; nUnit++)
+		int nUnit = 0; 
+		for (nUnit = 0; nUnit < NUM_UNITS; nUnit++)
 		{
 			const TIMEUNIT& tu = TIMEUNITS[nUnit];
 
@@ -266,7 +273,13 @@ void CTimeEdit::SetUnits(int nUnits, LPCTSTR szLongUnits, LPCTSTR szAbbrevUnits)
 		{
 			if (szLongUnits && *szLongUnits)
 			{
+				//fabio_2005
+#if _MSC_VER >= 1400
+				strncpy_s(tu.szLabel, szLongUnits, LABELLEN - 1);
+#else
 				strncpy(tu.szLabel, szLongUnits, LABELLEN - 1);
+#endif
+
 				tu.szLabel[LABELLEN - 1] = 0;
 			}
 

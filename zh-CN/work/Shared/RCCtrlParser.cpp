@@ -451,7 +451,7 @@ DWORD CRCCtrlParser::GetDefaultStyles(LPCTSTR szRCType)
 
 	while (nType--)
 	{
-		if (stricmp(RCCTRLTYPES[nType].szType, szRCType) == 0)
+		if (_stricmp(RCCTRLTYPES[nType].szType, szRCType) == 0)
 			return RCCTRLTYPES[nType].dwDefStyle;
 	}
 
@@ -464,7 +464,7 @@ BOOL CRCCtrlParser::GetClassName(LPCTSTR szRCType, CString& sClass)
 
 	while (nType--)
 	{
-		if (stricmp(RCCTRLTYPES[nType].szType, szRCType) == 0)
+		if (_stricmp(RCCTRLTYPES[nType].szType, szRCType) == 0)
 		{
 			sClass = RCCTRLTYPES[nType].szClass;
 			return TRUE;

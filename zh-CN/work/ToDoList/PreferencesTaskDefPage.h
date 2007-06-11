@@ -50,7 +50,8 @@ public:
 
 	int GetDefaultPriority() const { return m_nDefPriority; }
 	int GetDefaultRisk() const { return m_nDefRisk; }
-	CString GetDefaultAllocTo() const { return m_sDefAllocTo; }
+//	CString GetDefaultAllocTo() const { return m_sDefAllocTo; }
+	int GetDefaultAllocTo(CStringArray& aAllocTo) const;
 	CString GetDefaultAllocBy() const { return m_sDefAllocBy; }
 	CString GetDefaultStatus() const { return m_sDefStatus; }
 	int GetDefaultCategories(CStringArray& aCats) const;

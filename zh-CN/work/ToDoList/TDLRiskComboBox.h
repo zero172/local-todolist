@@ -12,6 +12,9 @@
 /////////////////////////////////////////////////////////////////////////////
 // CTDLRiskComboBox window
 
+// replacement DDX routine
+void AFXAPI DDX_CBRisk(CDataExchange* pDX, int nIDC, int& nRisk);
+
 class CTDLRiskComboBox : public CComboBox
 {
 // Construction

@@ -6,6 +6,7 @@
 #include "ImportExportMgr.h"
 #include "ITaskList.h"
 #include "IImportExport.h"
+#include "filemisc.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -47,13 +48,12 @@ void CImportExportMgr::Initialize()
 
 	// look at every dll from whereever we are now
 	CFileFind ff;
-    char szFolder[MAX_PATH], szDrive[_MAX_DRIVE], szSearchPath[MAX_PATH];
+    CString sSearchPath = FileMisc::GetModuleFileName(), sFolder, sDrive;
 
-    GetModuleFileName(NULL, szSearchPath, MAX_PATH);
-    _splitpath(szSearchPath, szDrive, szFolder, NULL, NULL);
-    _makepath(szSearchPath, szDrive, szFolder, "*", ".dll");
+	FileMisc::SplitPath(sSearchPath, &sDrive, &sFolder);
+	FileMisc::MakePath(sSearchPath, sDrive, sFolder, "*", ".dll");
 
-	BOOL bContinue = ff.FindFile(szSearchPath);
+	BOOL bContinue = ff.FindFile(sSearchPath);
 	
 	while (bContinue)
 	{
@@ -238,97 +238,21 @@ BOOL CImportExportMgr::ExportTaskList(const ITaskList* pSrcTasks, LPCTSTR szDest
 	return FALSE;
 }
 
-void CImportExportMgr::UpdateExportMenu(CCmdUI* pCmdUI, int nMaxCount, BOOL bEnabled) const
+int CImportExportMgr::FindImporter(LPCTSTR szFilePath)
 {
-	if (pCmdUI->m_pMenu)
+	CString sExt;
+	FileMisc::SplitPath(szFilePath, NULL, NULL, NULL, &sExt);
+
+	if (sExt.IsEmpty()) // no extension
+		return -1;
+
+	int nImporter = m_aImporters.GetSize();
+
+	while (nImporter--)
 	{
-		UINT nStartID = pCmdUI->m_nID;
-
-		// delete existing tool entries first
-		for (int nTool = 0; nTool < nMaxCount; nTool++)
-			pCmdUI->m_pMenu->DeleteMenu(nStartID + nTool, MF_BYCOMMAND);
-		
-		// if we have any tools to add we do it here
-		int nNumExporters = GetNumExporters();
-
-		if (nNumExporters)
-		{
-			int nPos = 0;
-			UINT nFlags = MF_BYPOSITION | MF_STRING | (bEnabled ? 0 : MF_GRAYED);
-			
-			for (nTool = 0; nTool < nMaxCount && nTool < nNumExporters; nTool++)
-			{
-				CString sMenuItem;
-				
-				if (nPos < 9)
-					sMenuItem.Format("&%d %s", nPos + 1, GetExporterMenuText(nTool));
-				else
-					sMenuItem = GetExporterMenuText(nTool);
-
-				pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, nFlags, 
-											nStartID + nTool, sMenuItem);
-				
-				nPos++;
-			}
-			
-			
-			// update end menu count
-			pCmdUI->m_nIndex--; // point to last menu added
-			pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
-			
-			pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
-		}
-		else // if nothing to add just re-add placeholder
-		{
-			pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex, MF_BYPOSITION | MF_STRING | MF_GRAYED, 
-				nStartID, "3rd Party Exporters");
-		}
+		if (GetImporterFileExtension(nImporter).CompareNoCase(sExt) == 0) // match
+			break;
 	}
-}
-
-void CImportExportMgr::UpdateImportMenu(CCmdUI* pCmdUI, int nMaxCount, BOOL bEnabled) const
-{
-	if (pCmdUI->m_pMenu)
-	{
-		UINT nStartID = pCmdUI->m_nID;
-
-		// delete existing tool entries first
-		for (int nTool = 0; nTool < nMaxCount; nTool++)
-			pCmdUI->m_pMenu->DeleteMenu(nStartID + nTool, MF_BYCOMMAND);
-		
-		// if we have any tools to add we do it here
-		int nNumImporters = GetNumImporters();
-
-		if (nNumImporters)
-		{
-			int nPos = 0;
-			UINT nFlags = MF_BYPOSITION | MF_STRING | (bEnabled ? 0 : MF_GRAYED);
-			
-			for (nTool = 0; nTool < nMaxCount && nTool < nNumImporters; nTool++)
-			{
-				CString sMenuItem;
-				
-				if (nPos < 9)
-					sMenuItem.Format("&%d %s", nPos + 1, GetImporterMenuText(nTool));
-				else
-					sMenuItem = GetImporterMenuText(nTool);
-				
-				pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, nFlags, 
-											nStartID + nTool, sMenuItem);
-				
-				nPos++;
-			}
-			
-			// update end menu count
-			pCmdUI->m_nIndex--; // point to last menu added
-			pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
-			
-			pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
-		}
-		else // if nothing to add just re-add placeholder
-		{
-			pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex, MF_BYPOSITION | MF_STRING | MF_GRAYED, 
-				nStartID, "3rd Party Importers");
-		}
-	}
+	
+	return nImporter; // match or -1
 }

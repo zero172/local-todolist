@@ -7,7 +7,7 @@
 
 #include "..\shared\enstring.h"
 #include "..\shared\misc.h"
-#include "..\shared\filedialogex.h"
+#include "..\shared\enfiledialog.h"
 
 #include "..\3rdparty\ini.h"
 
@@ -486,7 +486,7 @@ void CPreferencesToolPage::OnImport()
 
 	while (bContinue)
 	{
-		CFileDialogEx dialog(TRUE, "ini", NULL, 
+		CEnFileDialog dialog(TRUE, "ini", NULL, 
 							OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, 
 							CEnString(IDS_INIFILEFILTER));
 		

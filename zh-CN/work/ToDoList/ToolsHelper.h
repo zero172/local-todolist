@@ -11,6 +11,7 @@
 
 #include "ToolsCmdlineParser.h"
 #include "..\shared\toolbarhelper.h"
+#include "..\shared\menuiconmgr.h"
 
 struct USERTOOL
 {
@@ -30,6 +31,8 @@ struct USERTOOLARGS
 	CString sTaskComments;
 };
 
+class CSysImageList;
+
 typedef CArray<USERTOOL, USERTOOL&> CUserToolArray;
 
 class CToolsHelper  
@@ -38,7 +41,7 @@ public:
 	CToolsHelper(UINT nStart, int nSize = 16);
 	virtual ~CToolsHelper();
 	
-	void UpdateMenu(CCmdUI* pCmdUI, const CUserToolArray& tools);
+	void UpdateMenu(CCmdUI* pCmdUI, const CUserToolArray& tools, CMenuIconMgr& iconMgr);
 	BOOL RunTool(const USERTOOL& tool, const USERTOOLARGS& args, CWnd* pWnd = NULL);
 	void TestTool(const USERTOOL& tool, const USERTOOLARGS& args, CWnd* pWnd = NULL);
 	void AppendToolsToToolbar(const CUserToolArray& aTools, CToolBar& toolbar, UINT nCmdAfter, 
@@ -46,13 +49,15 @@ public:
 	void RemoveToolsFromToolbar(CToolBar& toolbar, UINT nCmdAfter);
 	
 protected:
-   UINT m_nStartID;
-   int m_nSize;
-
+	UINT m_nStartID;
+	int m_nSize;
+	
 protected:
-   BOOL PrepareCmdline(const USERTOOL& tool, CString& sCmdline, const USERTOOLARGS& args);
+	BOOL PrepareCmdline(const USERTOOL& tool, CString& sCmdline, const USERTOOLARGS& args);
    	LPCTSTR GetFileFilter();
 	LPCTSTR GetDefaultFileExt();
+
+	static HICON GetToolIcon(CSysImageList& sil, const USERTOOL& ut);
 
 };
 

@@ -58,6 +58,7 @@ protected:
 	afx_msg void OnEnable(BOOL bEnable);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	//}}AFX_MSG
+	afx_msg LRESULT OnSetFont(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnColorDropDown(NMHDR* pNMHDR, LRESULT* pResult);
 DECLARE_MESSAGE_MAP()
@@ -68,6 +69,8 @@ private:
 
 	CFontComboBox	m_font;
 	CSizeComboBox	m_size;
+//	CColourPicker	m_color;
+//	CColourPicker	m_colorBk;
 	COLORREF		m_crText, m_crBack;
 
 };

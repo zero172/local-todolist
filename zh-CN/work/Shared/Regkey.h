@@ -24,24 +24,28 @@ public:
 	CString GetPath() const { return m_sPath; }
 	HKEY GetKey() const { return m_hKey; }
 	HKEY GetKeyRoot() const { return m_hKeyRoot; }
-
-	LONG Write(const char* pszKey, DWORD dwVal);
-	LONG Write(const char* pszKey, const char* pszVal);
-	LONG Write(const char* pszKey, const BYTE* pData, DWORD dwLength);
-
-	LONG Read(const char* pszKey, DWORD& dwVal) const;
-	LONG Read(const char* pszKey, CString& sVal) const;
-	LONG Read(const char* pszKey, BYTE* pData, DWORD& dwLength) const;
-
+	
+	LONG Write(const char* pszItem, DWORD dwVal);
+	LONG Write(const char* pszItem, const char* pszVal);
+	LONG Write(const char* pszItem, const BYTE* pData, DWORD dwLength);
+	
+	LONG Read(const char* pszItem, DWORD& dwVal) const;
+	LONG Read(const char* pszItem, CString& sVal) const;
+	LONG Read(const char* pszItem, BYTE* pData, DWORD& dwLength) const;
+	
 	static LONG Delete(HKEY hKeyRoot, const char* pszPath);
 	static BOOL KeyExists(HKEY hKeyRoot, const char* pszPath);
+	
+	int GetSubkeyNames(CStringArray& aNames) const;
+	int GetValueNames(CStringArray& aNames) const;
+	BOOL HasValues() const;
+	DWORD GetValueType(const char* pszItem) const;
+	
+	BOOL ExportToIni(LPCTSTR szIniPath) const;
+	BOOL ImportFromIni(LPCTSTR szIniPath);
+	
+	static BOOL CopyKey(HKEY hkRootFrom, const CString& sFromPath, HKEY hkRootTo, const CString& sToPath);
 
-   int GetSubkeyNames(CStringArray& aNames) const;
-   int GetValueNames(CStringArray& aNames) const;
-   BOOL HasValues() const;
-
-   BOOL ExportToIni(LPCTSTR szIniPath) const;
-   BOOL ImportFromIni(LPCTSTR szIniPath);
 
 #ifndef _NOT_USING_MFC_
 	static CString GetAppRegPath(LPCTSTR szAppName = NULL);

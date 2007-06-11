@@ -8,7 +8,7 @@
 #include "resource.h"
 
 #include "..\shared\toolbarhelper.h"
-#include "..\shared\filedialogex.h"
+#include "..\shared\enfiledialog.h"
 #include "..\shared\spellcheckdlg.h"
 #include "..\shared\ITaskList.h"
 #include "..\shared\wclassdefines.h"
@@ -78,13 +78,9 @@ END_MESSAGE_MAP()
 
 BOOL CToDoCommentsCtrl::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
 {
-	if (!AfxInitRichEdit())
-		return FALSE;
+	dwStyle |= ES_AUTOHSCROLL | WS_HSCROLL | ES_NOHIDESEL;
 
-	dwStyle |= ES_AUTOHSCROLL | WS_HSCROLL;
-
-	CWnd* pWnd = this;
-	return pWnd->Create(WC_RICHEDIT20, NULL, dwStyle, rect, pParentWnd, nID);
+ 	return CRichEditHelper::CreateRichEdit20(*this, dwStyle, rect, pParentWnd, nID);
 }
 
 LRESULT CToDoCommentsCtrl::OnSetFont(WPARAM wp, LPARAM lp)
@@ -102,7 +98,7 @@ BOOL CToDoCommentsCtrl::OnChangeText()
 {
 	CUrlRichEditCtrl::OnChangeText();
 
-	if (m_bAllowNotify)
+	if (m_bAllowNotify && IsWindowEnabled() && !(GetStyle() & ES_READONLY))
 		GetParent()->SendMessage(WM_TDCN_COMMENTSCHANGE);
 	
 	return FALSE;
@@ -111,6 +107,8 @@ BOOL CToDoCommentsCtrl::OnChangeText()
 void CToDoCommentsCtrl::SetReadOnly(bool bReadOnly)
 {
 	CUrlRichEditCtrl::SetReadOnly(bReadOnly);
+
+	SetBackgroundColor(!bReadOnly, GetSysColor(COLOR_3DFACE));
 }
 
 void CToDoCommentsCtrl::OnContextMenu(CWnd* pWnd, CPoint point) 
@@ -135,7 +133,7 @@ void CToDoCommentsCtrl::OnContextMenu(CWnd* pWnd, CPoint point)
 	}
 }
 
-void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID)
+void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID) 
 {
 	switch (nCmdID)
 	{
@@ -145,7 +143,6 @@ void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID)
 
 	case ID_COMMENTS_REDO:
 		SendMessage(EM_REDO);
-//		CTextDocument(GetSafeHwnd()).Redo();
 		break;
 
 	case ID_COMMENTS_CUT:
@@ -225,7 +222,7 @@ void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID)
 					sFile.Empty();
 			}
 						
-			CFileDialogEx dialog(TRUE, NULL, sFile);
+			CEnFileDialog dialog(TRUE, NULL, sFile);
 			dialog.m_ofn.lpstrTitle = "Select File";
 			
 			if (dialog.DoModal() == IDOK)
@@ -272,7 +269,7 @@ void CToDoCommentsCtrl::SetWordWrap(BOOL bWrap)
 
 void CToDoCommentsCtrl::OnUpdateCommentsMenuCmd(CCmdUI* pCmdUI)
 {
-	BOOL bReadOnly = (GetStyle() & ES_READONLY);
+	BOOL bReadOnly = (GetStyle() & ES_READONLY) || !IsWindowEnabled();
 	
 	switch (pCmdUI->m_nID)
 	{
@@ -440,4 +437,46 @@ int CToDoCommentsCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	PostMessage(WM_COMMAND, ID_COMMENTS_WORDWRAP, (LPARAM)GetSafeHwnd());
 	
 	return 0;
+}
+
+bool CToDoCommentsCtrl::ProcessMessage(MSG* pMsg) 
+{
+	// process editing shortcuts
+	switch (pMsg->message)
+	{
+	case WM_KEYDOWN:
+		{
+			BOOL bCtrl = (GetKeyState(VK_CONTROL) & 0x8000);
+			BOOL bAlt = (GetKeyState(VK_MENU) & 0x8000);
+
+			if (bCtrl && !bAlt)
+			{
+				switch (pMsg->wParam)
+				{
+				case 'c': 
+				case 'C':
+					Copy();
+					return TRUE;
+
+				case 'v':
+				case 'V':
+					Paste();
+					return TRUE;
+
+				case 'x':
+				case 'X':
+					Cut();
+					return TRUE;
+
+				case 'a':
+				case 'A':
+					SetSel(0, -1);
+					return TRUE;
+				}
+			}
+		}
+		break;
+	}
+
+	return false;
 }

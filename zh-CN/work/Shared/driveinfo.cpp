@@ -267,6 +267,7 @@ BOOL CDriveInfo::IsRemovablePath(LPCTSTR szPathName)
 BOOL CDriveInfo::IsReadonlyPath(LPCTSTR szPathName)
 {
 	DWORD dwAttr = ::GetFileAttributes(szPathName);
+
 	if (dwAttr == 0xffffffff)
 		return -1;
 

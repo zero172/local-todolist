@@ -20,6 +20,7 @@
 //
 
 class CEnCommandLineInfo;
+class CTDLPrefMigrationDlg;
 
 class CToDoListApp : public CWinApp
 {
@@ -34,6 +35,7 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void WinHelp(DWORD dwData, UINT nCmd = HELP_CONTEXT);
 	virtual int DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt);
+	virtual int ExitInstance();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -60,7 +62,11 @@ protected:
 	BOOL SendDataMessage(HWND hwnd, int nType, int nSize, void* pData);
 	BOOL SendDataMessage(HWND hwnd, int nType, LPCTSTR szData);
 	BOOL SendDataMessage(HWND hwnd, int nType, DWORD dwData);
+	void UpgradePreferences(BOOL bUseIni);
+	void ParseCommandLine(CEnCommandLineInfo* pInfo);
 
+	BOOL RelocateFileStateSettings(const CString& sSection, BOOL bUseIni);
+	BOOL RelocateSplitPosSettings(BOOL bUseIni, CTDLPrefMigrationDlg* pFeedbackDlg);
 };
 
 

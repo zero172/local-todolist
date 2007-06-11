@@ -19,7 +19,11 @@ static char THIS_FILE[] = __FILE__;
 
 
 CFilterDlg::CFilterDlg(BOOL bMultiCategorySel, CWnd* pParent /*=NULL*/)
-	: CDialog(CFilterDlg::IDD, pParent), m_cbCategoryFilter(bMultiCategorySel)
+	: CDialog(CFilterDlg::IDD, pParent), 
+	  m_cbCategoryFilter(bMultiCategorySel, IDS_NOCATEGORY, IDS_TDC_ANY),
+	  m_cbAllocToFilter(TRUE, IDS_NOALLOCTO, IDS_TDC_ANYONE),
+	  m_cbAllocByFilter(FALSE, 0, IDS_TDC_ANYONE),
+	  m_cbStatusFilter(FALSE, 0, IDS_TDC_ANY)
 {
 	//{{AFX_DATA_INIT(CFilterDlg)
 	//}}AFX_DATA_INIT
@@ -39,39 +43,87 @@ void CFilterDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILTERCOMBO, m_cbTaskFilter);
 	//}}AFX_DATA_MAP
 	DDX_CBIndex(pDX, IDC_FILTERCOMBO, (int&)m_filter.nFilter);
-	DDX_CBString(pDX, IDC_ALLOCTOFILTERCOMBO, m_filter.sAllocTo);
+//	DDX_CBString(pDX, IDC_ALLOCTOFILTERCOMBO, m_filter.sAllocTo);
 	DDX_CBString(pDX, IDC_ALLOCBYFILTERCOMBO, m_filter.sAllocBy);
 	DDX_CBString(pDX, IDC_STATUSFILTERCOMBO, m_filter.sStatus);
 	
 	// special handling
 	if (pDX->m_bSaveAndValidate)
 	{
-		int nPriority;
-		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nPriority);
-		m_filter.nPriority = nPriority - 1;
+		int nIndex;
 
-		int nRisk;
-		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nRisk);
-		m_filter.nRisk = nRisk - 1;
+		// priority
+		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nIndex);
 
+		if (nIndex == 0) // any
+			m_filter.nPriority = FT_ANYPRIORITY;
+
+		else if (nIndex == 1) // none
+			m_filter.nPriority = FT_NOPRIORITY;
+		else
+			m_filter.nPriority = nIndex - 2;
+
+		// risk
+		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nIndex);
+
+		if (nIndex == 0) // any
+			m_filter.nRisk = FT_ANYRISK;
+
+		else if (nIndex == 1) // none
+			m_filter.nRisk = FT_NORISK;
+		else
+			m_filter.nRisk = nIndex - 2;
+
+		// cats
 		m_cbCategoryFilter.GetChecked(m_filter.aCategories);
 
-		BOOL bAllCats;
-		DDX_Check(pDX, IDC_ALLCATEGORIES, bAllCats);
-		m_filter.SetFlag(FT_ANYCATEGORY, !bAllCats);
+		BOOL bAll = FALSE;
+		DDX_Check(pDX, IDC_ALLCATEGORIES, bAll);
+		m_filter.SetFlag(FT_ANYCATEGORY, !bAll);
+
+		// alloc to
+		m_cbAllocToFilter.GetChecked(m_filter.aAllocTo);
+
+		DDX_Check(pDX, IDC_ALLALLOCTO, bAll);
+		m_filter.SetFlag(FT_ANYALLOCTO, !bAll);
 	}
 	else
 	{
-		int nPriority = m_filter.nPriority + 1;
-		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nPriority);
+		int nIndex;
+		
+		// priority
+		if (m_filter.nPriority == FT_ANYPRIORITY)
+			nIndex = 0;
 
-		int nRisk = m_filter.nRisk + 1;
-		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nRisk);
+		else if (m_filter.nPriority == FT_NOPRIORITY)
+			nIndex = 1;
+		else
+			nIndex = m_filter.nPriority + 2;
 
+		DDX_CBIndex(pDX, IDC_PRIORITYFILTERCOMBO, nIndex);
+
+		// risk
+		if (m_filter.nRisk == FT_ANYRISK)
+			nIndex = 0;
+
+		else if (m_filter.nRisk == FT_NORISK)
+			nIndex = 1;
+		else
+			nIndex = m_filter.nRisk + 2;
+
+		DDX_CBIndex(pDX, IDC_RISKFILTERCOMBO, nIndex);
+
+		// cats
 		m_cbCategoryFilter.SetChecked(m_filter.aCategories);
 
-		BOOL bAllCats = !m_filter.HasFlag(FT_ANYCATEGORY);
-		DDX_Check(pDX, IDC_ALLCATEGORIES, bAllCats);
+		BOOL bAll = !m_filter.HasFlag(FT_ANYCATEGORY);
+		DDX_Check(pDX, IDC_ALLCATEGORIES, bAll);
+
+		// alloc to
+		m_cbAllocToFilter.SetChecked(m_filter.aAllocTo);
+
+		bAll = !m_filter.HasFlag(FT_ANYALLOCTO);
+		DDX_Check(pDX, IDC_ALLALLOCTO, bAll);
 	}
 }
 
@@ -98,7 +150,6 @@ int CFilterDlg::DoModal(const CFilteredToDoCtrl& tdc,
 	m_aAllocBy.Add(""); // add blank item to top
 	
 	// category filter
-	CStringArray aCategory;
 	tdc.GetCategoryNames(m_aCategory);
 	m_aCategory.Add(""); // add blank item to top
 	
@@ -129,10 +180,10 @@ BOOL CFilterDlg::OnInitDialog()
 
 	// priority
 	m_cbPriorityFilter.SetColors(m_aPriorityColors);
-	m_cbPriorityFilter.InsertColor(0, (COLORREF)-1, ""); // add a blank item
+	m_cbPriorityFilter.InsertColor(0, (COLORREF)-1, CEnString(IDS_TDC_ANY)); // add a blank item
 
 	// risk
-	m_cbRiskFilter.InsertString(0, "");
+	m_cbRiskFilter.InsertString(0, CEnString(IDS_TDC_ANY)); // add a blank item
 
 	// update UI
 	UpdateData(FALSE);

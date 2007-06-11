@@ -18,7 +18,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CToDoCtrlMgr dialog
 
-enum { IM_NONE = -1, IM_READONLY, IM_CHECKEDIN, IM_CHECKEDOUT };
+enum { IM_NONE = -1, IM_READONLY, IM_CHECKEDIN, IM_CHECKEDOUT, IM_NOTLOADED };
 
 #define ASSERTVALIDINDEX(i) { ASSERT (i >= 0 && i < GetCount()); }
 
@@ -138,6 +138,20 @@ BOOL CToDoCtrlMgr::IsPristine(int nIndex) const
 	return IsFilePathEmpty(nIndex) && !GetModifiedStatus(nIndex);
 }
 
+BOOL CToDoCtrlMgr::IsLoaded(int nIndex) const
+{
+	ASSERTVALIDINDEX(nIndex);
+
+	return GetTDCItem(nIndex).bLoaded;
+}
+
+void CToDoCtrlMgr::SetLoaded(int nIndex, BOOL bLoaded)
+{
+	ASSERTVALIDINDEX(nIndex);
+
+	GetTDCItem(nIndex).bLoaded = bLoaded;
+}
+
 BOOL CToDoCtrlMgr::RefreshLastModified(int nIndex)
 {
 	ASSERTVALIDINDEX(nIndex);
@@ -163,7 +177,7 @@ BOOL CToDoCtrlMgr::RefreshReadOnlyStatus(int nIndex)
 
 	TDCITEM& tdci = GetTDCItem(nIndex);
 
-	BOOL bReadOnlyNow = CDriveInfo::IsReadonlyPath(tdci.pTDC->GetFilePath());
+	BOOL bReadOnlyNow = CDriveInfo::IsReadonlyPath(tdci.pTDC->GetFilePath()) > 0;
 	BOOL bReadOnlyPrev = tdci.bLastStatusReadOnly;
 
 	GetTDCItem(nIndex).bLastStatusReadOnly = bReadOnlyNow;
@@ -178,18 +192,18 @@ int CToDoCtrlMgr::GetReadOnlyStatus(int nIndex) const
 	return GetTDCItem(nIndex).bLastStatusReadOnly;
 }
 
-void CToDoCtrlMgr::SetDueItemStatus(int nIndex, BOOL bDueItems)
+void CToDoCtrlMgr::SetDueItemStatus(int nIndex, TDCM_DUESTATUS nStatus)
 {
 	ASSERTVALIDINDEX(nIndex);
 
-	GetTDCItem(nIndex).bDueItems = bDueItems;
+	GetTDCItem(nIndex).nDueStatus = nStatus;
 }
 
-BOOL CToDoCtrlMgr::GetDueItemStatus(int nIndex) const
+TDCM_DUESTATUS CToDoCtrlMgr::GetDueItemStatus(int nIndex) const
 {
 	ASSERTVALIDINDEX(nIndex);
 
-	return GetTDCItem(nIndex).bDueItems;
+	return GetTDCItem(nIndex).nDueStatus;
 }
 
 int CToDoCtrlMgr::GetLastCheckoutStatus(int nIndex) const
@@ -290,29 +304,13 @@ int CToDoCtrlMgr::RemoveToDoCtrl(int nIndex, BOOL bDelete)
 	ASSERTVALIDINDEX(nIndex);
 
 	int nSel = GetSelToDoCtrl(), nNewSel = -1;
+
 	CFilteredToDoCtrl& tdc = GetToDoCtrl(nIndex);
+	TDCITEM& tdci = GetTDCItem(nIndex);
 
-	// save filter state first
-	CString sFilePath(tdc.GetFilePath());
-
-	if (!sFilePath.IsEmpty())
-	{
-		CString sKey;
-
-		sFilePath.Replace('\\', '_');
-		sKey.Format("Filter\\%s", sFilePath);
-			
-		FTDCFILTER filter;
-		tdc.GetFilter(filter);
-
-		AfxGetApp()->WriteProfileInt(sKey, "Filter", filter.nFilter);
-		AfxGetApp()->WriteProfileInt(sKey, "Priority", filter.nPriority);
-		AfxGetApp()->WriteProfileInt(sKey, "Risk", filter.nRisk);
-		AfxGetApp()->WriteProfileString(sKey, "AllocTo", filter.sAllocTo);
-		AfxGetApp()->WriteProfileString(sKey, "AllocBy", filter.sAllocBy);
-		AfxGetApp()->WriteProfileString(sKey, "Category", Misc::FormatArray(filter.aCategories));
-		AfxGetApp()->WriteProfileInt(sKey, "AnyCategory", filter.HasFlag(FT_ANYCATEGORY));
-	}
+	// save state first
+	SaveColumns(&tdci);
+	SaveFilter(&tdc);
 
 	if (bDelete)
 	{
@@ -344,51 +342,173 @@ int CToDoCtrlMgr::RemoveToDoCtrl(int nIndex, BOOL bDelete)
    return nNewSel;
 }
 
-int CToDoCtrlMgr::AddToDoCtrl(CFilteredToDoCtrl* pCtrl, BOOL bReOrder)
+int CToDoCtrlMgr::AddToDoCtrl(CFilteredToDoCtrl* pCtrl, BOOL bLoaded)
 {
 	static int nNextIndex = 0;
 
-	TDCITEM tdci(pCtrl, nNextIndex++);
+	TDCITEM tdci(pCtrl, nNextIndex++, bLoaded);
 
+	// restore previous state
+	if (Prefs().GetRestoreTasklistFilters())
+		RestoreFilter(pCtrl);
+
+	RestoreColumns(&tdci);
+
+	// add to tab
 	int nSel = m_aToDoCtrls.Add(tdci);
 	m_tabCtrl.InsertItem(nSel, "");
 
 	UpdateTabItemText(nSel);
 	RefreshPathType(nSel);
 
-	if (bReOrder)
-		SortToDoCtrlsByName();
-
-	// restore previous filter state
-	if (Prefs().GetRestoreTasklistFilters())
-	{
-		CString sFilePath(pCtrl->GetFilePath());
-
-		if (!sFilePath.IsEmpty())
-		{
-			CString sKey;
-
-			sFilePath.Replace('\\', '_');
-			sKey.Format("Filter\\%s", sFilePath);
-				
-			FTDCFILTER filter;
-
-			filter.nFilter = (FILTER_TYPE)AfxGetApp()->GetProfileInt(sKey, "Filter", FT_ALL);
-			filter.nPriority = AfxGetApp()->GetProfileInt(sKey, "Priority", -1);
-			filter.nRisk = AfxGetApp()->GetProfileInt(sKey, "Risk", -1);
-			filter.sAllocTo = AfxGetApp()->GetProfileString(sKey, "AllocTo");
-			filter.sAllocBy = AfxGetApp()->GetProfileString(sKey, "AllocBy");
-
-			filter.SetFlag(FT_ANYCATEGORY, AfxGetApp()->GetProfileInt(sKey, "AnyCategory", FALSE));
-
-			CString sCategory = AfxGetApp()->GetProfileString(sKey, "Category");
-			Misc::ParseIntoArray(sCategory, filter.aCategories, TRUE);
-
-			pCtrl->SetFilter(filter);
-		}
-	}
 
 	return nSel;
+}
+
+void CToDoCtrlMgr::RestoreFilter(CFilteredToDoCtrl* pCtrl)
+{
+	CString sFilePath(pCtrl->GetFilePath());
+
+	if (!sFilePath.IsEmpty())
+	{
+		CString sKey;
+		sFilePath.Replace('\\', '_');
+		sKey.Format("FileStates\\%s\\Filter", sFilePath);
+
+		FTDCFILTER filter;
+
+		filter.nFilter = (FILTER_TYPE)AfxGetApp()->GetProfileInt(sKey, "Filter", FT_ALL);
+		filter.nPriority = AfxGetApp()->GetProfileInt(sKey, "Priority", FT_ANYPRIORITY);
+		filter.nRisk = AfxGetApp()->GetProfileInt(sKey, "Risk", FT_ANYRISK);
+		filter.sAllocBy = AfxGetApp()->GetProfileString(sKey, "AllocBy");
+		filter.sStatus = AfxGetApp()->GetProfileString(sKey, "Status");
+
+		// cats
+		filter.SetFlag(FT_ANYCATEGORY, AfxGetApp()->GetProfileInt(sKey, "AnyCategory", FALSE));
+		CString sCategory = AfxGetApp()->GetProfileString(sKey, "Category");
+		Misc::ParseIntoArray(sCategory, filter.aCategories, TRUE);
+
+		// alloc to
+		filter.SetFlag(FT_ANYALLOCTO, AfxGetApp()->GetProfileInt(sKey, "AnyAllocTo", FALSE));
+		CString sAllocTo = AfxGetApp()->GetProfileString(sKey, "AllocTo");
+		Misc::ParseIntoArray(sAllocTo, filter.aAllocTo, TRUE);
+		
+		pCtrl->SetFilter(filter);
+	}
+}
+
+void CToDoCtrlMgr::SaveFilter(const CFilteredToDoCtrl* pCtrl) const
+{
+	CString sFilePath(pCtrl->GetFilePath());
+
+	if (!sFilePath.IsEmpty())
+	{
+		CString sKey;
+		sFilePath.Replace('\\', '_');
+		sKey.Format("FileStates\\%s\\Filter", sFilePath);
+
+		FTDCFILTER filter;
+		pCtrl->GetFilter(filter);
+
+		AfxGetApp()->WriteProfileInt(sKey, "Filter", filter.nFilter);
+		AfxGetApp()->WriteProfileInt(sKey, "Priority", filter.nPriority);
+		AfxGetApp()->WriteProfileInt(sKey, "Risk", filter.nRisk);
+		AfxGetApp()->WriteProfileString(sKey, "AllocBy", filter.sAllocBy);
+		AfxGetApp()->WriteProfileString(sKey, "Status", filter.sStatus);
+		AfxGetApp()->WriteProfileString(sKey, "AllocTo", Misc::FormatArray(filter.aAllocTo));
+		AfxGetApp()->WriteProfileInt(sKey, "AnyAllocTo", filter.HasFlag(FT_ANYALLOCTO));
+		AfxGetApp()->WriteProfileString(sKey, "Category", Misc::FormatArray(filter.aCategories));
+		AfxGetApp()->WriteProfileInt(sKey, "AnyCategory", filter.HasFlag(FT_ANYCATEGORY));
+	}
+}
+
+void CToDoCtrlMgr::RefreshColumns(int nIndex, CTDCColumnArray& aColumns /*out*/)
+{
+	ASSERTVALIDINDEX(nIndex);
+
+	// if the todoctrl does not have its own columns we use the default
+	// preferences set else we return it's own set.
+	if (!HasOwnColumns(nIndex))
+	{
+		Prefs().GetVisibleColumns(aColumns);
+		GetToDoCtrl(nIndex).SetVisibleColumns(aColumns);
+	}
+	else
+		GetToDoCtrl(nIndex).GetVisibleColumns(aColumns);
+}
+
+BOOL CToDoCtrlMgr::HasOwnColumns(int nIndex) const
+{
+	ASSERTVALIDINDEX(nIndex);
+
+	return GetTDCItem(nIndex).bHasOwnColumns;
+}
+
+void CToDoCtrlMgr::SetHasOwnColumns(int nIndex, BOOL bHas)
+{
+	ASSERTVALIDINDEX(nIndex);
+
+	GetTDCItem(nIndex).bHasOwnColumns = bHas;
+}
+
+void CToDoCtrlMgr::RestoreColumns(TDCITEM* pTDCI)
+{
+	CString sFilePath(pTDCI->pTDC->GetFilePath());
+
+	if (!sFilePath.IsEmpty())
+	{
+		CString sKey;
+
+		sFilePath.Replace('\\', '_');
+		sKey.Format("FileStates\\%s\\Columns", sFilePath);
+
+		CTDCColumnArray aColumns;
+		int nItem = AfxGetApp()->GetProfileInt(sKey, "Count", -1);
+
+		if (nItem < 0)
+		{
+			pTDCI->bHasOwnColumns = FALSE;
+			nItem = Prefs().GetVisibleColumns(aColumns);
+		}
+		else
+			pTDCI->bHasOwnColumns = TRUE;
+
+		while (nItem--)
+		{
+			int nCol = AfxGetApp()->GetProfileInt(sKey, CEnString("Item%d", nItem), -1);
+			
+			if (nCol != -1)
+				aColumns.Add((TDC_COLUMN&)nCol);
+		}
+		
+		pTDCI->pTDC->SetVisibleColumns(aColumns);
+	}
+}
+
+void CToDoCtrlMgr::SaveColumns(const TDCITEM* pTDCI) const
+{
+	CString sFilePath(pTDCI->pTDC->GetFilePath());
+	
+	if (!sFilePath.IsEmpty())
+	{
+		CString sKey;
+		
+		sFilePath.Replace('\\', '_');
+		sKey.Format("FileStates\\%s\\Columns", sFilePath);
+		
+		if (pTDCI->bHasOwnColumns)
+		{
+			CTDCColumnArray aColumns;
+			int nItem = pTDCI->pTDC->GetVisibleColumns(aColumns);
+			
+			AfxGetApp()->WriteProfileInt(sKey, "Count", nItem);
+			
+			while (nItem--)
+				AfxGetApp()->WriteProfileInt(sKey, CEnString("Item%d", nItem), aColumns[nItem]);
+		}
+		else
+			AfxGetApp()->WriteProfileInt(sKey, "Count", -1);
+	}
 }
 
 time_t CToDoCtrlMgr::GetLastModified(int nIndex) const
@@ -462,10 +582,10 @@ CString CToDoCtrlMgr::GetArchivePath(LPCTSTR szFilePath) const
 	
 	if (!sFilePath.IsEmpty() && sFilePath.Find(sDone) == -1) // don't archive archives!
 	{
-		char szDrive[_MAX_DRIVE], szPath[MAX_PATH], szFName[_MAX_FNAME], szExt[_MAX_EXT];
-		_splitpath(szFilePath, szDrive, szPath, szFName, szExt);
-		
-		sArchivePath.Format("%s%s%s%s%s", szDrive, szPath, szFName, sDone, szExt);
+		CString sDrive, sPath, sFName, sExt;
+
+		FileMisc::SplitPath(sFilePath, &sDrive, &sPath, &sFName, &sExt);
+		FileMisc::MakePath(sArchivePath, sDrive, sPath, sFName, sDone + sExt);
 	}
 	
 	return sArchivePath;
@@ -585,8 +705,11 @@ CString CToDoCtrlMgr::UpdateTabItemText(int nIndex)
 	
 	// appropriate icon
 	int nImage = IM_NONE;
+
+	if (!tdci.bLoaded)
+		nImage = IM_NOTLOADED;
 	
-	if (tdci.bLastStatusReadOnly > 0)
+	else if (tdci.bLastStatusReadOnly > 0)
 		nImage = IM_READONLY;
 	
 	else if (PathSupportsSourceControl(nIndex))
@@ -626,6 +749,30 @@ CString CToDoCtrlMgr::GetTabItemText(int nIndex) const
 	sText.Replace("&&", "&"); // remove doubled-up ampersands
 
 	return sText;
+}
+
+CString CToDoCtrlMgr::GetTabItemTooltip(int nIndex) const
+{
+	ASSERTVALIDINDEX(nIndex);
+
+	TCITEM tci;
+	tci.mask = TCIF_IMAGE;
+
+	m_tabCtrl.GetItem(nIndex, &tci);
+
+	switch (tci.iImage)
+	{
+	case IM_READONLY:	return CEnString(IDS_TABTIP_READONLY);
+	case IM_CHECKEDIN:	return CEnString(IDS_TABTIP_CHECKEDIN);
+	case IM_CHECKEDOUT: return CEnString(IDS_TABTIP_CHECKEDOUT);
+	case IM_NOTLOADED:	return CEnString(IDS_TABTIP_NOTLOADED);
+
+	case IM_NONE:
+	default:
+		break;
+	}
+
+	return "";
 }
 
 BOOL CToDoCtrlMgr::PathTypeSupportsSourceControl(TDCM_PATHTYPE nType) const
@@ -681,10 +828,13 @@ BOOL CToDoCtrlMgr::GetNeedsPreferenceUpdate(int nIndex) const
 	return GetTDCItem(nIndex).bNeedPrefUpdate;
 }
 
-void CToDoCtrlMgr::SetAllNeedPreferenceUpdate(BOOL bNeed)
+void CToDoCtrlMgr::SetAllNeedPreferenceUpdate(BOOL bNeed, int nExcept)
 {
 	for (int nIndex = 0; nIndex < m_aToDoCtrls.GetSize(); nIndex++)
-		GetTDCItem(nIndex).bNeedPrefUpdate = bNeed;
+	{
+		if (nIndex != nExcept)
+			GetTDCItem(nIndex).bNeedPrefUpdate = bNeed;
+	}
 }
 
 int CToDoCtrlMgr::FindToDoCtrl(LPCTSTR szFilePath)
@@ -705,7 +855,9 @@ int CToDoCtrlMgr::FindToDoCtrl(LPCTSTR szFilePath)
 
 void CToDoCtrlMgr::PreparePopupMenu(CMenu& menu, UINT nID1, int nMax)
 {
-	for (int nTDC = 0; nTDC < GetCount() && nTDC < nMax; nTDC++)
+	//fabio_2005
+	int nTDC = 0;
+	for (nTDC = 0; nTDC < GetCount() && nTDC < nMax; nTDC++)
 	{
 		CString sTaskList = GetFriendlyProjectName(nTDC);
 

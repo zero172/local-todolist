@@ -64,6 +64,7 @@ BEGIN_MESSAGE_MAP(CRRECToolBar, CEnToolBar)
 	ON_WM_ENABLE()
 	ON_WM_SIZE()
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_SETFONT, OnSetFont)
 	ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
 	ON_NOTIFY_REFLECT(TBN_DROPDOWN, OnColorDropDown)
 END_MESSAGE_MAP()
@@ -150,6 +151,14 @@ BOOL CRRECToolBar::Create( CWnd* parent)
 
 /////////////////////////////////////////////////////////////////////////////
 // CRRECToolBar message handlers
+
+
+LRESULT CRRECToolBar::OnSetFont(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	// eat this
+	return 0L;
+}
+
 
 LRESULT CRRECToolBar::OnIdleUpdateCmdUI(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {

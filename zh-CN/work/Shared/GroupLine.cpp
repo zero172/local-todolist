@@ -76,7 +76,7 @@ LRESULT CGroupLine::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 			if (!hFont)
 				hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 
-			::SelectObject(dc, hFont);
+			HFONT hOld = (HFONT)::SelectObject(dc, hFont);
 			dc.SetBkMode(TRANSPARENT);
 
 			CSize sizeText = dc.GetTextExtent(sText); // default
@@ -118,6 +118,10 @@ LRESULT CGroupLine::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 				dc.Draw3dRect(rClient.left + sizeText.cx, nY, rClient.Width() - sizeText.cx, 2, 
 					GetSysColor(COLOR_3DSHADOW), GetSysColor(COLOR_3DHIGHLIGHT));
 			}
+
+			// cleanup
+			::SelectObject(dc, hOld);
+
 
 			return 0;
 		}

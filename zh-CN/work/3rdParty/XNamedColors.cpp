@@ -280,7 +280,9 @@ void CXNamedColors::SetColorFromString(LPCTSTR lpszColor)
 	BYTE r = 0;
 	BYTE g = 0;
 	BYTE b = 0;
-	TCHAR *cp;
+	//fabio_2005
+	const char *cp;
+	//TCHAR *cp;
 
 	if ((cp = _tcschr(lpszColor, _T(','))) != NULL)
 	{

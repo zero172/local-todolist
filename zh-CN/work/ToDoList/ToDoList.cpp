@@ -6,16 +6,19 @@
 #include "ToDoListWnd.h"
 #include "PreferencesGenPage.h"
 #include "welcomedialog.h"
+#include "tdcmsg.h"
+#include "tdlprefmigrationdlg.h"
 
 #include "..\shared\LimitSingleInstance.h"
 #include "..\shared\encommandlineinfo.h"
 #include "..\shared\driveinfo.h"
-#include "..\shared\filedialogex.h"
+#include "..\shared\enfiledialog.h"
 #include "..\shared\enstring.h"
-#include "..\3rdparty\xmlnodewrapper.h"
 #include "..\shared\regkey.h"
-#include "..\shared\filedialogex.h"
 #include "..\shared\filemisc.h"
+
+#include "..\3rdparty\xmlnodewrapper.h"
+#include "..\3rdparty\ini.h"
 
 #include <afxpriv.h>
 
@@ -101,7 +104,7 @@ BOOL CToDoListApp::InitInstance()
 	}
 
 	CEnCommandLineInfo cmdInfo;
-	ParseCommandLine(cmdInfo);
+	ParseCommandLine(&cmdInfo);
 	
 	// see if the user just wants to see the commandline options
 	if (cmdInfo.GetOption("h") || cmdInfo.GetOption("help") || 
@@ -117,9 +120,6 @@ BOOL CToDoListApp::InitInstance()
 		AfxMessageBox(IDS_BADMSXML);
 		return FALSE;
 	}
-
-	if (GetFileAttributes(cmdInfo.m_strFileName) == 0xffffffff)
-		cmdInfo.m_strFileName.Empty();
 
 	if (!InitPreferences(&cmdInfo))
 		return FALSE;
@@ -171,6 +171,12 @@ BOOL CToDoListApp::InitInstance()
 				if (dwID)
 					SendDataMessage(hWnd, SELECTTASK, dwID);
 			}
+			// or merge/import
+			else if (cmdInfo.GetOption("m", sValue))
+			{
+				if (!sValue.IsEmpty())
+					SendDataMessage(hWnd, IMPORTFILE, sValue);
+			}
 			
 			return FALSE;
 		}
@@ -186,6 +192,7 @@ BOOL CToDoListApp::InitInstance()
 	
 	if (pTDL && pTDL->Create(dwFlags, cmdInfo.m_strFileName))
 	{
+		HWND hWnd = pTDL->GetSafeHwnd();
 		m_pMainWnd = pTDL;
 		
 		// new task?
@@ -193,13 +200,13 @@ BOOL CToDoListApp::InitInstance()
 		
 		if (cmdInfo.GetOption("nt", sValue))
 		{
-			SendDataMessage(m_pMainWnd->GetSafeHwnd(), ADDNEWTASK, sValue);
+			SendDataMessage(hWnd, ADDNEWTASK, sValue);
 
 			if (cmdInfo.GetOption("cm", sValue))
 			{
 				// replace [\][n] with [\n]
 				sValue.Replace("\\n", "\n");
-				SendDataMessage(m_pMainWnd->GetSafeHwnd(), SETCOMMENTS, sValue);
+				SendDataMessage(hWnd, SETCOMMENTS, sValue);
 			}
 		}
 		// or select task
@@ -208,7 +215,13 @@ BOOL CToDoListApp::InitInstance()
 			DWORD dwID = atoi(sValue);
 			
 			if (dwID)
-				SendDataMessage(m_pMainWnd->GetSafeHwnd(), SELECTTASK, dwID);
+				SendDataMessage(hWnd, SELECTTASK, dwID);
+		}
+		// or merge/import
+		else if (cmdInfo.GetOption("m", sValue))
+		{
+			if (!sValue.IsEmpty())
+				SendDataMessage(hWnd, IMPORTFILE, sValue);
 		}
 
 		return TRUE;
@@ -216,6 +229,34 @@ BOOL CToDoListApp::InitInstance()
 
 	// else
 	return FALSE;
+}
+
+void CToDoListApp::ParseCommandLine(CEnCommandLineInfo* pInfo)
+{
+	ASSERT (pInfo);
+
+	CWinApp::ParseCommandLine(*pInfo); // default
+
+	// check for task link
+	if (pInfo->m_strFileName.Find(TDL_PROTOCOL) != -1)
+	{
+		CString sFilePath;
+		DWORD dwID = 0;
+
+		CToDoCtrl::ParseTaskLink(pInfo->m_strFileName, dwID, sFilePath);
+
+		if (!sFilePath.IsEmpty() && dwID)
+		{
+			// replace possible %20 by spaces
+			sFilePath.Replace("%20", " ");
+			pInfo->m_strFileName = sFilePath;
+			pInfo->SetOption("tid", dwID);
+		}
+	}
+
+	// validate file path
+	if (GetFileAttributes(pInfo->m_strFileName) == 0xffffffff)
+		pInfo->m_strFileName.Empty();
 }
 
 BOOL CToDoListApp::SendDataMessage(HWND hWnd, int nType, int nSize, void* pData)
@@ -282,20 +323,16 @@ void CToDoListApp::DoHelp(const CString& /*sHelpRef*/)
 	// 1. look for todolist_help.tdl in the registry
 	CString sHelpTopic, sHelpFile = GetProfileString("Help", "TDLFile");
 
-	if (GetFileAttributes(sHelpFile) == 0xffffffff)
+	if (!FileMisc::FileExists(sHelpFile))
 	{
 		// 2. try exe folder
-		char szFolder[MAX_PATH], szDrive[_MAX_DRIVE];
-		char szHelpPath[MAX_PATH + 1];
+		CString sFolder, sDrive, sHelpPath = FileMisc::GetModuleFileName();
 
-		GetModuleFileName(NULL, szHelpPath, MAX_PATH);
-		_splitpath(szHelpPath, szDrive, szFolder, NULL, NULL);
-		_makepath(szHelpPath, szDrive, szFolder, "ToDoListDocumentation.tdl", NULL);
-
-		sHelpFile = szHelpPath;
+		FileMisc::SplitPath(sHelpPath, &sDrive, &sFolder);
+		FileMisc::MakePath(sHelpPath, sDrive, sFolder, "ToDoListDocumentation.tdl");
 
 		// try again
-		if (GetFileAttributes(sHelpFile) == 0xffffffff)
+		if (!FileMisc::FileExists(sHelpFile))
 		{
 			// 3. ask the user
 			CEnString sMsg(IDS_LOCATEHELP), sTitle(IDS_LOCATEHELP_TITLE);
@@ -303,7 +340,8 @@ void CToDoListApp::DoHelp(const CString& /*sHelpRef*/)
 			if (MessageBox(*m_pMainWnd, sMsg, sTitle, MB_OKCANCEL) == IDOK)
 			{
 				CEnString sFilter(IDS_HELPFILEFILTER);
-				CFileDialogEx dialog(TRUE, "tdl", sHelpFile, OFN_PATHMUSTEXIST, "Help Files (*.tdl)|*.tdl||");
+				//fabio_2005
+				CEnFileDialog dialog(TRUE, "tdl", sHelpFile, OFN_PATHMUSTEXIST, "Help Files (*.tdl)|*.tdl||");
 
 				dialog.m_ofn.lpstrTitle = (LPCSTR)(LPCTSTR)sTitle;
 
@@ -336,12 +374,9 @@ BOOL CToDoListApp::InitPreferences(const CEnCommandLineInfo* pInfo)
 	BOOL bUseIni = FALSE;
 
 	// get the app file path
-	char szFolder[MAX_PATH], szAppName[_MAX_FNAME], szDrive[_MAX_DRIVE];
-	char szIniPath[MAX_PATH + 1];
+	CString sTemp = FileMisc::GetModuleFileName(), sDrive, sFolder, sAppName;
+	FileMisc::SplitPath(sTemp, &sDrive, &sFolder, &sAppName);
 
-	GetModuleFileName(NULL, szIniPath, MAX_PATH);
-	_splitpath(szIniPath, szDrive, szFolder, szAppName, NULL);
-	
     // try command line first
     CString sIniPath;
 
@@ -349,21 +384,19 @@ BOOL CToDoListApp::InitPreferences(const CEnCommandLineInfo* pInfo)
     {
 		// prefix application path if path is relative
 		if (PathIsRelative(sIniPath))
-			_makepath(szIniPath, szDrive, szFolder, sIniPath, NULL);
-		else
-	        lstrcpy(szIniPath, sIniPath);
+			FileMisc::MakePath(sIniPath, sDrive, sFolder, sIniPath);
 
-        bUseIni = (GetFileAttributes(szIniPath) != 0xffffffff);
+        bUseIni = FileMisc::FileExists(sIniPath);
     }
 
 	// else if there is a tasklist on the commandline then try for an
 	// ini file of the same name
 	if (!bUseIni && !pInfo->m_strFileName.IsEmpty())
 	{
-	    lstrcpy(szIniPath, pInfo->m_strFileName);
-		FileMisc::ReplaceExtension(szIniPath, "ini");
+	    sIniPath = pInfo->m_strFileName;
+		FileMisc::ReplaceExtension(sIniPath, "ini");
 
-        bUseIni = (GetFileAttributes(szIniPath) != 0xffffffff);
+        bUseIni = FileMisc::FileExists(sIniPath);
 
 		// if we found one then make sure it does not have single 
 		// instance specified
@@ -375,30 +408,26 @@ BOOL CToDoListApp::InitPreferences(const CEnCommandLineInfo* pInfo)
 	if (!bUseIni)
     {
         // then try current working dir followed by app folder
-        GetCurrentDirectory(MAX_PATH, szIniPath);
-        _makepath(szIniPath, NULL, szIniPath, szAppName, ".ini");
+		FileMisc::MakePath(sIniPath, NULL, FileMisc::GetCwd(), sAppName, ".ini");
+		bUseIni = FileMisc::FileExists(sIniPath);
 
-        bUseIni = (GetFileAttributes(szIniPath) != 0xffffffff);
-
+		// followed by app folder
         if (!bUseIni)
-        {
-            _makepath(szIniPath, szDrive, szFolder, szAppName, ".ini");
-            bUseIni = (GetFileAttributes(szIniPath) != 0xffffffff);
-        }
+		{
+			FileMisc::MakePath(sIniPath, sDrive, sFolder, sAppName, ".ini");
+    		bUseIni = FileMisc::FileExists(sIniPath);
+		}
    }
 
 	// then try registry
 	if (!bUseIni)
 	{
-		HKEY hKey = NULL;
+      BOOL bFirstTime = !CRegKey::KeyExists(HKEY_CURRENT_USER, "Software\\Abstractspoon\\ToDoList");
 
-		LONG lResult = RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Abstractspoon\\ToDoList", 
-									0L, KEY_ALL_ACCESS, &hKey);
-
-		if (lResult == ERROR_FILE_NOT_FOUND) // first time
+		if (bFirstTime) // first time
 		{
 			// don't bother the user if we're being run off removeable media
-			if (CDriveInfo::IsRemovablePath(szIniPath))
+			if (CDriveInfo::IsRemovablePath(sIniPath))
 				bUseIni = TRUE;
 			else
 			{
@@ -410,18 +439,215 @@ BOOL CToDoListApp::InitPreferences(const CEnCommandLineInfo* pInfo)
 					return FALSE;
 			}
 		}
-		else if (hKey == NULL)
-			bUseIni = TRUE;
 	}
 
 	// finally make the choice
 	if (bUseIni)
 	{
 		free((void*)m_pszProfileName);
-		m_pszProfileName = _strdup(szIniPath);
+		m_pszProfileName = _strdup(sIniPath);
 	}
 	else
 		SetRegistryKey(_T(REGKEY));
+
+    UpgradePreferences(bUseIni);
+
+	return TRUE;
+}
+
+void CToDoListApp::UpgradePreferences(BOOL bUseIni)
+{
+	// put later upgrades at top
+	// HERE
+	
+	// unification of file states
+	// do splits separately because it uses the unmodified filespec as the
+	// value names whereas the others replace backslashes with underscores
+	// for use as the key name
+	// and as an optimization, if the splitpos key does not exist then 
+	// assume we've already done the upgrade
+	CTDLPrefMigrationDlg feedbackDlg;
+	
+	if (RelocateSplitPosSettings(bUseIni, &feedbackDlg))
+	{
+		CWaitCursor cursor;
+		RelocateFileStateSettings("Filter", bUseIni);
+		RelocateFileStateSettings("ExpandedState", bUseIni);
+		RelocateFileStateSettings("SortState", bUseIni);
+	}
+}
+
+BOOL CToDoListApp::RelocateSplitPosSettings(BOOL bUseIni, CTDLPrefMigrationDlg* pFeedbackDlg)
+{
+	if (bUseIni)
+	{
+		CIni ini(m_pszProfileName);
+
+		if (!ini.IsSectionExist("SplitPos"))
+			return FALSE;
+
+		// at this point notify the user that
+		// it can take some time to transfer all their settings
+		AfxMessageBox(IDS_WARN_CONVERT_INI);
+
+		if (pFeedbackDlg)
+			pFeedbackDlg->Create(NULL);
+
+		CStringArray aFileKeys;
+		ini.GetKeyNames("SplitPos", &aFileKeys);
+
+		for (int nItem = 0; nItem < aFileKeys.GetSize(); nItem++)
+		{
+			Misc::ProcessMsgLoop(); // for feedback dialog
+
+			CString sItem = aFileKeys[nItem];
+			
+			int nSplit = ini.GetInt("SplitPos", sItem, -1);
+			
+			if (nSplit != -1)
+			{
+				CString sNewKey, sValueName("SplitPos");
+				
+				// handle 'Shared' differently
+				if (sItem.CompareNoCase("Shared") == 0)
+				{
+					sNewKey = "FileStates";
+					sValueName = "SharedSplitPos";
+				}
+				else
+				{
+					sItem.Replace('\\', '_');
+					sNewKey.Format("FileStates\\%s", sItem);
+				}
+
+				ini.WriteInt(sNewKey, sValueName, nSplit);
+			}
+		}
+		
+		// delete old key
+		ini.DeleteSection("SplitPos");
+	}
+	else // registry
+	{
+		CString sAppKey = CRegKey::GetAppRegPath(), sOldKey;
+		sOldKey.Format("%sSplitPos", sAppKey);
+		
+		if (!CRegKey::KeyExists(HKEY_CURRENT_USER, sOldKey))
+			return FALSE;
+
+		CRegKey regOld;
+		CStringArray aFileKeys;
+		
+		regOld.Open(HKEY_CURRENT_USER, sOldKey);
+		regOld.GetValueNames(aFileKeys);
+		
+		for (int nItem = 0; nItem < aFileKeys.GetSize(); nItem++)
+		{
+			CString sItem = aFileKeys[nItem];
+			
+			int nSplit = -1;
+			regOld.Read(sItem, (DWORD&)nSplit);
+			
+			if (nSplit != -1)
+			{
+				CString sNewKey, sValueName("SplitPos");
+				
+				// handle 'Shared' differently
+				if (sItem.CompareNoCase("Shared") == 0)
+				{
+					sNewKey.Format("%sFileStates", sAppKey);
+					sValueName = "SharedSplitPos";
+				}
+				else
+				{
+					sItem.Replace('\\', '_');
+					sNewKey.Format("%sFileStates\\%s", sAppKey, sItem);
+				}
+				
+				CRegKey regNew;
+				
+				regNew.Open(HKEY_CURRENT_USER, sNewKey);
+				regNew.Write(sValueName, (DWORD)nSplit);
+				regNew.Close();
+			}
+		}
+		
+		// delete old key
+		CRegKey::Delete(HKEY_CURRENT_USER, sOldKey);
+	}
+
+	return TRUE;
+}
+
+BOOL CToDoListApp::RelocateFileStateSettings(const CString& sSection, BOOL bUseIni)
+{
+	if (bUseIni)
+	{
+		CIni ini(m_pszProfileName);
+
+		CString sNewFileKey, sOldFileKey;
+		CStringArray aSections;
+		ini.GetSectionNames(&aSections);
+
+		for (int nItem = 0; nItem < aSections.GetSize(); nItem++)
+		{
+			Misc::ProcessMsgLoop(); // for feedback dialog
+			
+			CString sItem = aSections[nItem];
+
+			// look for match at start of section name
+			if (sItem.Find(sSection) == 0 && sItem.GetLength() > sSection.GetLength())
+			{
+				CString sFileKey = sItem.Mid(sSection.GetLength() + 1); // name + backslash
+
+				if (!sFileKey.IsEmpty())
+				{
+					sNewFileKey.Format("FileStates\\%s\\%s", sFileKey, sSection);
+					
+					ini.CopySection(sItem, sNewFileKey, TRUE); // copy over
+
+					Misc::ProcessMsgLoop(); // for feedback dialog
+
+					ini.DeleteSection(sItem); // and delete
+				}
+			}
+		}
+		
+		// delete old key
+		ini.DeleteSection(sSection);
+	}
+	else // registry
+	{
+		// check for existence of old key
+		CString sAppKey = CRegKey::GetAppRegPath(), sOldKey;
+		sOldKey.Format("%s%s", sAppKey, sSection);
+		
+		if (!CRegKey::KeyExists(HKEY_CURRENT_USER, sOldKey))
+			return FALSE;
+
+		CRegKey regOld;
+		CString sNewFileKey, sOldFileKey;
+		CStringArray aFileKeys;
+		
+		regOld.Open(HKEY_CURRENT_USER, sOldKey);
+		regOld.GetSubkeyNames(aFileKeys);
+		regOld.Close();
+		
+		// copy values to new location
+		for (int nItem = 0; nItem < aFileKeys.GetSize(); nItem++)
+		{
+			CString sItem = aFileKeys[nItem];
+			sItem.Replace('\\', '_');
+			
+			sOldFileKey.Format("%s\\%s", sOldKey, sItem);
+			sNewFileKey.Format("%sFileStates\\%s\\%s", sAppKey, sItem, sSection);
+			
+			CRegKey::CopyKey(HKEY_CURRENT_USER, sOldFileKey, HKEY_CURRENT_USER, sNewFileKey);
+		}
+		
+		// then delete old key
+		CRegKey::Delete(HKEY_CURRENT_USER, sOldKey);
+	}
 
 	return TRUE;
 }
@@ -438,14 +664,11 @@ int CToDoListApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt)
 void CToDoListApp::OnImportPrefs() 
 {
 	// default location is always app folder
-	char szAppPath[MAX_PATH];
-	GetModuleFileName(NULL, szAppPath, MAX_PATH);
-	
-	CString sIniPath(szAppPath);
+	CString sIniPath = FileMisc::GetModuleFileName();
 	sIniPath.MakeLower();
 	sIniPath.Replace("exe", "ini");
 	
-	CFileDialogEx dialog(TRUE, "ini", sIniPath, 
+	CEnFileDialog dialog(TRUE, "ini", sIniPath, 
 						OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, 
 						CEnString(IDS_INIFILEFILTER));
 	
@@ -510,14 +733,13 @@ void CToDoListApp::OnExportPrefs()
 	if (reg.Open(HKEY_CURRENT_USER, APPREGKEY) == ERROR_SUCCESS)
 	{
 		// default location is always app folder
-		char szAppPath[MAX_PATH];
-		GetModuleFileName(NULL, szAppPath, MAX_PATH);
+		CString sAppPath = FileMisc::GetModuleFileName();
 
-		CString sIniPath(szAppPath);
+		CString sIniPath(sAppPath);
 		sIniPath.MakeLower();
 		sIniPath.Replace("exe", "ini");
 		
-		CFileDialogEx dialog(FALSE, "ini", sIniPath, OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY, 
+		CEnFileDialog dialog(FALSE, "ini", sIniPath, OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY, 
 							CEnString(IDS_INIFILEFILTER));
 		
 		if (dialog.DoModal() == IDOK)
@@ -528,13 +750,13 @@ void CToDoListApp::OnExportPrefs()
 			if (bUsingReg && reg.ExportToIni(sIniPath))
 			{
 				// use them now? 
-				char szAppFolder[MAX_PATH], szIniFolder[MAX_PATH];
+				CString sAppFolder, sIniFolder;
 				
-				_splitpath(szAppPath, NULL, szAppFolder, NULL, NULL);
-				_splitpath(sIniPath, NULL, szIniFolder, NULL, NULL);
+				FileMisc::SplitPath(sAppPath, NULL, &sAppFolder);
+				FileMisc::SplitPath(sIniPath, NULL, &sIniFolder);
 				
 				// only if they're in the same folder as the exe
-				if (stricmp(szIniFolder, szAppFolder) == 0)
+				if (sIniFolder.CompareNoCase(sAppFolder) == 0)
 				{
 					if (AfxMessageBox(IDS_POSTEXPORTPREFS, MB_YESNO | MB_ICONQUESTION) == IDYES)
 					{
@@ -592,4 +814,11 @@ void CToDoListApp::OnHelpCommandline()
 void CToDoListApp::OnHelpDonate() 
 {
 	::ShellExecute(*m_pMainWnd, NULL, DONATE, NULL, NULL, SW_SHOWNORMAL);
+}
+
+int CToDoListApp::ExitInstance() 
+{
+	// TODO: Add your specialized code here and/or call the base class
+	
+	return CWinApp::ExitInstance();
 }

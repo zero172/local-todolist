@@ -40,16 +40,15 @@ BOOL CTaskTimeLog::LogTime(DWORD dwTaskID, double dTime, BOOL bLogSeparately)
 
 CString CTaskTimeLog::GetLogPath(DWORD dwTaskID, BOOL bLogSeparately)
 {
-	CString sLogPath;
+	CString sLogPath, sDrive, sFolder, sFileName;
 
 	// use ref filename as the basis for the log filename
-	char szDrive[_MAX_DRIVE], szFolder[_MAX_DIR], szFileName[_MAX_FNAME];
-	_splitpath(m_sRefPath, szDrive, szFolder, szFileName, NULL);
+	FileMisc::SplitPath(m_sRefPath, &sDrive, &sFolder, &sFileName);
 	
 	if (bLogSeparately)
-		sLogPath.Format("%s%s%s\\%ld_Log.csv", szDrive, szFolder, szFileName, dwTaskID);
+		sLogPath.Format("%s%s%s\\%ld_Log.csv", sDrive, sFolder, sFileName, dwTaskID);
 	else
-		sLogPath.Format("%s%s%s_Log.csv", szDrive, szFolder, szFileName);
+		sLogPath.Format("%s%s%s_Log.csv", sDrive, sFolder, sFileName);
 
 	return sLogPath;
 }
@@ -69,7 +68,13 @@ double CTaskTimeLog::CalcAccumulatedTime(DWORD dwTaskID, BOOL bLogSeparately)
 		while (file.ReadString(sLine))
 		{
 			// decode it
+			//fabio_2005
+#if _MSC_VER >= 1400
+			if (sscanf_s("%ld,%.3f", sLine, &dwLogID, &dLogTime) == 2)
+#else
 			if (sscanf("%ld,%.3f", sLine, &dwLogID, &dLogTime) == 2)
+#endif
+
 			{
 				if (dwLogID == dwTaskID)
 					dTotalTime += dLogTime;

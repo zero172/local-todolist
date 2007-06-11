@@ -101,7 +101,7 @@ HBITMAP CEnBitmap::LoadImageFile(LPCTSTR szImagePath, COLORREF crBack)
 			return (HBITMAP)::LoadImage(NULL, szImagePath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_LOADMAP3DCOLORS);
 
 		case FT_UNKNOWN:
-			return NULL;
+			break;
 
 		default: // all the rest
 		{
@@ -121,7 +121,7 @@ HBITMAP CEnBitmap::LoadImageFile(LPCTSTR szImagePath, COLORREF crBack)
 		}
 	}
 
-	return NULL; // can't get here
+	return NULL;
 }
 
 HBITMAP CEnBitmap::LoadImageResource(UINT uIDRes, LPCTSTR szResourceType, HMODULE hInst, COLORREF crBack)

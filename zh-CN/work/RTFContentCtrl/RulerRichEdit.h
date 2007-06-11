@@ -17,9 +17,11 @@ public:
 	virtual ~CRulerRichEdit();
 
 	void Paste(BOOL bSimple = FALSE);
+	BOOL IsIMEComposing() const { return m_bIMEComposing; }
 
 protected:
 	BOOL m_bPasteSimple;
+	BOOL m_bIMEComposing;
 
 protected:
 // Message handlers
@@ -29,6 +31,8 @@ protected:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	afx_msg LRESULT OnDropFiles(WPARAM wp, LPARAM lp);
+	afx_msg LRESULT OnIMEStartComposition(WPARAM wp, LPARAM lp);
+	afx_msg LRESULT OnIMEEndComposition(WPARAM wp, LPARAM lp);
 
 	DECLARE_MESSAGE_MAP()
 

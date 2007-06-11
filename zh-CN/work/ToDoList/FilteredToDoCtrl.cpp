@@ -34,7 +34,7 @@ CFilteredToDoCtrl::~CFilteredToDoCtrl()
 
 int CFilteredToDoCtrl::GetAllTasks(CTaskFile& tasks) const
 {
-	if (!m_tasksHidden.GetItemCount()) // nothing to merge in
+	if (!m_nHiddenCount) // nothing to merge in
 		return CToDoCtrl::GetAllTasks(tasks);
 
 	// else	merge back in any tasks that were previously removed
@@ -48,7 +48,7 @@ int CFilteredToDoCtrl::GetAllTasks(CTaskFile& tasks) const
 		tasks.Copy(m_tasksHidden);
 		tasks.Merge(tasksSrc, TRUE, TRUE);
 	}
-	else // just copy hidden
+	else // nothing showing so just copy hidden
 		tasks.Copy(m_tasksHidden);
 
 	return tasks.GetTaskCount();
@@ -334,8 +334,15 @@ BOOL CFilteredToDoCtrl::MatchStatus(const CTaskFile& tasks, HTASKITEM ht) const
 
 BOOL CFilteredToDoCtrl::MatchAllocTo(const CTaskFile& tasks, HTASKITEM ht) const
 {
-	if (!m_filter.sAllocTo.IsEmpty())
-		return (m_filter.sAllocTo.CompareNoCase(tasks.GetTaskAllocatedTo(ht)) == 0);
+	if (m_filter.aAllocTo.GetSize())
+	{
+		CStringArray aAllocTo;
+		tasks.GetTaskAllocatedTo(ht, aAllocTo);
+
+		return m_filter.MatchAllocTo(aAllocTo);
+	}
+//	if (!m_filter.sAllocTo.IsEmpty())
+//		return (m_filter.sAllocTo.CompareNoCase(tasks.GetTaskAllocatedTo(ht)) == 0);
 
 	// else match
 	return TRUE;
@@ -352,13 +359,16 @@ BOOL CFilteredToDoCtrl::MatchAllocBy(const CTaskFile& tasks, HTASKITEM ht) const
 
 BOOL CFilteredToDoCtrl::MatchPriority(const CTaskFile& tasks, HTASKITEM ht) const
 {
-	if (m_filter.nPriority != -1)
+	if (m_filter.nPriority != FT_ANYPRIORITY)
 	{
 		if (IsTaskDone(tasks, ht))
 			return FALSE;
 		
 		else if (tasks.IsTaskDue(ht))
 			return TRUE;
+		// match exactly on 'none'
+		else if (m_filter.nPriority == FT_NOPRIORITY)
+			return (tasks.GetTaskPriority(ht, FALSE) == FT_NOPRIORITY);
 		else
 			return (m_filter.nPriority <= tasks.GetTaskPriority(ht, FALSE));
 	}
@@ -369,13 +379,16 @@ BOOL CFilteredToDoCtrl::MatchPriority(const CTaskFile& tasks, HTASKITEM ht) cons
 
 BOOL CFilteredToDoCtrl::MatchRisk(const CTaskFile& tasks, HTASKITEM ht) const
 {
-	if (m_filter.nRisk != -1)
+	if (m_filter.nRisk != FT_ANYRISK)
 	{
 		if (IsTaskDone(tasks, ht))
 			return FALSE;
 		
-		// else
-		return (m_filter.nRisk <= tasks.GetTaskRisk(ht, FALSE));
+		// match exactly on 'none'
+		else if (m_filter.nRisk == FT_NORISK)
+			return (tasks.GetTaskRisk(ht, FALSE) == FT_NORISK);
+		else
+			return (m_filter.nRisk <= tasks.GetTaskRisk(ht, FALSE));
 	}
 
 	// else match
@@ -562,17 +575,34 @@ TODOITEM* CFilteredToDoCtrl::NewTask()
 	TODOITEM* pTDI = CToDoCtrl::NewTask();
 
 	// fiddle with the default attributes so that the task 
-	// matches the current filter
+	// will not be filtered out by the current filter
 	if (HasFilter())
 	{
-		pTDI->nRisk = max(pTDI->nRisk, m_filter.nRisk);
-		pTDI->nPriority = max(pTDI->nPriority, m_filter.nPriority);
+		if (m_filter.nRisk != FT_ANYRISK)
+			pTDI->nRisk = max(pTDI->nRisk, m_filter.nRisk);
+
+		if (m_filter.nPriority != FT_ANYPRIORITY)
+			pTDI->nPriority = max(pTDI->nPriority, m_filter.nPriority);
 
 		if (!m_filter.sAllocBy.IsEmpty() && pTDI->sAllocBy.IsEmpty())
 			pTDI->sAllocBy = m_filter.sAllocBy;
 
-		if (!m_filter.sAllocTo.IsEmpty() && pTDI->sAllocTo.IsEmpty())
-			pTDI->sAllocTo = m_filter.sAllocTo;
+// 		if (!m_filter.sAllocTo.IsEmpty() && pTDI->sAllocTo.IsEmpty())
+// 			pTDI->sAllocTo = m_filter.sAllocTo;
+
+		if (!m_filter.MatchAllocTo(pTDI->aAllocTo))
+		{
+			// if any category will match then set it to the first
+			if (m_filter.HasFlag(FT_ANYALLOCTO))
+			{
+				pTDI->aAllocTo.RemoveAll();
+
+				if (m_filter.aAllocTo.GetSize())
+					pTDI->aAllocTo.Add(m_filter.aAllocTo[0]);
+			}
+			else // set it to all the filter cats
+				pTDI->aAllocTo.Copy(m_filter.aAllocTo);
+		}
 
 		if (!m_filter.sStatus.IsEmpty() && pTDI->sStatus.IsEmpty())
 			pTDI->sStatus = m_filter.sStatus;
@@ -607,9 +637,9 @@ TODOITEM* CFilteredToDoCtrl::NewTask()
 }
 
 HTREEITEM CFilteredToDoCtrl::NewTask(LPCTSTR szText, TDC_INSERTWHERE nWhere, 
-									BOOL bSelect, BOOL bEditText, BOOL bSort)
+									BOOL bSelect, BOOL bEditText)
 {
-	return CToDoCtrl::NewTask(szText, nWhere, bSelect, bEditText, bSort);
+	return CToDoCtrl::NewTask(szText, nWhere, bSelect, bEditText);
 }
 
 void CFilteredToDoCtrl::SetModified(BOOL bMod, TDC_ATTRIBUTE nAttrib)
@@ -627,11 +657,14 @@ BOOL CFilteredToDoCtrl::ModNeedsRefilter(TDC_ATTRIBUTE nModType)
 		switch (nModType)
 		{
 		case TDCA_PRIORITY:		return (m_filter.nPriority != -1);
-		case TDCA_ALLOCTO:		return (!m_filter.sAllocTo.IsEmpty());
+		case TDCA_RISK:			return (m_filter.nRisk != -1);
+			
+//		case TDCA_ALLOCTO:		return (!m_filter.sAllocTo.IsEmpty());
 		case TDCA_ALLOCBY:		return (!m_filter.sAllocBy.IsEmpty());
 		case TDCA_STATUS:		return (!m_filter.sStatus.IsEmpty());
+
 		case TDCA_CATEGORY:		return (m_filter.aCategories.GetSize());
-		case TDCA_RISK:			return (m_filter.nRisk != -1);
+		case TDCA_ALLOCTO:		return (m_filter.aAllocTo.GetSize());
 
 		case TDCA_PERCENT:
 		case TDCA_DONEDATE:		return (m_filter.nFilter == FT_DONE ||

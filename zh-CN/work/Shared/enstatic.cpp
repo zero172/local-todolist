@@ -94,7 +94,11 @@ void CEnStatic::OnSize(UINT nType, int cx, int cy)
 	CStatic::OnSize(nType, cx, cy);
 }
 
-UINT CEnStatic::OnNcHitTest(CPoint point) 
+#if _MSC_VER >= 1400
+LRESULT CEnStatic::OnNcHitTest(CPoint point)
+#else
+UINT CEnStatic::OnNcHitTest(CPoint point)
+#endif
 {
 	if (IsShowingGripper())
 	{

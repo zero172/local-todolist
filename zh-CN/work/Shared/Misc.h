@@ -24,8 +24,9 @@ namespace Misc
 	void NullGuid(GUID& guid);
 	BOOL SameGuids(const GUID& guid1, const GUID& guid2);
 
-	BOOL ArraysMatch(const CStringArray& array1, const CStringArray& array2, BOOL bOrderMatters = FALSE);
-	BOOL MatchAny(const CStringArray& array1, const CStringArray& array2);
+	BOOL ArraysMatch(const CStringArray& array1, const CStringArray& array2, 
+					 BOOL bOrderMatters = FALSE, BOOL bCaseMatters = FALSE);
+	BOOL MatchAny(const CStringArray& array1, const CStringArray& array2, BOOL bCaseMatters = FALSE);
 	CString FormatArray(const CStringArray& array);
 	int ParseIntoArray(const CString& sText, CStringArray& array, BOOL bAllowEmpty = FALSE);
 	int Find(const CStringArray& array, LPCTSTR szItem, BOOL bCaseMatters = FALSE);
@@ -37,18 +38,28 @@ namespace Misc
 	CString GetDecimalSeparator();
 	CString GetDefCharset();
 
+	HCURSOR HandCursor();
+
 	int CompareVersions(LPCTSTR szVersion1, LPCTSTR szVersion2);
 	int Split(const CString& sText, char cDelim, CStringArray& aValues);
 
-	CFont& WingDings();
-	HFONT CreateFont(LPCTSTR szFaceName, int nPoint, BOOL bStrikeThru = FALSE);
+	enum { BOLD = 0x01, ITALIC = 0x02, UNDERLINED = 0x04, STRIKETHRU = 0x08, SYMBOL = 0x10};
+
+	HFONT CreateFont(HFONT hFont, DWORD dwFlags = 0);
+	HFONT CreateFont(LPCTSTR szFaceName, int nPoint = -1, DWORD dwFlags = 0);
+	BOOL CreateFont(CFont& font, LPCTSTR szFaceName, int nPoint = -1, DWORD dwFlags = 0);
+	BOOL CreateFont(CFont& fontOut, HFONT fontIn, DWORD dwFlags = 0);
+
+	DWORD GetFontFlags(HFONT hFont);
 	int GetFontNameSize(HFONT hFont, CString& sFaceName);
 	BOOL SameFont(HFONT hFont, LPCTSTR szFaceName, int nPoint);
 	BOOL SameFontNameSize(HFONT hFont1, HFONT hFont2);
+	CFont& WingDings();
 
 	double Round(double dValue);
 	float Round(float fValue);
 	double Atof(const CString& sValue);
+	CString Format(double dVal, int nDecPlaces = 2);
 
 	BOOL IsWorkStationLocked();
 	BOOL IsScreenSaverActive();
@@ -58,6 +69,9 @@ namespace Misc
 	int AFX_CDECL GetTextWidth(CDC* pDC, LPCTSTR lpszFormat, ...);
 	float GetAverageCharWidth(CDC* pDC);
 
+	int ParseSearchString(LPCTSTR szLookFor, CStringArray& aWords);
+	BOOL FindWord(LPCTSTR szWord, LPCTSTR szText, BOOL bMatchCase, BOOL bMatchWholeWord);
+	
 };
 
 #endif // !defined(AFX_MISC_H__4B2FDA3E_63C5_4F52_A139_9512105C3AD4__INCLUDED_)

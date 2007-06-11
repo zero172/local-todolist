@@ -59,18 +59,14 @@ CExportDlg::CExportDlg(const CImportExportMgr& mgr, BOOL bSingleTaskList, LPCTST
 		if ((m_sFilePath.IsEmpty() || PathIsRelative(m_sFilePath)) && 
 			!m_sFolderPath.IsEmpty())
 		{
-			char szFName[_MAX_FNAME];
-			_splitpath(m_sFilePath, NULL, NULL, szFName, NULL);
+			CString sFName;
+			FileMisc::SplitPath(m_sFilePath, NULL, NULL, &sFName);
 
 			// handle empty filename
-			if (!szFName[0])
-			{
-				CEnString sUntitled(IDS_TDC_UNTITLEDFILE);
-				strcpy(szFName, sUntitled);
-			}
+			if (sFName.IsEmpty())
+				sFName.LoadString(IDS_TDC_UNTITLEDFILE);
 
-			_makepath(m_sExportPath.GetBuffer(MAX_PATH), NULL, m_sFolderPath, szFName, NULL);
-			m_sExportPath.ReleaseBuffer();
+			FileMisc::MakePath(m_sExportPath, NULL, m_sFolderPath, sFName);
 		}
 				
 		ReplaceExtension(m_sExportPath, s_nFormatOption);
@@ -83,10 +79,10 @@ CExportDlg::CExportDlg(const CImportExportMgr& mgr, BOOL bSingleTaskList, LPCTST
 
 		else if (!m_sFilePath.IsEmpty())
 		{
-			char szDrive[_MAX_DRIVE], szPath[MAX_PATH];
-			_splitpath(m_sFilePath, szDrive, szPath, NULL, NULL);
-			_makepath(m_sExportPath.GetBuffer(MAX_PATH), szDrive, szPath, NULL, NULL);
-			m_sExportPath.ReleaseBuffer();
+			CString sDrive, sPath;
+
+			FileMisc::SplitPath(m_sFilePath, &sDrive, &sPath);
+			FileMisc::MakePath(m_sExportPath, sDrive, sPath);
 		}
 
 		m_sPathLabel.LoadString(IDS_ED_FOLDER);
@@ -210,7 +206,6 @@ void CExportDlg::ReplaceExtension(CString& sPathName, int nFormat)
 	if (!m_mgrImportExport.ExporterHasFileExtension(nFormat))
 		return;
 	
-	char szDrive[_MAX_DRIVE], szFolder[MAX_PATH], szFName[_MAX_FNAME];
 
 	CString sExt = m_mgrImportExport.GetExporterFileExtension(nFormat);
 
@@ -220,11 +215,11 @@ void CExportDlg::ReplaceExtension(CString& sPathName, int nFormat)
 
 	if (nFind != sPathName.GetLength() - sExt.GetLength())
 	{
-		_splitpath(sPathName, szDrive, szFolder, szFName, NULL);
-		_makepath(sPathName.GetBuffer(MAX_PATH), szDrive, szFolder, szFName, sExt);
-	}
+		CString sDrive, sFolder, sFName;
 
-	sPathName.ReleaseBuffer();
+		FileMisc::SplitPath(sPathName, &sDrive, &sFolder, &sFName);
+		FileMisc::MakePath(sPathName, sDrive, sFolder, sFName, sExt);
+	}
 }
 
 void CExportDlg::OnOK()
@@ -240,19 +235,17 @@ void CExportDlg::OnOK()
 		// on the exe path and check with the user
 		if (::PathIsRelative(m_sExportPath))
 		{
-			char szPath[MAX_PATH], szDrive[_MAX_DRIVE], szFolder[MAX_PATH];
+			CString sPath = FileMisc::GetModuleFileName(), sDrive, sFolder;
 
-			::GetModuleFileName(NULL, szPath, MAX_PATH);
-
-			_splitpath(szPath, szDrive, szFolder, NULL, NULL);
-			_makepath(szPath, szDrive, szFolder, m_sExportPath, NULL);
+			FileMisc::SplitPath(sPath, &sDrive, &sFolder);
+			FileMisc::MakePath(sPath, sDrive, sFolder, m_sExportPath);
 
 			CString sMessage;
 			
 			if (m_nExportOption == ALLTASKLISTS)
-				sMessage.Format(IDS_ED_CONFIRMEXPORTPATHMULTI, szPath);
+				sMessage.Format(IDS_ED_CONFIRMEXPORTPATHMULTI, sPath);
 			else
-				sMessage.Format(IDS_ED_CONFIRMEXPORTPATH, szPath);
+				sMessage.Format(IDS_ED_CONFIRMEXPORTPATH, sPath);
 							
 			UINT nRet = MessageBox(sMessage, CEnString(IDS_ED_CONFIRMEXPORTPATH_TITLE), MB_YESNO);
 
@@ -264,7 +257,7 @@ void CExportDlg::OnOK()
 				return;
 			}
 			else
-				m_sExportPath = szPath;
+				m_sExportPath = sPath;
 		}
 
 		// make sure the output folder is valid

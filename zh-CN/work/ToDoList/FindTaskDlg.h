@@ -13,7 +13,7 @@
 #include "findblankpage.h"
 #include "findprioritypage.h"
 #include "findriskpage.h"
-#include "findcategorypage.h"
+#include "finditemspage.h"
 
 #include "..\shared\PropertyPageHost.h"
 #include "..\shared\dockmanager.h"
@@ -80,8 +80,8 @@ public:
 	void RefreshSearch();
 	
 	void SetPriorityColors(const CDWordArray& aColors);
-	void SetCategories(const CStringArray& aCats);
 
+	void AddHeaderRow(LPCTSTR szText, BOOL bSpaceAbove = TRUE);
 	void AddResult(LPCTSTR szTask, LPCTSTR szMatch, LPCTSTR szPath, BOOL bDone, DWORD dwItemData, int nTaskList);
 
 	FIND_WHAT GetFindWhat();
@@ -90,8 +90,8 @@ public:
 	BOOL GetRange(int& nFrom, int& nTo);
 	BOOL GetRange(double& dFrom, double& dTo);
 
-	int GetCategories(CStringArray& aCats);
-	BOOL GetMatchAllCategories();
+	int GetItems(CStringArray& aItems);
+	BOOL GetMatchAllItems();
 	
 	CString GetText();
 	BOOL GetMatchCase();
@@ -118,7 +118,6 @@ protected:
 	//{{AFX_DATA(CFindTaskDlg)
 	enum { IDD = IDD_FIND_DIALOG };
 	CTabbedComboBox	m_cbFindOptions;
-	CListCtrl	m_lcResults;
 	int		m_bAllTasklists;
 	CString	m_sResultsLabel;
 	BOOL	m_bIncludeDone;
@@ -129,34 +128,39 @@ protected:
 	BOOL	m_bAutoSelectSingles;
 	BOOL	m_bSearchResults;
 	//}}AFX_DATA
-	CMap<DWORD, DWORD, FTDRESULT, FTDRESULT&> m_mapResults;
-	CPropertyPageHost m_host;
+	CListCtrl	m_lcResults;
+
 	CFindTextPage m_pageTitleComments;
-	CFindPriorityPage  m_pagePriority;
-	CFindRiskPage  m_pageRisk;
-	CFindNumPage  m_pagePercent;
-	CFindNumPage  m_pageTimeEst;
-	CFindNumPage  m_pageTimeSpent;
-	CFindNumPage  m_pageTaskID;
-	CFindNumPage  m_pageCost;
+	CFindPriorityPage m_pagePriority;
+	CFindRiskPage m_pageRisk;
+	CFindNumPage m_pagePercent;
+	CFindNumPage m_pageTimeEst;
+	CFindNumPage m_pageTimeSpent;
+	CFindNumPage m_pageTaskID;
+	CFindNumPage m_pageCost;
 	CFindDatePage m_pageCreationDate;
 	CFindDatePage m_pageStartDate;
 	CFindDatePage m_pageDueDate;
 	CFindDatePage m_pageDoneDate;
 	CFindDatePage m_pageLastMod;
-	CFindTextPage m_pageAllocTo;
+	CFindItemsPage m_pageAllocTo;
 	CFindTextPage m_pageAllocBy;
 	CFindTextPage m_pageCreatedBy;
 	CFindTextPage m_pageStatus;
-	CFindCategoryPage m_pageCategory;
+	CFindItemsPage m_pageCategory;
 	CFindTextPage m_pageExtID;
 	CFindTextPage m_pageVersion;
 	CFindBlankPage m_pageFlag;
+
 	CDockManager m_dockMgr;
 	BOOL m_bDockable;
 	CEnToolBar m_toolbar;
 	CToolbarHelper m_tbHelper;
 	CLockableHeaderCtrl m_hdrResults;
+	CMap<DWORD, DWORD, FTDRESULT, FTDRESULT&> m_mapResults;
+	CPropertyPageHost m_host;
+	CFont m_fontBold;
+	int m_nCurSel;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -177,7 +181,6 @@ protected:
 	afx_msg void OnClose();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnItemActivated(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDestroy();
 	afx_msg void OnSelchangeFindoption();
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI);
@@ -191,8 +194,11 @@ protected:
 	afx_msg void OnDockbelow();
 	afx_msg void OnUpdateDockbelow(CCmdUI* pCmdUI);
 	afx_msg void OnSearchresults();
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnItemchangingResults(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
 	afx_msg void OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnItemActivated(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 
 	void SaveSettings();
@@ -200,6 +206,10 @@ protected:
 	void InitFieldColumn();
 	void LoadSettings();
 	CSize GetMinDockedSize(DM_POS nPos);
+	int GetNextResult(int nItem, BOOL bDown);
+	void SelectItem(int nItem);
+	int GetSelectedItem();
+//	void InvalidateVisibleHeaderRows();
 
 };
 

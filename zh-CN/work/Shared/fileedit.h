@@ -69,10 +69,14 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg void OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
-	afx_msg UINT OnNcHitTest(CPoint point);
 	afx_msg BOOL OnChange();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	//}}AFX_MSG
+#if _MSC_VER >= 1400
+	afx_msg LRESULT OnNcHitTest(CPoint point);
+#else
+	afx_msg UINT OnNcHitTest(CPoint point);
+#endif
 	afx_msg LRESULT OnSetText(WPARAM /*wp*/, LPARAM /*lp*/);
 	afx_msg void OnNeedTooltip(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 	virtual void OnBtnClick(UINT nID);

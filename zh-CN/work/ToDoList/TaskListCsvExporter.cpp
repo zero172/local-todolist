@@ -112,14 +112,13 @@ CString& CTaskListCsvExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 		AppendAttribute(pTasks, hTask, TDL_TASKCREATIONDATESTRING, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKCREATEDBY, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKSTARTDATESTRING, NULL, sOutput);
-		AppendAttribute(pTasks, hTask, TDL_TASKDUEDATESTRING, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKEARLIESTDUEDATESTRING, TDL_TASKDUEDATESTRING, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKDONEDATESTRING, NULL, sOutput);
-		AppendAttribute(pTasks, hTask, TDL_TASKALLOCTO, NULL, sOutput);
+		AppendAttributeList(pTasks, hTask, TDL_TASKNUMALLOCTO, TDL_TASKALLOCTO, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKALLOCBY, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKVERSION, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKRECURRENCE, NULL, sOutput);
-		AppendAttribute(pTasks, hTask, TDL_TASKCATEGORY, NULL, sOutput);
+		AppendAttributeList(pTasks, hTask, TDL_TASKNUMCATEGORY, TDL_TASKCATEGORY, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKSTATUS, NULL, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKHIGHESTRISK, TDL_TASKRISK, sOutput);
 		AppendAttribute(pTasks, hTask, TDL_TASKEXTERNALID, NULL, sOutput);
@@ -167,33 +166,59 @@ void CTaskListCsvExporter::CheckAddAttribtoList(const ITaskList6* pTasks, HTASKI
 	}
 }
 
+void CTaskListCsvExporter::AppendAttributeList(const ITaskList6* pTasks, HTASKITEM hTask, 
+										   LPCTSTR szNumAttribName, LPCTSTR szAttribName, 
+                                          CString& sOutput) const
+{
+	int nItemCount = atoi(pTasks->GetTaskAttribute(hTask, szNumAttribName));
+
+	if (nItemCount <= 1)
+		AppendAttribute(pTasks, hTask, szAttribName, NULL, sOutput);
+
+	else // more than one (use plus sign as delimiter)
+	{
+		CString sAttribs = pTasks->GetTaskAttribute(hTask, szAttribName);
+
+		for (int nItem = 1; nItem < nItemCount; nItem++)
+		{
+			CString sAttribName;
+			sAttribName.Format("%s%d", szAttribName, nItem);
+
+			sAttribs += '+';
+			sAttribs += pTasks->GetTaskAttribute(hTask, sAttribName);
+		}
+
+		AppendAttribute(sAttribs, sOutput);
+	}
+}
+
 void CTaskListCsvExporter::AppendAttribute(const ITaskList6* pTasks, HTASKITEM hTask, 
-										            LPCTSTR szAttribName, LPCTSTR szAltAttribName, 
-                                          CString& sOutput, LPCTSTR szPrefix) const
+										   LPCTSTR szAttribName, LPCTSTR szAltAttribName, 
+										   CString& sOutput, LPCTSTR szPrefix) const
 {
 	if (WantAttribute(szAttribName) || (szAltAttribName && WantAttribute(szAltAttribName)))
 	{
 		if (pTasks->TaskHasAttribute(hTask, szAttribName))
-      {
-         CString sAttrib(szPrefix);
-         sAttrib += pTasks->GetTaskAttribute(hTask, szAttribName);
-
+		{
+			CString sAttrib(szPrefix);
+			sAttrib += pTasks->GetTaskAttribute(hTask, szAttribName);
+			
 			AppendAttribute(sAttrib, sOutput);
-      }
+		}
 		else if (szAltAttribName && pTasks->TaskHasAttribute(hTask, szAltAttribName))
-      {
-         CString sAttrib(szPrefix);
-         sAttrib += pTasks->GetTaskAttribute(hTask, szAltAttribName);
-
+		{
+			CString sAttrib(szPrefix);
+			sAttrib += pTasks->GetTaskAttribute(hTask, szAltAttribName);
+			
 			AppendAttribute(sAttrib, sOutput);
-      }
+		}
 		else
 			sOutput += DELIM;
 	}
 }
 
 void CTaskListCsvExporter::AppendAttribute(LPCTSTR szAttrib, CString& sOutput) const
-	{
+{
 	BOOL bNeedQuoting = FALSE;
 	CString sAttrib(szAttrib);
 	
@@ -203,7 +228,7 @@ void CTaskListCsvExporter::AppendAttribute(LPCTSTR szAttrib, CString& sOutput) c
 		sAttrib.Replace(ONEDBLQUOTE, TWODBLQUOTE);
 		bNeedQuoting = TRUE;
 	}
-
+	
 	if (sAttrib.Find(DELIM) != -1)
 		bNeedQuoting = TRUE;
 	

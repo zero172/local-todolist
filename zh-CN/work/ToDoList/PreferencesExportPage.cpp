@@ -135,7 +135,7 @@ BOOL CPreferencesExportPage::OnInitDialog()
 {
 	CPropertyPage::OnInitDialog();
 	
-	m_mgrGroupLines.AddGroupLine(IDC_EXPORTGROUP, *this); 
+//	m_mgrGroupLines.AddGroupLine(IDC_EXPORTGROUP, *this); 
 	m_cbIndent.EnableWindow(m_bUseSpaceIndents);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

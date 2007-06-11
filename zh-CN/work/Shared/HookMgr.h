@@ -49,13 +49,17 @@ enum
 	HM_SYSMSGFILTER	= 0x0400,
 };
 
-/*
+//
+//fabio_2005
+#if _MSC_VER >= 1300
+#else
 struct MOUSEHOOKSTRUCTEX
 {
     MOUSEHOOKSTRUCT MOUSEHOOKSTRUCT;
     DWORD mouseData;
 };
-*/
+#endif
+
 
 #ifndef HSHELL_APPCOMMAND
 #define HSHELL_APPCOMMAND           12
@@ -300,10 +304,24 @@ protected:
 
 		if (nCode == HC_ACTION)
 		{
-         MOUSEHOOKSTRUCT* pInfo = (MOUSEHOOKSTRUCT*)lParam;
+			MOUSEHOOKSTRUCT* pInfo = (MOUSEHOOKSTRUCT*)lParam;
 
 			if (mgr.ClassMatches(pInfo->hwnd))
-         {
+			{
+#if _MSC_VER >= 1300
+
+				//fabio_2005	
+			   //fabio	
+				MOUSEHOOKSTRUCTEX* pInfoEx = (MOUSEHOOKSTRUCTEX*)pInfo;
+				if (!mgr.m_b2000orLater)
+				{
+					pInfoEx->mouseData = 0;
+
+				}
+				if (mgr.OnMouse(wParam, *pInfoEx))
+					return TRUE;
+#else
+
             if (mgr.m_b2000orLater)
             {
                MOUSEHOOKSTRUCTEX* pInfoEx = (MOUSEHOOKSTRUCTEX*)pInfo;
@@ -313,14 +331,14 @@ protected:
             }
             else
             {
-               MOUSEHOOKSTRUCTEX infoEx;
-               MOUSEHOOKSTRUCT& rInfo = infoEx;
-               rInfo = *pInfo;
+				MOUSEHOOKSTRUCTEX infoEx;
+               infoEx.MOUSEHOOKSTRUCT = *pInfo;
                infoEx.mouseData = 0;
 
                if (mgr.OnMouse(wParam, infoEx))
                   return TRUE;
             }
+#endif
 			   
          }
 		}

@@ -38,8 +38,7 @@ public:
 	BOOL ImportTaskList(LPCTSTR szSrcFile, ITaskList* pDestTasks, int nByImporter) const;
 	BOOL ExportTaskList(const ITaskList* pSrcTasks, LPCTSTR szDestFile, int nByExporter) const;
 	
-	void UpdateExportMenu(CCmdUI* pCmdUI, int nMaxCount, BOOL bEnabled = TRUE) const;
-	void UpdateImportMenu(CCmdUI* pCmdUI, int nMaxCount, BOOL bEnabled = TRUE) const;
+	int FindImporter(LPCTSTR szFilePath);
 	
 protected:
 	BOOL m_bInitialized;

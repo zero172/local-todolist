@@ -40,11 +40,11 @@ void CFindRiskPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CFindRiskPage)
 	DDX_Radio(pDX, IDC_THIS, m_nRiskOption);
-	DDX_CBIndex(pDX, IDC_MORETHANRISK, m_nMoreThanRisk);
-	DDX_CBIndex(pDX, IDC_LESSTHANRISK, m_nLessThanRisk);
-	DDX_CBIndex(pDX, IDC_RISKSTART, m_nStartRisk);
-	DDX_CBIndex(pDX, IDC_RISKEND, m_nEndRisk);
-	DDX_CBIndex(pDX, IDC_THISRISK, m_nThisRisk);
+	DDX_CBRisk(pDX, IDC_MORETHANRISK, m_nMoreThanRisk);
+	DDX_CBRisk(pDX, IDC_LESSTHANRISK, m_nLessThanRisk);
+	DDX_CBRisk(pDX, IDC_RISKSTART, m_nStartRisk);
+	DDX_CBRisk(pDX, IDC_RISKEND, m_nEndRisk);
+	DDX_CBRisk(pDX, IDC_THISRISK, m_nThisRisk);
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_MORETHANRISK, m_cbMoreThanRisk);
 	DDX_Control(pDX, IDC_LESSTHANRISK, m_cbLessThanRisk);

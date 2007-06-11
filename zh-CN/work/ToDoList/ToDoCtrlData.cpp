@@ -10,6 +10,7 @@
 #include "..\shared\datehelper.h"
 #include "..\shared\misc.h"
 #include "..\shared\enstring.h"
+#include "..\shared\treectrlhelper.h"
 
 #include <float.h>
 #include <math.h>
@@ -65,7 +66,6 @@ TODOITEM::TODOITEM(const TODOITEM& tdi) :
 	sComments(tdi.sComments),
 	color(tdi.color), 
 	sFileRefPath(tdi.sFileRefPath),
-	sAllocTo(tdi.sAllocTo),
 	sAllocBy(tdi.sAllocBy),
 	sStatus(tdi.sStatus),
 	nPriority(tdi.nPriority),
@@ -89,6 +89,7 @@ TODOITEM::TODOITEM(const TODOITEM& tdi) :
 		dateCreated = COleDateTime::GetCurrentTime();
 
 	aCategories.Copy(tdi.aCategories);
+	aAllocTo.Copy(tdi.aAllocTo);
 
 	SetModified();
 	ResetCalcs();
@@ -152,7 +153,7 @@ void TODOITEM::SetModified()
 	tLastMod = COleDateTime::GetCurrentTime(); 
 }
 
-void TODOITEM::ResetCalcs() 
+void TODOITEM::ResetCalcs() const 
 {
 	nCalcPriority = nCalcPercent = nCalcRisk = -1;
 	dCalcTimeEstimate = dCalcTimeSpent = dCalcCost = -1;
@@ -164,6 +165,11 @@ void TODOITEM::ResetCalcs()
 CString TODOITEM::GetFirstCategory() const
 {
 	return aCategories.GetSize() ? aCategories[0] : "";
+}
+
+CString TODOITEM::GetFirstAllocTo() const
+{
+	return aAllocTo.GetSize() ? aAllocTo[0] : "";
 }
 
 BOOL TODOITEM::GetNextOccurence(COleDateTime& dtNext) const
@@ -182,7 +188,7 @@ BOOL TODOITEM::GetNextOccurence(COleDateTime& dtNext) const
 
 
 CToDoCtrlData::CToDoCtrlData(CTreeCtrl& tree, const CWordArray& aStyles) : 
-m_tree(tree), m_aStyles(aStyles)
+m_tree(tree), m_aStyles(aStyles), m_bSortDueTodayHigh(-1)
 {
 	
 }
@@ -334,7 +340,9 @@ DWORD CToDoCtrlData::FindFirstTask(HTREEITEM hti, const SEARCHPARAMS& params, SE
 
 BOOL CToDoCtrlData::TaskMatches(DWORD dwID, const SEARCHPARAMS& params, SEARCHRESULT& result) const
 {
-	return TaskMatches(FindItem(dwID, NULL), params, result);
+	HTREEITEM hti = CTreeCtrlHelper(m_tree).FindItem(dwID, NULL);
+
+	return TaskMatches(hti, params, result);
 }
 
 BOOL CToDoCtrlData::TaskMatches(HTREEITEM hti, const SEARCHPARAMS& params, SEARCHRESULT& result) const
@@ -364,7 +372,7 @@ BOOL CToDoCtrlData::TaskMatches(HTREEITEM hti, const SEARCHPARAMS& params, SEARC
 			break;
 			
 		case FIND_ALLOCTO:
-			bMatch = TaskMatches(pTDI->sAllocTo, params, result);
+			bMatch = TaskMatches(pTDI->aAllocTo, params, result);
 			break;
 			
 		case FIND_ALLOCBY:
@@ -457,7 +465,8 @@ BOOL CToDoCtrlData::TaskMatches(HTREEITEM hti, const SEARCHPARAMS& params, SEARC
 
 BOOL CToDoCtrlData::TaskMatches(const COleDateTime& date, const SEARCHPARAMS& params, SEARCHRESULT& result)
 {
-	if (date >= params.dateFrom && date <= params.dateTo)
+	if (date.m_dt >= floor(params.dateFrom.m_dt) && 
+		date.m_dt <= floor(params.dateTo.m_dt))
 	{
 		result.dateMatch = date;
 		return TRUE;
@@ -471,7 +480,7 @@ BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAMS& params
 {
 	CStringArray aWords;
 	
-	if (!ParseSearchString(params.sText, aWords))
+	if (!Misc::ParseSearchString(params.sText, aWords))
 		return FALSE;
 	
 	BOOL bMatchCase = (params.dwFlags & FIND_MATCHCASE);
@@ -482,7 +491,7 @@ BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAMS& params
 	{
 		CString sWord = aWords.GetAt(nWord);
 		
-		if (FindWord(sWord, sText, bMatchCase, bMatchWholeWord))
+		if (Misc::FindWord(sWord, sText, bMatchCase, bMatchWholeWord))
 		{
 			result.sMatch = sText;
 			return TRUE;
@@ -492,24 +501,24 @@ BOOL CToDoCtrlData::TaskMatches(const CString& sText, const SEARCHPARAMS& params
 	return FALSE;
 }
 
-BOOL CToDoCtrlData::TaskMatches(const CStringArray& aCats, const SEARCHPARAMS& params, SEARCHRESULT& result)
+BOOL CToDoCtrlData::TaskMatches(const CStringArray& aItems, const SEARCHPARAMS& params, SEARCHRESULT& result)
 {
 	BOOL bMatch = FALSE;
 
-	if (params.dwFlags & FIND_MATCHALLCATS)
-		bMatch = Misc::ArraysMatch(aCats, params.aCategories);
+	if (params.dwFlags & FIND_MATCHALLARRAY)
+		bMatch = Misc::ArraysMatch(aItems, params.aItems);
 	else
 	{
-		if (aCats.GetSize())
-			bMatch = Misc::MatchAny(aCats, params.aCategories);
+		if (aItems.GetSize())
+			bMatch = Misc::MatchAny(aItems, params.aItems);
 		else
-			// special case: task has no category and param.aCategories
+			// special case: task has no item and param.aItems
 			// contains an empty item
-			bMatch = (Misc::Find(params.aCategories, "") != -1);
+			bMatch = (Misc::Find(params.aItems, "") != -1);
 	}
 
 	if (bMatch)
-		result.sMatch = Misc::FormatArray(aCats);
+		result.sMatch = Misc::FormatArray(aItems);
 
 	return bMatch;
 }
@@ -536,103 +545,6 @@ BOOL CToDoCtrlData::TaskMatches(int nValue, const SEARCHPARAMS& params, SEARCHRE
 
 	// else
 	return FALSE;
-}
-
-BOOL CToDoCtrlData::FindWord(LPCTSTR szWord, LPCTSTR szText, BOOL bMatchCase, BOOL bMatchWholeWord)
-{
-	CString sWord(szWord), sText(szText);
-	
-	if (sWord.GetLength() > sText.GetLength())
-		return FALSE;
-	
-	sWord.TrimLeft();
-	sWord.TrimRight();
-	
-	if (!bMatchCase)
-	{
-		sWord.MakeUpper();
-		sText.MakeUpper();
-	}
-	
-	int nFind = sText.Find(sWord);
-	
-	if (nFind == -1)
-		return FALSE;
-	
-	else if (bMatchWholeWord) // test whole word
-	{
-		const CString DELIMS("()-\\/{}[]:;,. ?\"'");
-		
-		// prior and next chars must be delimeters
-		char cPrevChar = 0, cNextChar = 0;
-		
-		// prev
-		if (nFind == 0) // word starts at start
-			cPrevChar = ' '; // known delim
-		else
-			cPrevChar = sText[nFind - 1];
-		
-		// next
-		if ((nFind + sWord.GetLength()) < sText.GetLength())
-			cNextChar = sText[nFind + sWord.GetLength()];
-		else
-			cNextChar = ' '; // known delim
-		
-		if (DELIMS.Find(cPrevChar) == -1 || DELIMS.Find(cNextChar) == -1)
-			return FALSE;
-	}
-	
-	return TRUE;
-}
-
-int CToDoCtrlData::ParseSearchString(LPCTSTR szLookFor, CStringArray& aWords)
-{
-	aWords.RemoveAll();
-	
-	// parse on spaces unless enclosed in double-quotes
-	int nLen = lstrlen(szLookFor);
-	BOOL bInQuotes = FALSE, bAddWord = FALSE;
-	CString sWord;
-	
-	for (int nPos = 0; nPos < nLen; nPos++)
-	{
-		switch (szLookFor[nPos])
-		{
-		case ' ': // word break
-			if (bInQuotes)
-				sWord += szLookFor[nPos];
-			else
-				bAddWord = TRUE;
-			break;
-			
-		case '\"':
-			// whether its the start or end we add the current word
-			// and flip bInQuotes
-			bInQuotes = !bInQuotes;
-			bAddWord = TRUE;
-			break;
-			
-		default: // everything else
-			sWord += szLookFor[nPos];
-			
-			// also if its the last char then add it
-			bAddWord = (nPos == nLen - 1);
-			break;
-		}
-		
-		if (bAddWord)
-		{
-			sWord.TrimLeft();
-			sWord.TrimRight();
-			
-			if (!sWord.IsEmpty())
-				aWords.Add(sWord);
-			
-			sWord.Empty(); // next word
-		}
-	}
-	
-	return aWords.GetSize();
 }
 
 CString CToDoCtrlData::GetTaskTitle(DWORD dwID) const
@@ -701,14 +613,15 @@ double CToDoCtrlData::GetTaskTimeSpent(DWORD dwID, int& nUnits) const
 	return 0;
 }
 
-CString CToDoCtrlData::GetTaskAllocTo(DWORD dwID) const
+int CToDoCtrlData::GetTaskAllocTo(DWORD dwID, CStringArray& aAllocTo) const
 {
 	TODOITEM* pTDI = GetTask(dwID);
-	
+	aAllocTo.RemoveAll();
+
 	if (pTDI)
-		return pTDI->sAllocTo;
-	
-	return "";
+		aAllocTo.Copy(pTDI->aAllocTo);
+
+	return aAllocTo.GetSize();
 }
 
 CString CToDoCtrlData::GetTaskAllocBy(DWORD dwID) const
@@ -1003,9 +916,9 @@ double CToDoCtrlData::GetTaskTimeSpent(HTREEITEM hti, int& nUnits) const
 	return GetTaskTimeSpent(GetTaskID(hti), nUnits);
 }
 
-CString CToDoCtrlData::GetTaskAllocTo(HTREEITEM hti) const
+int CToDoCtrlData::GetTaskAllocTo(HTREEITEM hti, CStringArray& aAllocTo) const
 {
-	return GetTaskAllocTo(GetTaskID(hti));
+	return GetTaskAllocTo(GetTaskID(hti), aAllocTo);
 }
 
 CString CToDoCtrlData::GetTaskAllocBy(HTREEITEM hti) const
@@ -1112,12 +1025,7 @@ int CToDoCtrlData::AreChildTasksDone(HTREEITEM hti) const
 	
 	return TRUE;
 }
-/*
-BOOL CToDoCtrlData::IsTaskDue(HTREEITEM hti) const
-{
-return IsTaskDue(GetTaskID(hti));
-}
-*/
+
 BOOL CToDoCtrlData::DeleteTask(HTREEITEM hti)
 {
 	// do children first to ensure entire branch is deleted
@@ -1152,6 +1060,17 @@ void CToDoCtrlData::Sort(TDC_SORTBY nBy, BOOL bAscending, HTREEITEM htiRoot)
 	Sort(htiRoot, ss);
 }
 
+void CToDoCtrlData::SetSortDueTodayHigh(BOOL bHigh) 
+{ 
+	bHigh = bHigh ? TRUE : FALSE; // normalize
+
+	if (m_bSortDueTodayHigh != bHigh)
+	{
+		ResetCachedCalculations();
+		m_bSortDueTodayHigh = bHigh; 
+	}
+}
+
 void CToDoCtrlData::Sort(HTREEITEM hti, const TDSORTSTRUCT& ss)
 {
 	// don't sort if not expanded and not the root item (hti == NULL)
@@ -1178,8 +1097,6 @@ void CToDoCtrlData::Sort(HTREEITEM hti, const TDSORTSTRUCT& ss)
 
 int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
-	int nCompare = 0;
-	
 	TDSORTSTRUCT* pSS = (TDSORTSTRUCT*)lParamSort;
 	
 	// sort by id can be optimized since the IDs are the lParams
@@ -1187,38 +1104,46 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		return (pSS->bAscending ? (lParam1 - lParam2) : (lParam2 - lParam1));
 	
 	// else all the rest require the task lookup
-	TODOITEM* tdi1 = pSS->pData->GetTask(lParam1);
-	TODOITEM* tdi2 = pSS->pData->GetTask(lParam2);
+	TODOITEM* pTDI1 = pSS->pData->GetTask(lParam1);
+	TODOITEM* pTDI2 = pSS->pData->GetTask(lParam2);
 	
 	HTREEITEM hti1 = NULL, hti2 = NULL;
 	VERIFY(pSS->pMapHTItems->Lookup(lParam1, hti1) && hti1);
 	VERIFY(pSS->pMapHTItems->Lookup(lParam2, hti2) && hti2);
 	
+	return pSS->pData->CompareTasks(pTDI1, hti1, pTDI2, hti2, pSS->nSortBy, pSS->bAscending);
+}
+
+int CToDoCtrlData::CompareTasks(TODOITEM* pTDI1, HTREEITEM hti1, TODOITEM* pTDI2, HTREEITEM hti2, 
+								TDC_SORTBY nSortBy, BOOL bAscending)
+{
+	int nCompare = 0;
+	
 	// figure out if either or both tasks are completed
 	// but only if the user has specified to sort these differently
-	BOOL bHideDone = pSS->pData->HasStyle(TDCS_HIDESTARTDUEFORDONETASKS);
-	BOOL bSortDoneBelow = pSS->pData->HasStyle(TDCS_SORTDONETASKSATBOTTOM);
+	BOOL bHideDone = HasStyle(TDCS_HIDESTARTDUEFORDONETASKS);
+	BOOL bSortDoneBelow = HasStyle(TDCS_SORTDONETASKSATBOTTOM);
 	BOOL bDone1 = FALSE, bDone2 = FALSE;
 	
 	if (bSortDoneBelow || 
-		pSS->nSortBy == TDC_SORTBYDONE || pSS->nSortBy == TDC_SORTBYDONEDATE ||
-		(bHideDone && (pSS->nSortBy == TDC_SORTBYSTARTDATE || pSS->nSortBy == TDC_SORTBYDUEDATE)))
+		nSortBy == TDC_SORTBYDONE || nSortBy == TDC_SORTBYDONEDATE ||
+		(bHideDone && (nSortBy == TDC_SORTBYSTARTDATE || nSortBy == TDC_SORTBYDUEDATE)))
 	{
-		bDone1 = pSS->pData->IsTaskDone(hti1, TDCCHECKALL);
-		bDone2 = pSS->pData->IsTaskDone(hti2, TDCCHECKALL);
+		bDone1 = IsTaskDone(hti1, TDCCHECKALL);
+		bDone2 = IsTaskDone(hti2, TDCCHECKALL);
 		
 		// can also do a partial optimization
-		if (bSortDoneBelow && (pSS->nSortBy != TDC_SORTBYDONE && pSS->nSortBy != TDC_SORTBYDONEDATE))
+		if (bSortDoneBelow && (nSortBy != TDC_SORTBYDONE && nSortBy != TDC_SORTBYDONEDATE))
 		{
 			if (bDone1 != bDone2)
 				return bDone1 ? 1 : -1;
 		}
 	}
-	
-	switch (pSS->nSortBy)
+
+	switch (nSortBy)
 	{
 	case TDC_SORTBYNAME:
-		nCompare = Compare(tdi1->sTitle, tdi2->sTitle);
+		nCompare = Compare(pTDI1->sTitle, pTDI2->sTitle);
 		break;
 		
 	case TDC_SORTBYDONE:
@@ -1226,25 +1151,25 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		break;
 		
 	case TDC_SORTBYFLAG:
-		nCompare = Compare(tdi1->bFlagged, tdi2->bFlagged);
+		nCompare = Compare(pTDI1->bFlagged, pTDI2->bFlagged);
 		break;
 		
 	case TDC_SORTBYRECURRENCE:
-		nCompare = Compare(tdi1->trRecurrence.nRegularity, tdi2->trRecurrence.nRegularity);
+		nCompare = Compare(pTDI1->trRecurrence.nRegularity, pTDI2->trRecurrence.nRegularity);
 		break;
 		
 	case TDC_SORTBYVERSION:
-		nCompare = Misc::CompareVersions(tdi1->sVersion, tdi2->sVersion);
+		nCompare = Misc::CompareVersions(pTDI1->sVersion, pTDI2->sVersion);
 		break;
 		
 	case TDC_SORTBYCREATIONDATE:
-		nCompare = Compare(tdi1->dateCreated, tdi2->dateCreated);
+		nCompare = Compare(pTDI1->dateCreated, pTDI2->dateCreated);
 		break;
 		
 	case TDC_SORTBYLASTMOD:
 		{
-			BOOL bHasModify1 = tdi1->HasLastMod() && !(bHideDone && bDone1);
-			BOOL bHasModify2 = tdi2->HasLastMod() && !(bHideDone && bDone2);
+			BOOL bHasModify1 = pTDI1->HasLastMod() && !(bHideDone && bDone1);
+			BOOL bHasModify2 = pTDI2->HasLastMod() && !(bHideDone && bDone2);
 			
 			if (bHasModify1 != bHasModify2)
 				return bHasModify1 ? -1 : 1;
@@ -1252,15 +1177,15 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 			else if (!bHasModify1) //  and !bHasStart2
 				return 0;
 			
-			nCompare = Compare(tdi1->tLastMod, tdi2->tLastMod);
+			nCompare = Compare(pTDI1->tLastMod, pTDI2->tLastMod);
 		}
 		break;
 		
 		
 	case TDC_SORTBYDONEDATE:
 		{
-			COleDateTime date1 = tdi1->dateDone; // default
-			COleDateTime date2 = tdi2->dateDone; // default
+			COleDateTime date1 = pTDI1->dateDone; // default
+			COleDateTime date2 = pTDI2->dateDone; // default
 			
 			// sort tasks 'good as done' between done and not-done
 			if (date1 <= 0 && bDone1)
@@ -1277,22 +1202,16 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		{
 			COleDateTime date1, date2;
 			
-			BOOL bUseEarliestDueDate = pSS->pData->HasStyle(TDCS_USEEARLIESTDUEDATE);
+			BOOL bUseEarliestDueDate = HasStyle(TDCS_USEEARLIESTDUEDATE);
 			
 			if (!bHideDone || !bDone1)
 			{
-				if (bUseEarliestDueDate)
-					date1 = pSS->pData->GetEarliestDueDate(hti1, tdi1);
-				else
-					date1 = tdi1->dateDue;
+				date1 = GetEarliestDueDate(hti1, pTDI1, bUseEarliestDueDate);
 			}
 			
 			if (!bHideDone || !bDone2)
 			{
-				if (bUseEarliestDueDate)
-					date2 = pSS->pData->GetEarliestDueDate(hti2, tdi2);
-				else
-					date2 = tdi2->dateDue;
+				date2 = GetEarliestDueDate(hti2, pTDI2, bUseEarliestDueDate);
 			}
 			
 			// Sort undated options below others
@@ -1312,8 +1231,8 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		
 	case TDC_SORTBYSTARTDATE:
 		{
-			BOOL bHasStart1 = tdi1->HasStart() && !(bHideDone && bDone1);
-			BOOL bHasStart2 = tdi2->HasStart() && !(bHideDone && bDone2);
+			BOOL bHasStart1 = pTDI1->HasStart() && !(bHideDone && bDone1);
+			BOOL bHasStart2 = pTDI2->HasStart() && !(bHideDone && bDone2);
 			
 			if (bHasStart1 != bHasStart2)
 				return bHasStart1 ? -1 : 1;
@@ -1321,7 +1240,7 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 			else if (!bHasStart1) //  and !bHasStart2
 				return 0;
 			
-			nCompare = Compare(tdi1->dateStart, tdi2->dateStart);
+			nCompare = Compare(pTDI1->dateStart, pTDI2->dateStart);
 		}
 		break;
 		
@@ -1329,30 +1248,30 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		{
 			// done items have even less than zero priority!
 			// and due items have greater than the highest priority
-			int nPriority1 = tdi1->nPriority; // default
-			int nPriority2 = tdi2->nPriority; // default
+			int nPriority1 = pTDI1->nPriority; // default
+			int nPriority2 = pTDI2->nPriority; // default
 			
-			BOOL bUseHighestPriority = pSS->pData->HasStyle(TDCS_USEHIGHESTPRIORITY);
+			BOOL bUseHighestPriority = HasStyle(TDCS_USEHIGHESTPRIORITY);
 			
 			// item1
 			if (bDone1)
 				nPriority1 = -1;
 			
-			else if (pSS->pData->IsTaskDue(hti1, tdi1))
-				nPriority1 = tdi1->nPriority + 11;
+			else if (IsTaskDue(hti1, pTDI1) && (m_bSortDueTodayHigh || !IsTaskDue(hti1, pTDI1, TRUE)))
+				nPriority1 = pTDI1->nPriority + 11;
 			
 			else if (bUseHighestPriority)
-				nPriority1 = pSS->pData->GetHighestPriority(hti1, tdi1);
+				nPriority1 = GetHighestPriority(hti1, pTDI1);
 			
 			// item2
 			if (bDone2)
 				nPriority2 = -1;
 			
-			else if (pSS->pData->IsTaskDue(hti2, tdi2))
-				nPriority2 = tdi2->nPriority + 11;
+			else if (IsTaskDue(hti2, pTDI2) && (m_bSortDueTodayHigh || !IsTaskDue(hti2, pTDI2, TRUE)))
+				nPriority2 = pTDI2->nPriority + 11;
 			
 			else if (bUseHighestPriority)
-				nPriority2 = pSS->pData->GetHighestPriority(hti2, tdi2);
+				nPriority2 = GetHighestPriority(hti2, pTDI2);
 			
 			nCompare = Compare(nPriority1, nPriority2);
 		}
@@ -1362,67 +1281,61 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		{
 			// done items have even less than zero priority!
 			// and due items have greater than the highest priority
-			int nRisk1 = tdi1->nRisk; // default
-			int nRisk2 = tdi2->nRisk; // default
+			int nRisk1 = pTDI1->nRisk; // default
+			int nRisk2 = pTDI2->nRisk; // default
 			
-			BOOL bUseHighestRisk = pSS->pData->HasStyle(TDCS_USEHIGHESTRISK);
+			BOOL bUseHighestRisk = HasStyle(TDCS_USEHIGHESTRISK);
 			
 			// item1
 			if (bDone1)
 				nRisk1 = -1;
 			
-//			else if (pSS->pData->IsTaskDue(hti1, tdi1))
-//				nRisk1 = tdi1->nRisk + 11;
-			
 			else if (bUseHighestRisk)
-				nRisk1 = pSS->pData->GetHighestRisk(hti1, tdi1);
+				nRisk1 = GetHighestRisk(hti1, pTDI1);
 			
 			// item2
 			if (bDone2)
 				nRisk2 = -1;
 			
-//			else if (pSS->pData->IsTaskDue(hti2, tdi2))
-//				nRisk2 = tdi2->nRisk + 11;
-			
 			else if (bUseHighestRisk)
-				nRisk2 = pSS->pData->GetHighestRisk(hti2, tdi2);
+				nRisk2 = GetHighestRisk(hti2, pTDI2);
 			
 			nCompare = Compare(nRisk1, nRisk2);
 		}
 		break;
 		
 	case TDC_SORTBYCOLOR:
-		nCompare = Compare((int)tdi1->color, (int)tdi2->color);
+		nCompare = Compare((int)pTDI1->color, (int)pTDI2->color);
 		break;
 		
 	case TDC_SORTBYALLOCTO:
-		nCompare = Compare(tdi1->sAllocTo, tdi2->sAllocTo, TRUE);
+		nCompare = Compare(pTDI1->GetFirstAllocTo(), pTDI2->GetFirstAllocTo(), TRUE);
 		break;
 		
 	case TDC_SORTBYALLOCBY:
-		nCompare = Compare(tdi1->sAllocBy, tdi2->sAllocBy, TRUE);
+		nCompare = Compare(pTDI1->sAllocBy, pTDI2->sAllocBy, TRUE);
 		break;
 		
 	case TDC_SORTBYCREATEDBY:
-		nCompare = Compare(tdi1->sCreatedBy, tdi2->sCreatedBy, TRUE);
+		nCompare = Compare(pTDI1->sCreatedBy, pTDI2->sCreatedBy, TRUE);
 		break;
 		
 	case TDC_SORTBYSTATUS:
-		nCompare = Compare(tdi1->sStatus, tdi2->sStatus, TRUE);
+		nCompare = Compare(pTDI1->sStatus, pTDI2->sStatus, TRUE);
 		break;
 		
 	case TDC_SORTBYEXTERNALID:
-		nCompare = Compare(tdi1->sExternalID, tdi2->sExternalID, TRUE);
+		nCompare = Compare(pTDI1->sExternalID, pTDI2->sExternalID, TRUE);
 		break;
 		
 	case TDC_SORTBYCATEGORY:
-		nCompare = Compare(tdi1->GetFirstCategory(), tdi2->GetFirstCategory(), TRUE);
+		nCompare = Compare(pTDI1->GetFirstCategory(), pTDI2->GetFirstCategory(), TRUE);
 		break;
 		
 	case TDC_SORTBYPERCENT:
 		{
-			int nPercent1 = pSS->pData->CalcPercentDone(hti1, tdi1);
-			int nPercent2 = pSS->pData->CalcPercentDone(hti2, tdi2);
+			int nPercent1 = CalcPercentDone(hti1, pTDI1);
+			int nPercent2 = CalcPercentDone(hti2, pTDI2);
 			
 			nCompare = Compare(nPercent1, nPercent2);
 		}
@@ -1430,8 +1343,8 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		
 	case TDC_SORTBYCOST:
 		{
-			double dCost1 = pSS->pData->CalcCost(hti1, tdi1);
-			double dCost2 = pSS->pData->CalcCost(hti2, tdi2);
+			double dCost1 = CalcCost(hti1, pTDI1);
+			double dCost2 = CalcCost(hti2, pTDI2);
 			
 			nCompare = Compare(dCost1, dCost2);
 		}
@@ -1439,8 +1352,8 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		
 	case TDC_SORTBYTIMEEST:
 		{
-			double dTime1 = pSS->pData->CalcTimeEstimate(hti1, tdi1, TDITU_HOURS);
-			double dTime2 = pSS->pData->CalcTimeEstimate(hti2, tdi2, TDITU_HOURS);
+			double dTime1 = CalcTimeEstimate(hti1, pTDI1, TDITU_HOURS);
+			double dTime2 = CalcTimeEstimate(hti2, pTDI2, TDITU_HOURS);
 			
 			nCompare = Compare(dTime1, dTime2);
 		}
@@ -1448,8 +1361,8 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		
 	case TDC_SORTBYTIMESPENT:
 		{
-			double dTime1 = pSS->pData->CalcTimeSpent(hti1, tdi1, TDITU_HOURS);
-			double dTime2 = pSS->pData->CalcTimeSpent(hti2, tdi2, TDITU_HOURS);
+			double dTime1 = CalcTimeSpent(hti1, pTDI1, TDITU_HOURS);
+			double dTime2 = CalcTimeSpent(hti2, pTDI2, TDITU_HOURS);
 			
 			nCompare = Compare(dTime1, dTime2);
 		}
@@ -1459,11 +1372,8 @@ int CALLBACK CToDoCtrlData::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM l
 		ASSERT(0);
 		break;
 	}
-	
-	if (!pSS->bAscending)
-		nCompare = -nCompare;
-	
-	return nCompare;
+
+	return bAscending ? nCompare : -nCompare;
 }
 
 int CToDoCtrlData::Compare(const COleDateTime& date1, const COleDateTime& date2)
@@ -1522,7 +1432,7 @@ int CToDoCtrlData::GetItemPos(HTREEITEM hti, HTREEITEM htiSearch) const
 	return 0; // not found
 }
 
-void CToDoCtrlData::ResetCachedCalculations()
+void CToDoCtrlData::ResetCachedCalculations() const
 {
 	// sets the bNeedRecalc flag on all items
 	POSITION pos = m_mapTDItems.GetStartPosition();
@@ -1532,9 +1442,7 @@ void CToDoCtrlData::ResetCachedCalculations()
 	while (pos)
 	{
 		m_mapTDItems.GetNextAssoc(pos, dwID, pTDI);
-		
 		pTDI->ResetCalcs();
-		m_mapTDItems[dwID] = pTDI;
 	}
 }
 
@@ -1695,11 +1603,9 @@ double CToDoCtrlData::CalcCost(HTREEITEM hti, const TODOITEM* pTDI) const
 	// update calc'ed value in hours
 	if (pTDI->dCalcCost < 0)
 	{	
-		double dCost = 0;
+		double dCost = pTDI->dCost; // parent's own cost
 		
-		if (!m_tree.ItemHasChildren(hti))
-			dCost = pTDI->dCost;
-		else // children
+		if (m_tree.ItemHasChildren(hti))
 		{
 			HTREEITEM htiChild = m_tree.GetChildItem(hti);
 			
@@ -1823,24 +1729,51 @@ void CToDoCtrlData::UpdateHTIMapEntry(CHTIMap& mapHTI, HTREEITEM hti) const
 	}
 }
 
-BOOL CToDoCtrlData::IsTaskDue(HTREEITEM hti) const
+BOOL CToDoCtrlData::IsTaskDue(HTREEITEM hti, BOOL bToday) const
 {
 	TODOITEM* pTDI = GetTask(hti);
 	
 	if (!pTDI)
 		return FALSE;
 	
-	return IsTaskDue(hti, pTDI);
+	return IsTaskDue(hti, pTDI, bToday);
 }
 
-double CToDoCtrlData::GetEarliestDueDate(HTREEITEM hti) const
+double CToDoCtrlData::GetEarliestDueDate() const
+{
+	double dEarliest = 1e307;
+
+	// traverse top level items
+	HTREEITEM hti = m_tree.GetChildItem(NULL);
+	
+	while (hti)
+	{
+		double dTaskEarliest = GetEarliestDueDate(hti, TRUE);
+
+		if (dTaskEarliest > 0.0)
+			dEarliest = min(dTaskEarliest, dEarliest);
+
+		hti = m_tree.GetNextItem(hti, TVGN_NEXT);
+	}
+
+	// we need to reset the cached calculation in the case where
+	// the user is *not* including child due dates in the parents'
+	// due date because the call to GetEarliestDueDate with TRUE
+	// will have overwritten it
+	if (!HasStyle(TDCS_USEEARLIESTDUEDATE))
+		ResetCachedCalculations();
+	
+	return (dEarliest == 1e307) ? 0.0 : dEarliest;
+}
+
+double CToDoCtrlData::GetEarliestDueDate(HTREEITEM hti, BOOL bCheckChildren) const
 {
 	TODOITEM* pTDI = GetTask(hti);
 	
 	if (!pTDI)
 		return 0;
 	
-	return GetEarliestDueDate(hti, pTDI);
+	return GetEarliestDueDate(hti, pTDI, bCheckChildren);
 }
 
 int CToDoCtrlData::GetHighestPriority(HTREEITEM hti, BOOL bIncludeDue) const
@@ -1913,29 +1846,48 @@ BOOL CToDoCtrlData::GetSubtaskTotals(HTREEITEM hti, int& nSubtasksTotal, int& nS
 	return GetSubtaskTotals(hti, pTDI, nSubtasksTotal, nSubtasksDone);
 }
 
-CString CToDoCtrlData::GetLongestExternalID(HTREEITEM hti) const
+CString CToDoCtrlData::GetLongestVisibleExternalID(HTREEITEM hti) const
 {
 	TODOITEM* pTDI = GetTask(hti);
 	
 	if (!pTDI)
 		return "";
 	
-	return GetLongestExternalID(hti, pTDI);
+	return GetLongestVisibleExternalID(hti, pTDI);
 }
 
-CString CToDoCtrlData::GetLongestCategory(HTREEITEM hti) const
+CString CToDoCtrlData::GetLongestVisibleAllocTo() const
 {
+	CString sLongest;
+	HTREEITEM hti = m_tree.GetChildItem(NULL);
+
+	while (hti)
+	{
+		CString sItemLongest = GetLongestVisibleAllocTo(hti);
+		
+		if (sItemLongest.GetLength() > sLongest.GetLength())
+			sLongest = sItemLongest;
+		
+		hti = m_tree.GetNextItem(hti, TVGN_NEXT);
+	}
+	
+	return sLongest;
+}
+
+CString CToDoCtrlData::GetLongestVisibleAllocTo(HTREEITEM hti) const
+{
+	ASSERT(hti);
 	TODOITEM* pTDI = GetTask(hti);
 	
 	if (!pTDI)
 		return "";
 	
-	return GetLongestCategory(hti, pTDI);
+	return GetLongestVisibleAllocTo(hti, pTDI);
 }
 
-CString CToDoCtrlData::GetLongestExternalID(HTREEITEM hti, const TODOITEM* pTDI) const
+CString CToDoCtrlData::GetLongestVisibleAllocTo(HTREEITEM hti, const TODOITEM* pTDI) const
 {
-	CString sLongest = pTDI->sExternalID;
+	CString sLongest = Misc::FormatArray(pTDI->aAllocTo);
 
 	BOOL bExpanded = (m_tree.GetItemState(hti, TVIS_EXPANDED) & TVIS_EXPANDED);
 
@@ -1946,7 +1898,7 @@ CString CToDoCtrlData::GetLongestExternalID(HTREEITEM hti, const TODOITEM* pTDI)
 
 		while (htiChild)
 		{
-			CString sChildLongest = GetLongestExternalID(htiChild);
+			CString sChildLongest = GetLongestVisibleAllocTo(htiChild);
 
 			if (sChildLongest.GetLength() > sLongest.GetLength())
 				sLongest = sChildLongest;
@@ -1958,7 +1910,54 @@ CString CToDoCtrlData::GetLongestExternalID(HTREEITEM hti, const TODOITEM* pTDI)
 	return sLongest;
 }
 
-CString CToDoCtrlData::GetLongestCategory(HTREEITEM hti, const TODOITEM* pTDI) const
+CString CToDoCtrlData::GetLongestVisibleCategory() const
+{
+	CString sLongest;
+	HTREEITEM hti = m_tree.GetChildItem(NULL);
+
+	while (hti)
+	{
+		CString sItemLongest = GetLongestVisibleCategory(hti);
+		
+		if (sItemLongest.GetLength() > sLongest.GetLength())
+			sLongest = sItemLongest;
+		
+		hti = m_tree.GetNextItem(hti, TVGN_NEXT);
+	}
+	
+	return sLongest;
+}
+
+CString CToDoCtrlData::GetLongestVisibleExternalID() const
+{
+	CString sLongest;
+	HTREEITEM hti = m_tree.GetChildItem(NULL);
+
+	while (hti)
+	{
+		CString sItemLongest = GetLongestVisibleExternalID(hti);
+		
+		if (sItemLongest.GetLength() > sLongest.GetLength())
+			sLongest = sItemLongest;
+		
+		hti = m_tree.GetNextItem(hti, TVGN_NEXT);
+	}
+	
+	return sLongest;
+}
+
+CString CToDoCtrlData::GetLongestVisibleCategory(HTREEITEM hti) const
+{
+	ASSERT(hti);
+	TODOITEM* pTDI = GetTask(hti);
+	
+	if (!pTDI)
+		return "";
+	
+	return GetLongestVisibleCategory(hti, pTDI);
+}
+
+CString CToDoCtrlData::GetLongestVisibleCategory(HTREEITEM hti, const TODOITEM* pTDI) const
 {
 	CString sLongest = Misc::FormatArray(pTDI->aCategories);
 
@@ -1971,7 +1970,32 @@ CString CToDoCtrlData::GetLongestCategory(HTREEITEM hti, const TODOITEM* pTDI) c
 
 		while (htiChild)
 		{
-			CString sChildLongest = GetLongestCategory(htiChild);
+			CString sChildLongest = GetLongestVisibleCategory(htiChild);
+
+			if (sChildLongest.GetLength() > sLongest.GetLength())
+				sLongest = sChildLongest;
+
+			htiChild = m_tree.GetNextItem(htiChild, TVGN_NEXT);
+		}
+	}
+
+	return sLongest;
+}
+
+CString CToDoCtrlData::GetLongestVisibleExternalID(HTREEITEM hti, const TODOITEM* pTDI) const
+{
+	CString sLongest = pTDI->sExternalID;
+
+	BOOL bExpanded = (m_tree.GetItemState(hti, TVIS_EXPANDED) & TVIS_EXPANDED);
+
+	if (bExpanded)
+	{
+		// check children
+		HTREEITEM htiChild = m_tree.GetChildItem(hti);
+
+		while (htiChild)
+		{
+			CString sChildLongest = GetLongestVisibleExternalID(htiChild);
 
 			if (sChildLongest.GetLength() > sLongest.GetLength())
 				sLongest = sChildLongest;
@@ -2042,23 +2066,23 @@ BOOL CToDoCtrlData::IsTaskFullyDone(HTREEITEM hti, const TODOITEM* pTDI, BOOL bC
 	return TRUE;
 }
 
-BOOL CToDoCtrlData::IsTaskDue(HTREEITEM hti, const TODOITEM* pTDI) const
+BOOL CToDoCtrlData::IsTaskDue(HTREEITEM hti, const TODOITEM* pTDI, BOOL bToday) const
 {
-	// some optimizations
-	// check chached value
-	if (pTDI->bDue >= 0)
-		return pTDI->bDue;
+	double dDue = GetEarliestDueDate(hti,  pTDI, HasStyle(TDCS_USEEARLIESTDUEDATE));
+	BOOL bDue = FALSE;
 
-	double dDue = GetEarliestDueDate(hti,  pTDI);
-	BOOL bDue = (dDue > 0 && dDue < COleDateTime::GetCurrentTime());
+	if (bToday)
+	{
+		double dToday = floor(COleDateTime::GetCurrentTime()); // 12 midnight
+		bDue = (dDue >= dToday && dDue < dToday+ 1);
+	}
+	else
+		bDue = (dDue > 0 && dDue < COleDateTime::GetCurrentTime());
 
-	// update cached value
-	pTDI->bDue = bDue;
-	
-	return pTDI->bDue;
+	return bDue;
 }
 
-double CToDoCtrlData::GetEarliestDueDate(HTREEITEM hti, const TODOITEM* pTDI) const
+double CToDoCtrlData::GetEarliestDueDate(HTREEITEM hti, const TODOITEM* pTDI, BOOL bCheckChildren) const
 {
 	ASSERT (hti);
 	ASSERT (pTDI);
@@ -2072,7 +2096,7 @@ double CToDoCtrlData::GetEarliestDueDate(HTREEITEM hti, const TODOITEM* pTDI) co
 	if (IsTaskDone(hti, TDCCHECKCHILDREN))
 		dEarliest = 0;
 	
-	else if (HasStyle(TDCS_USEEARLIESTDUEDATE) && m_tree.ItemHasChildren(hti))
+	else if (bCheckChildren && m_tree.ItemHasChildren(hti))
 	{
 		// check children
 		dEarliest = pTDI->HasDue() ? pTDI->dateDue : DBL_MAX;
@@ -2081,7 +2105,7 @@ double CToDoCtrlData::GetEarliestDueDate(HTREEITEM hti, const TODOITEM* pTDI) co
 		
 		while (htiChild)
 		{
-			double dChildDue = GetEarliestDueDate(htiChild);
+			double dChildDue = GetEarliestDueDate(htiChild, TRUE);
 			
 			if (dChildDue > 0 && dChildDue < dEarliest)
 				dEarliest = dChildDue;
@@ -2103,17 +2127,17 @@ int CToDoCtrlData::GetHighestPriority(HTREEITEM hti, const TODOITEM* pTDI, BOOL 
 	
 	// some optimizations
 	// try pre-calculated value first
-	if (!bIncludeDue && pTDI->nCalcPriority >= 0)
+	if (!bIncludeDue && pTDI->nCalcPriority != -1)
 		return pTDI->nCalcPriority;
 	
 	int nHighest = pTDI->nPriority;
 	
-	if (nHighest < MAX_TDPRIORITY)
-	{
-		if (pTDI->IsDone())
-			nHighest = MIN_TDPRIORITY;
+	if (pTDI->IsDone())
+		nHighest = min(nHighest, MIN_TDPRIORITY);
 
-		else if (bIncludeDue && IsTaskDue(hti, pTDI))
+	else if (nHighest < MAX_TDPRIORITY)
+	{
+		if (bIncludeDue && IsTaskDue(hti, pTDI) && (m_bSortDueTodayHigh || !IsTaskDue(hti, pTDI, TRUE)))
 			nHighest = MAX_TDPRIORITY;
 		
 		else if (HasStyle(TDCS_USEHIGHESTPRIORITY) && m_tree.ItemHasChildren(hti))
@@ -2153,20 +2177,20 @@ int CToDoCtrlData::GetHighestRisk(HTREEITEM hti, const TODOITEM* pTDI) const
 	
 	// some optimizations
 	// try pre-calculated value first
-	if (pTDI->nCalcRisk >= 0)
+	if (pTDI->nCalcRisk != -1)
 		return pTDI->nCalcRisk;
 	
 	int nHighest = pTDI->nRisk;
 	
-	if (nHighest < MAX_TDRISK)
+	if (pTDI->IsDone())
+		nHighest = min(nHighest, MIN_TDRISK);
+
+	else if (nHighest < MAX_TDRISK)
 	{
-		if (pTDI->IsDone())
-			nHighest = MIN_TDRISK;
-		
-		else if (HasStyle(TDCS_USEHIGHESTRISK) && m_tree.ItemHasChildren(hti))
+		if (HasStyle(TDCS_USEHIGHESTRISK) && m_tree.ItemHasChildren(hti))
 		{
 			// check children
-			nHighest = MIN_TDRISK;
+			nHighest = FT_NORISK;//MIN_TDRISK;
 			
 			HTREEITEM htiChild = m_tree.GetChildItem(hti);
 			
@@ -2291,7 +2315,12 @@ BOOL CToDoCtrlData::SetTaskAttributeAsParent(HTREEITEM hti, TDC_ATTRIBUTE nAttri
 		break;
 		
 	case TDCA_ALLOCTO:
-		nRes = SetTaskAllocTo(dwID, GetTaskAllocTo(dwParentID));
+//		nRes = SetTaskAllocTo(dwID, GetTaskAllocTo(dwParentID));
+		{
+			CStringArray aAllocTo;
+			GetTaskAllocTo(dwParentID, aAllocTo);
+			nRes = SetTaskAllocTo(dwID, aAllocTo);
+		}
 		break;
 		
 	case TDCA_ALLOCBY:
@@ -2369,7 +2398,7 @@ void CToDoCtrlData::ApplyLastChangeToSubtasks(HTREEITEM hti, const TODOITEM* pTD
 			break;
 			
 		case TDCA_ALLOCTO:
-			tdiChild->sAllocTo = pTDI->sAllocTo;
+			tdiChild->aAllocTo.Copy(pTDI->aAllocTo);
 			break;
 			
 		case TDCA_ALLOCBY:
@@ -2414,13 +2443,16 @@ int CToDoCtrlData::SetTaskColor(DWORD dwID, COLORREF color)
 	if (dwID)
 	{
 		TODOITEM* pTDI = GetTask(dwID);
-		
+
 		if (pTDI)
 		{
 			// if the color is 0 then add 1 to discern from unset
-			if (!color)
-				color++;
-			
+			if (color == 0)
+				color = 1;
+
+			else if (color == (COLORREF)-1) // and treat -1 as meaning unset color
+				color = 0;
+
 			if (pTDI->color != color)
 			{
 				pTDI->color = color;
@@ -2430,7 +2462,7 @@ int CToDoCtrlData::SetTaskColor(DWORD dwID, COLORREF color)
 			return SET_NOCHANGE;
 		}
 	}
-	
+
 	return SET_FAILED;
 }
 
@@ -2542,7 +2574,7 @@ int CToDoCtrlData::SetTaskRecurrence(DWORD dwID, const TDIRECURRENCE& tr)
 
 int CToDoCtrlData::SetTaskPriority(DWORD dwID, int nPriority)
 {
-	if (dwID && nPriority >= 0 && nPriority <= 10)
+	if (dwID && (nPriority == FT_NOPRIORITY || (nPriority >= 0 && nPriority <= 10)))
 	{
 		TODOITEM* pTDI = GetTask(dwID);
 		
@@ -2563,7 +2595,7 @@ int CToDoCtrlData::SetTaskPriority(DWORD dwID, int nPriority)
 
 int CToDoCtrlData::SetTaskRisk(DWORD dwID, int nRisk)
 {
-	if (dwID && nRisk >= 0 && nRisk <= 10)
+	if (dwID && (nRisk == FT_NORISK || (nRisk >= 0 && nRisk <= 10)))
 	{
 		TODOITEM* pTDI = GetTask(dwID);
 		
@@ -2805,7 +2837,7 @@ int CToDoCtrlData::SetTaskTimeSpent(DWORD dwID, const double& dTime, int nUnits)
 	return SET_FAILED;
 }
 
-int CToDoCtrlData::SetTaskAllocTo(DWORD dwID, LPCTSTR szAllocTo)
+int CToDoCtrlData::SetTaskAllocTo(DWORD dwID, const CStringArray& aAllocTo)
 {
 	if (dwID)
 	{
@@ -2813,9 +2845,9 @@ int CToDoCtrlData::SetTaskAllocTo(DWORD dwID, LPCTSTR szAllocTo)
 		
 		if (pTDI)
 		{
-			if (pTDI->sAllocTo != szAllocTo)
+			if (!Misc::ArraysMatch(pTDI->aAllocTo, aAllocTo))
 			{
-				pTDI->sAllocTo = szAllocTo;
+				pTDI->aAllocTo.Copy(aAllocTo);
 				pTDI->SetModified();
 				return SET_CHANGE;
 			}
@@ -2879,29 +2911,6 @@ int CToDoCtrlData::SetTaskStatus(DWORD dwID, LPCTSTR szStatus)
 			if (pTDI->sStatus != szStatus)
 			{
 				pTDI->sStatus = szStatus;
-				pTDI->SetModified();
-				return SET_CHANGE;
-			}
-			return SET_NOCHANGE;
-		}
-	}
-	
-	return SET_FAILED;
-}
-
-int CToDoCtrlData::SetTaskCategory(DWORD dwID, LPCTSTR szCategory)
-{
-	if (dwID)
-	{
-		TODOITEM* pTDI = GetTask(dwID);
-		
-		if (pTDI)
-		{
-			if (pTDI->GetFirstCategory() != szCategory)
-			{
-				pTDI->aCategories.RemoveAll();
-				pTDI->aCategories.Add(szCategory);
-
 				pTDI->SetModified();
 				return SET_CHANGE;
 			}
@@ -3038,23 +3047,9 @@ CString CToDoCtrlData::MapTimeUnits(int nUnits)
 	return "H";
 }
 
-HTREEITEM CToDoCtrlData::FindItem(DWORD dwID, HTREEITEM htiStart) const
-{
-	// try htiStart first
-	if (htiStart && m_tree.GetItemData(htiStart) == dwID)
-		return htiStart;
-	
-	// else try htiStart's children
-	HTREEITEM htiFound = NULL;
-	HTREEITEM htiChild = m_tree.GetChildItem(htiStart);
-	
-	while (htiChild && !htiFound)
-	{
-		htiFound = FindItem(dwID, htiChild);
-		htiChild = m_tree.GetNextItem(htiChild, TVGN_NEXT);
-	}
-	
-	return htiFound;
+HTREEITEM CToDoCtrlData::GetItem(DWORD dwID) const 
+{ 
+	return CTreeCtrlHelper(m_tree).FindItem(dwID, NULL); 
 }
 
 void CToDoCtrlData::LoadTreeExpandedState(LPCTSTR szRegKey)

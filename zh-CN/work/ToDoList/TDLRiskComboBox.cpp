@@ -4,8 +4,10 @@
 #include "stdafx.h"
 #include "TDLRiskComboBox.h"
 #include "resource.h"
+#include "tdcenum.h"
 
 #include "..\shared\enstring.h"
+#include "..\shared\dlgunits.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,6 +29,24 @@ const UINT IDS_TDC_SCALE[] = { IDS_TDC_SCALE0,
 
 
 const int TDC_NUMSCALES = sizeof(IDS_TDC_SCALE) / sizeof(UINT);
+
+void AFXAPI DDX_CBRisk(CDataExchange* pDX, int nIDC, int& nRisk)
+{
+	if (pDX->m_bSaveAndValidate)
+	{
+		::DDX_CBIndex(pDX, nIDC, nRisk);
+
+		if (nRisk == 0) // NONE
+			nRisk = FT_NORISK;
+		else
+			nRisk--;
+	}
+	else
+	{
+		int nTemp = (nRisk == FT_NORISK) ? 0 : nRisk + 1;
+		::DDX_CBIndex(pDX, nIDC, nTemp);
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CTDLRiskComboBox
@@ -73,6 +93,9 @@ void CTDLRiskComboBox::BuildCombo()
 	int nSel = GetCurSel(); // so we can restore it
 	
 	ResetContent();
+	
+	// first item is 'None' and never has a colour
+	AddString(CEnString(IDS_TDC_NONE));
 	
 	for (int nLevel = 0; nLevel <= 10; nLevel++)
 	{

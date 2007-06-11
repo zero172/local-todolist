@@ -99,7 +99,9 @@ void CFontComboBox::EnumFontFamiliesEx(CDC* pDC, /*BOOL bIgnoreCharsets,*/ BYTE 
 	int nCount = m_arrayFontDesc.GetSize();
 	// walk through fonts adding names to string map
 	// first time add value 0, after that add value 1
-	for (int i = 0; i<nCount;i++)
+	//fabio_2005
+	int i = 0;
+	for (i = 0; i<nCount;i++)
 	{
 		CFontDesc* pDesc = (CFontDesc*)m_arrayFontDesc[i];
 		void* pv = NULL;

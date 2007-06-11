@@ -18,7 +18,7 @@ static char THIS_FILE[]=__FILE__;
 class CDefaultContent : public IContent
 {
 	bool GetTypeID(GUID& /*id*/) { return false; }
-	const char* GetTypeDescription() { static LPCTSTR sDesc = "´¿ÎÄ±¾"; return sDesc; }
+	const char* GetTypeDescription() { static LPCTSTR sDesc = "Simple Text"; return sDesc; }
 
 	IContentControl* CreateCtrl(unsigned short nCtrlID, unsigned long nStyle, 
 						long nLeft, long nTop, long nWidth, long nHeight, HWND hwndParent)

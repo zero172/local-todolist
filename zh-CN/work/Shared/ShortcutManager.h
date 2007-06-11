@@ -31,7 +31,7 @@ public:
 	BOOL Initialize(CWnd* pOwner, WORD wInvalidComb = HKCOMB_EDITCTRLS, WORD wFallbackModifiers = 0);
 	BOOL Release();
 
-	UINT ProcessMessage(MSG* pMsg) const; // call this in PreTranslateMessage. returns the cmd ID or 0
+	UINT ProcessMessage(const MSG* pMsg, DWORD* pShortcut) const; // call this in PreTranslateMessage. returns the cmd ID or 0
 
 	// AddShortcut fails if the shortcut is already being used
 	BOOL AddShortcut(UINT nCmdID, WORD wVirtKeyCode, WORD wModifiers = HOTKEYF_CONTROL); 
@@ -70,6 +70,7 @@ protected:
 	int BuildMapping(CMenu* pMenu, LPCTSTR szParentName, CStringArray& aMapping, char cDelim);
 
 	static CString GetKeyName(WORD wVirtKeyCode, BOOL bExtended = FALSE); 
+	static BOOL IsEditShortcut(DWORD dwShortcut);
 };
 
 #endif // !defined(AFX_SHORTCUTMANAGER_H__08D5DF0A_7D5E_4266_A244_59C4B2BD5DC2__INCLUDED_)

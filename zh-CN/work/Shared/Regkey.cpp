@@ -2,6 +2,8 @@
 #include "regkey.h"
 #include <winerror.h>
 
+#include "..\3rdParty\RegUtil.h"
+
 CRegKey::CRegKey()
 {
 	m_hKeyRoot = NULL;
@@ -126,52 +128,67 @@ void CRegKey::Close()
 	m_hKey = NULL;
 }
 
-LONG CRegKey::Write(const char* pszKey, DWORD dwVal) 
+LONG CRegKey::Write(const char* pszItem, DWORD dwVal) 
 {
 	ASSERT(m_hKey);
-	ASSERT(pszKey);
-	return RegSetValueEx(m_hKey, pszKey, 0L, REG_DWORD,
+	ASSERT(pszItem);
+	return RegSetValueEx(m_hKey, pszItem, 0L, REG_DWORD,
 		(CONST BYTE*) &dwVal, sizeof(DWORD));
 }
 
-LONG CRegKey::Write(const char* pszKey, const char* pszData) 
+DWORD CRegKey::GetValueType(const char* pszItem) const
 {
 	ASSERT(m_hKey);
-	ASSERT(pszKey);
-	ASSERT(pszData);
+	ASSERT(pszItem);
 
-#ifndef _NOT_USING_MFC_
-	ASSERT(AfxIsValidAddress(pszData, strlen(pszData), FALSE));
-#endif
+	DWORD dwType;
 
-	return RegSetValueEx(m_hKey, pszKey, 0L, REG_SZ,
-		(CONST BYTE*) pszData, strlen(pszData) + 1);
+	LONG lRet = RegQueryValueEx (m_hKey, (LPSTR) pszItem, NULL, &dwType, NULL, NULL);
+
+	if (lRet == ERROR_SUCCESS)
+		return dwType;
+
+	return REG_NONE;
 }
 
-LONG CRegKey::Write(const char* pszKey, const BYTE* pData, DWORD dwLength) 
+LONG CRegKey::Write(const char* pszItem, const char* pszVal) 
 {
 	ASSERT(m_hKey);
-	ASSERT(pszKey);
+	ASSERT(pszItem);
+	ASSERT(pszVal);
+
+#ifndef _NOT_USING_MFC_
+	ASSERT(AfxIsValidAddress(pszVal, strlen(pszVal), FALSE));
+#endif
+
+	return RegSetValueEx(m_hKey, pszItem, 0L, REG_SZ,
+		(CONST BYTE*) pszVal, strlen(pszVal) + 1);
+}
+
+LONG CRegKey::Write(const char* pszItem, const BYTE* pData, DWORD dwLength) 
+{
+	ASSERT(m_hKey);
+	ASSERT(pszItem);
 	ASSERT(pData && dwLength > 0);
 
 #ifndef _NOT_USING_MFC_
 	ASSERT(AfxIsValidAddress(pData, dwLength, FALSE));
 #endif
 
-	return RegSetValueEx (m_hKey, pszKey, 0L, REG_BINARY,
+	return RegSetValueEx (m_hKey, pszItem, 0L, REG_BINARY,
 		pData, dwLength);
 }
 
-LONG CRegKey::Read(const char* pszKey, DWORD& dwVal) const
+LONG CRegKey::Read(const char* pszItem, DWORD& dwVal) const
 {
 	ASSERT(m_hKey);
-	ASSERT(pszKey);
+	ASSERT(pszItem);
 
 	DWORD dwType;
 	DWORD dwSize = sizeof (DWORD);
 	DWORD dwDest;
 
-	LONG lRet = RegQueryValueEx (m_hKey, (LPSTR) pszKey, NULL, 
+	LONG lRet = RegQueryValueEx (m_hKey, (LPSTR) pszItem, NULL, 
 		&dwType, (BYTE *) &dwDest, &dwSize);
 
 	if (lRet == ERROR_SUCCESS)
@@ -180,16 +197,16 @@ LONG CRegKey::Read(const char* pszKey, DWORD& dwVal) const
 	return lRet;
 }
 
-LONG CRegKey::Read(const char* pszKey, CString& sVal) const
+LONG CRegKey::Read(const char* pszItem, CString& sVal) const
 {
 	ASSERT(m_hKey);
-//	ASSERT(pszKey);
+//	ASSERT(pszItem);
 
 	DWORD dwType;
 	DWORD dwSize = 200;
 	char  string[200];
 
-	LONG lReturn = RegQueryValueEx (m_hKey, (LPSTR) pszKey, NULL,
+	LONG lReturn = RegQueryValueEx (m_hKey, (LPSTR) pszItem, NULL,
 		&dwType, (BYTE *) string, &dwSize);
 
 	if (lReturn == ERROR_SUCCESS)
@@ -198,14 +215,14 @@ LONG CRegKey::Read(const char* pszKey, CString& sVal) const
 	return lReturn;
 }
 
-LONG CRegKey::Read(const char* pszKey, BYTE* pData, DWORD& dwLen) const
+LONG CRegKey::Read(const char* pszItem, BYTE* pData, DWORD& dwLen) const
 {
 	ASSERT(m_hKey);
-	ASSERT(pszKey);
+	ASSERT(pszItem);
 
 	DWORD dwType;
 
-	return RegQueryValueEx(m_hKey, (LPSTR) pszKey, NULL,
+	return RegQueryValueEx(m_hKey, (LPSTR) pszItem, NULL,
 		&dwType, pData, &dwLen);
 
 }
@@ -548,4 +565,9 @@ BOOL CRegKey::ImportSectionFromIni(const CString& sSection, CStdioFile& file, CS
 	}
 	
 	return TRUE;
+}
+
+BOOL CRegKey::CopyKey(HKEY hkRootFrom, const CString& sFromPath, HKEY hkRootTo, const CString& sToPath)
+{
+	return CopyRegistryKey(hkRootFrom, sFromPath, hkRootTo, sToPath);
 }

@@ -225,8 +225,12 @@ BOOL CToolsUserInputDlg::OnInitDialog()
 				// parse the date to ISO standards ie yyyy-mm-dd
 				SYSTEMTIME sysTime;
 				ZeroMemory(&sysTime, sizeof(sysTime));
-
+//fabio_2005
+#if _MSC_VER >= 1400
+				int nRes = sscanf_s(tuii.sDefValue, "%d-%d-%d", &sysTime.wYear, &sysTime.wMonth, &sysTime.wDay);
+#else
 				int nRes = sscanf(tuii.sDefValue, "%d-%d-%d", &sysTime.wYear, &sysTime.wMonth, &sysTime.wDay);
+#endif
 
 				if (nRes == 3)
 					tuii.pCtrl->SendMessage(DTM_SETSYSTEMTIME, GDT_VALID, (LPARAM) &sysTime);

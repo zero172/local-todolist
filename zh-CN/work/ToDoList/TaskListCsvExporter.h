@@ -49,6 +49,9 @@ protected:
 
 	CString CheckGetColumnHeading(LPCTSTR szAttribName, UINT nIDHeading) const;
 
+	void AppendAttributeList(const ITaskList6* pTasks, HTASKITEM hTask, 
+										   LPCTSTR szNumAttribName, LPCTSTR szAttribName, 
+                                          CString& sOutput) const;
 };
 
 #endif // !defined(AFX_TASKLISTCSVEXPORTER_H__ADF211CB_FBD2_42A2_AD51_DFF58E566753__INCLUDED_)

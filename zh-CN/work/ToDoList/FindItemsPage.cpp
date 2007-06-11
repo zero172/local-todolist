@@ -3,9 +3,10 @@
 
 #include "stdafx.h"
 #include "todolist.h"
-#include "FindCategoryPage.h"
+#include "FindItemsPage.h"
 
 #include "..\shared\Misc.h"
+#include "..\shared\dialoghelper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -14,80 +15,96 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CFindCategoryPage property page
+// CFindItemsPage property page
 
-IMPLEMENT_DYNCREATE(CFindCategoryPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CFindItemsPage, CPropertyPage)
 
-CFindCategoryPage::CFindCategoryPage() : CPropertyPage(CFindCategoryPage::IDD)
+CFindItemsPage::CFindItemsPage() : CPropertyPage(CFindItemsPage::IDD)
 {
-	//{{AFX_DATA_INIT(CFindCategoryPage)
-	m_sCategories = _T("");
+	//{{AFX_DATA_INIT(CFindItemsPage)
+	m_sItems = _T("");
 	//}}AFX_DATA_INIT
-	m_bMatchAllCategories = TRUE;
+	m_bMatchAllItems = TRUE;
 }
 
-CFindCategoryPage::~CFindCategoryPage()
+CFindItemsPage::~CFindItemsPage()
 {
 }
 
-void CFindCategoryPage::DoDataExchange(CDataExchange* pDX)
+void CFindItemsPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CFindCategoryPage)
-	DDX_Control(pDX, IDC_CATEGORIES, m_cbCategory);
-	DDX_CBString(pDX, IDC_CATEGORIES, m_sCategories);
+	//{{AFX_DATA_MAP(CFindItemsPage)
+	DDX_Control(pDX, IDC_ITEMS, m_cbItems);
+	DDX_CBString(pDX, IDC_ITEMS, m_sItems);
 	//}}AFX_DATA_MAP
-	DDX_Check(pDX, IDC_MATCHALLCATEGORIES, m_bMatchAllCategories);
+	DDX_Check(pDX, IDC_MATCHALLITEMS, m_bMatchAllItems);
 }
 
 
-BEGIN_MESSAGE_MAP(CFindCategoryPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CFindCategoryPage)
+BEGIN_MESSAGE_MAP(CFindItemsPage, CPropertyPage)
+	//{{AFX_MSG_MAP(CFindItemsPage)
 	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CFindCategoryPage message handlers
+// CFindItemsPage message handlers
 
-int CFindCategoryPage::GetCategories(CStringArray& aCats)
+int CFindItemsPage::GetItems(CStringArray& aItems)
 {
-	aCats.RemoveAll();
+	aItems.RemoveAll();
 
 	if (GetSafeHwnd())
 	{
 		UpdateData();
-		Misc::ParseIntoArray(m_sCategories, aCats, TRUE);
+		Misc::ParseIntoArray(m_sItems, aItems, TRUE);
 
-		if (!m_sCategories.IsEmpty())
+		if (!m_sItems.IsEmpty())
 		{
 			// move or add to top of combo
-			int nFind = FindSearchInCombo(m_sCategories);
+			int nFind = FindSearchInCombo(m_sItems);
 
 			if (nFind != CB_ERR)
-				m_cbCategory.DeleteString(nFind);
+				m_cbItems.DeleteString(nFind);
 
-			m_cbCategory.InsertString(0, m_sCategories);
+			m_cbItems.InsertString(0, m_sItems);
 			UpdateData(FALSE);
 		}
 
 	}
 
-	return aCats.GetSize();
+	return aItems.GetSize();
 }
 
-BOOL CFindCategoryPage::GetMatchAllCategories()
+/*
+void CFindItemsPage::SetItems(const CStringArray& aItems)
+{
+	if (!GetSafeHwnd())
+		return;
+
+	CStringArray aCurItems;
+	GetItems(aCurItems);
+
+	if (Misc::ArraysMatch(aItems, aCurItems))
+		return;
+
+	CDialogHelper::SetComboBoxItems(m_cbItems, aItems);
+}
+*/
+
+BOOL CFindItemsPage::GetMatchAllItems()
 {
 	if (GetSafeHwnd())
 	{
 		UpdateData();
-		return m_bMatchAllCategories;
+		return m_bMatchAllItems;
 	}
 
 	return TRUE;
 }
 
-BOOL CFindCategoryPage::OnInitDialog() 
+BOOL CFindItemsPage::OnInitDialog() 
 {
 	CPropertyPage::OnInitDialog();
 
@@ -101,11 +118,11 @@ BOOL CFindCategoryPage::OnInitDialog()
 		CString sItemKey;
 		sItemKey.Format("LookFor%d", nItem);
 
-		m_cbCategory.AddString(AfxGetApp()->GetProfileString(sKey, sItemKey));
+		m_cbItems.AddString(AfxGetApp()->GetProfileString(sKey, sItemKey));
 	}
 	
-	m_sCategories = AfxGetApp()->GetProfileString(sKey, "LastLookFor");
-	m_bMatchAllCategories = AfxGetApp()->GetProfileInt(sKey, "LastMatchAllCategories", TRUE);
+	m_sItems = AfxGetApp()->GetProfileString(sKey, "LastLookFor");
+	m_bMatchAllItems = AfxGetApp()->GetProfileInt(sKey, "LastMatchAllItems", TRUE);
 
 	UpdateData(FALSE);
 	
@@ -113,7 +130,7 @@ BOOL CFindCategoryPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CFindCategoryPage::OnDestroy() 
+void CFindItemsPage::OnDestroy() 
 {
 	CPropertyPage::OnDestroy();
 	
@@ -122,13 +139,13 @@ void CFindCategoryPage::OnDestroy()
 	CString sKey(GetRegKey());
 
 	// save combo entries
-	int nCount = m_cbCategory.GetCount();
+	int nCount = m_cbItems.GetCount();
 	AfxGetApp()->WriteProfileInt(sKey, "LookForCount", nCount);
 
 	for (int nItem = 0; nItem < nCount; nItem++)
 	{
 		CString sItem;
-		m_cbCategory.GetLBText(nItem, sItem);
+		m_cbItems.GetLBText(nItem, sItem);
 
 		CString sItemKey;
 		sItemKey.Format("LookFor%d", nItem);
@@ -137,11 +154,11 @@ void CFindCategoryPage::OnDestroy()
 	}
 
 	// rest
-	AfxGetApp()->WriteProfileString(sKey, "LastLookFor", m_sCategories);
-	AfxGetApp()->WriteProfileInt(sKey, "LastMatchAllCategories", m_bMatchAllCategories);
+	AfxGetApp()->WriteProfileString(sKey, "LastLookFor", m_sItems);
+	AfxGetApp()->WriteProfileInt(sKey, "LastMatchAllItems", m_bMatchAllItems);
 }
 
-CString CFindCategoryPage::GetRegKey() const
+CString CFindItemsPage::GetRegKey() const
 {
 	CString sKey, sTitle;
 	GetWindowText(sTitle);
@@ -154,16 +171,16 @@ CString CFindCategoryPage::GetRegKey() const
 	return sKey;
 }
 
-int CFindCategoryPage::FindSearchInCombo(LPCTSTR szLookFor) const
+int CFindItemsPage::FindSearchInCombo(LPCTSTR szLookFor) const
 {
 	// CComboBox::FindStringExact is not case sensitive 
 	// and we need that so we must roll it ourselves
-	int nItem = m_cbCategory.GetCount();
+	int nItem = m_cbItems.GetCount();
 
 	while (nItem--)
 	{
 		CString sItem;
-		m_cbCategory.GetLBText(nItem, sItem);
+		m_cbItems.GetLBText(nItem, sItem);
 
 		if (sItem == szLookFor)
 			return nItem;
