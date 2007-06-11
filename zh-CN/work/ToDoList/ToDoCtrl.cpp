@@ -6191,7 +6191,8 @@ LRESULT CToDoCtrl::OnGutterDrawItem(WPARAM /*wParam*/, LPARAM lParam)
 				if (font.GetSafeHandle())
 				{
 					CFont* pOldFont = pNCGDI->pDC->SelectObject(&font);
-					DrawGutterItemText(pNCGDI->pDC, CLOCKBTN, rItem, pNCGDI->nTextAlign, crTextColor);
+                    const char szClock[] = { CLOCKBTN, 0 };
+					DrawGutterItemText(pNCGDI->pDC, szClock, rItem, pNCGDI->nTextAlign, crTextColor);
 					pNCGDI->pDC->SelectObject(pOldFont);
 				}
 				else
