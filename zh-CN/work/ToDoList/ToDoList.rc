@@ -34,7 +34,7 @@ IDR_MANIFEST            RT_MANIFEST             "res\\todolist.exe.manifest"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,2,5,0
+ FILEVERSION 5,2,6,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -53,7 +53,7 @@ BEGIN
             VALUE "Comments", "边城狂人 汉化"
             VALUE "CompanyName", "AbstractSpoon Software"
             VALUE "FileDescription", "ToDoList"
-            VALUE "FileVersion", "5, 2, 5, 0"
+            VALUE "FileVersion", "5, 2, 6, 0"
             VALUE "InternalName", "ToDoList"
             VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2003-07"
             VALUE "OriginalFilename", "ToDoList.exe"
@@ -3093,7 +3093,12 @@ BEGIN
     IDS_SAVESHARINGVIOLATION 
                             "不能保存 '%s'，\n因为另一个用户正在访问这个文件。\n\n请过一会儿再试。"
     IDS_BACKUPFILEFOUND     "ToDoList检测到文件'%s'的一个备份版本，\n这表示上次保存任务列表的时候出了问题。\n\n要恢复到这个备份吗？"
-
+    IDS_PSP_RESERVED        "这个快捷键是保留的，请另行选择。"
+    IDS_RESERVEDSHORTCUT_TITLE "保留的快捷键"
+    IDS_RESERVEDSHORTCUT_MSG 
+                            "你刚才使用的快捷键现在已被ToDoList保留。\n\n要将它修改为其它的吗？"
+    IDS_TASKLISTEXTENDEDSELECTION "任务列表扩展选择"
+    IDS_SAVEBADXML          "任务列表 '%s' 包含不能保存的特殊字符。通常这是由于从其它程序拷贝内容到备注中时产生的。\n\n只有在删除这些字符之后你才能保存任务列表。"
 END
 
 #endif    // 中文(中华人民共和国) resources

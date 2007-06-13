@@ -813,6 +813,14 @@ BOOL CToDoListWnd::InitToolbar()
 
 BOOL CToDoListWnd::PreTranslateMessage(MSG* pMsg)
 {
+	// the only way we get a WM_CLOSE here is if it was sent from an external app
+	// so we shut down as gracefully as possible
+	if (pMsg->message == WM_CLOSE)
+	{
+		DoExit();
+		return TRUE;
+	}
+
 	if (ProcessDialogControlShortcut(pMsg))
 		return TRUE;
 	
@@ -1054,46 +1062,46 @@ BOOL CToDoListWnd::SaveTaskList(int nIndex, LPCTSTR szFilePath)
 				// we're done
 				break;
 			}
-			else // error handling
+			// error handling
+			else if (nResult == TDCO_NOTALLOWED)
 			{
+				CEnString sMessage(IDS_SAVEACCESSDENIED, sFilePath);
+				
+				if (IDYES == MessageBox(sMessage, sTitle, MB_YESNO | MB_ICONEXCLAMATION))
+				{
+					sFilePath.Empty(); // try again
+					continue;
+				}
+				else // clear modified status
+				{
+					tdc.SetModified(FALSE);
+					m_mgrToDoCtrls.SetModifiedStatus(nIndex, FALSE);
+				}
+			}
+			else
+			{
+				CString sMessage;
+
 				switch (nResult)
 				{
-				case TDCO_NOTALLOWED:
-					{
-						CEnString sMessage(IDS_SAVEACCESSDENIED, sFilePath);
-						
-						if (IDYES == MessageBox(sMessage, sTitle, MB_YESNO | MB_ICONEXCLAMATION))
-						{
-							sFilePath.Empty(); // try again
-							continue;
-						}
-						else // clear modified status
-						{
-							tdc.SetModified(FALSE);
-							m_mgrToDoCtrls.SetModifiedStatus(nIndex, FALSE);
-						}
-					}
-					break;
-					
 				case TDCO_CANCELLED:
 					break;
 					
+				case TDCO_BADMSXML:
+					sMessage.Format(IDS_SAVEBADXML, sFilePath);
+					break;
+					
 				case TDCO_INUSE:
-					{
-						CEnString sMessage(IDS_SAVESHARINGVIOLATION, sFilePath);
-						MessageBox(sMessage, sTitle, MB_OK);
-					}
+					sMessage.Format(IDS_SAVESHARINGVIOLATION, sFilePath);
 					break;
 					
 				default:
-					{
-						int nError = nResult - (int)TDCO_OTHER;
-						
-						CEnString sMessage(IDS_UNKNOWNOPENERROR, sFilePath, nError);
-						MessageBox(sMessage, sTitle, MB_OK);
-					}
+					sMessage.Format(IDS_UNKNOWNSAVEERROR2, sFilePath, (nResult - (int)TDCO_OTHER));
 					break;
 				}
+
+				if (!sMessage.IsEmpty())
+					MessageBox(sMessage, sTitle, MB_OK);
 				
 				return FALSE;
 			}
@@ -2973,7 +2981,7 @@ void CToDoListWnd::EnsureVisible()
 
 void CToDoListWnd::OnAbout() 
 {
-	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.5</b>",
+	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.6</b>",
 		CEnString(IDS_ABOUTHEADING), CEnString(IDS_ABOUTCOPYRIGHT), 1, 2, 8);
 	
 	dialog.DoModal();
@@ -6523,6 +6531,7 @@ void CToDoListWnd::AddFindResult(const SEARCHRESULT& result, const SEARCHPARAMS&
 	case FIND_STARTDATE:
 	case FIND_DUEDATE:
 	case FIND_DONEDATE:
+	case FIND_LASTMOD:
 		sMatch = CDateHelper::FormatDate(result.dateMatch, 
 			Prefs().GetDisplayDatesInISO(),	
 			Prefs().GetShowWeekdayInDates());
