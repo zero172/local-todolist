@@ -1157,6 +1157,7 @@
 #define IDS_RESERVEDSHORTCUT_TITLE      58060
 #define IDS_RESERVEDSHORTCUT_MSG        58061
 #define IDS_TASKLISTEXTENDEDSELECTION   58062
+#define IDS_SAVEBADXML                  58063
 
 // Next default values for new objects
 // 
