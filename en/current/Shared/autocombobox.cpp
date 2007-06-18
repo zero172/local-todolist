@@ -164,22 +164,22 @@ int CAutoComboBox::FindStringExact(int nIndexStart, const CString& sItem, BOOL b
 int CAutoComboBox::AddUniqueItem(const CString& sItem)
 {
    int nIndex = CB_ERR;
-
-    if (!sItem.IsEmpty())
-    {
-		int nFind = FindStringExact(-1, sItem, m_bCaseSensitive);
-		
-		if (nFind == CB_ERR)
-      {
-         nIndex = CComboBox::AddString(sItem); // add at end
-
-         if (nIndex != CB_ERR)
-            RefreshMaxDropWidth();
-      }
-		else // reinsert as text may have changed
-			nIndex = InsertUniqueItem(nFind, sItem);
-	}
-	
+   
+   if (!sItem.IsEmpty())
+   {
+	   int nFind = FindStringExact(-1, sItem, m_bCaseSensitive);
+	   
+	   if (nFind == CB_ERR)
+	   {
+		   nIndex = CComboBox::AddString(sItem); // add at end
+		   
+		   if (nIndex != CB_ERR)
+			   RefreshMaxDropWidth();
+	   }
+	   else // reinsert as text may have changed
+		   nIndex = InsertUniqueItem(nFind, sItem);
+   }
+   
 	return nIndex;
 }
 
@@ -199,33 +199,33 @@ int CAutoComboBox::InsertUniqueItem(int nIndex, const CString& sItem)
 				// save selection so we can restore it
 				int nSel = GetCurSel();
 				CString sSelItem;
-
+				
 				if (nSel != CB_ERR)
 					GetLBText(nSel, sSelItem);
-
+				
 				DeleteString(nFind); // remove original
 				nIndex = CComboBox::InsertString(nIndex, sItem); // re-insert
-
-            if (nIndex != CB_ERR)
-               RefreshMaxDropWidth();
-
+				
+				if (nIndex != CB_ERR)
+					RefreshMaxDropWidth();
+				
 				// restore selection
 				if (nSel != CB_ERR)
 					SelectString(-1, sSelItem);
-
+				
 				return nIndex;
 			}
 			// else no change
 		}
 		else
-      {
-         nIndex = CComboBox::InsertString(nIndex, sItem); // re-insert
-
-         if (nIndex != CB_ERR)
-            RefreshMaxDropWidth();
-
-         return nIndex;
-      }
+		{
+			nIndex = CComboBox::InsertString(nIndex, sItem); // re-insert
+			
+			if (nIndex != CB_ERR)
+				RefreshMaxDropWidth();
+			
+			return nIndex;
+		}
 	}
 	
 	return CB_ERR; // invalid item
@@ -340,6 +340,8 @@ LRESULT CAutoComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 void CAutoComboBox::HandleReturnKey()
 {
+	int nSel = GetCurSel();
+
 	CString sEdit;
 	GetCWnd()->GetWindowText(sEdit);
 	
@@ -349,6 +351,11 @@ void CAutoComboBox::HandleReturnKey()
 		CComboBox::GetParent()->SendMessage(WM_ACB_ITEMADDED, 
 											MAKEWPARAM(CWnd::GetDlgCtrlID(), nAdd),
 											(LPARAM)(LPCTSTR)sEdit);
+	// also send a selection change
+	if (GetCurSel() != nSel)
+		CComboBox::GetParent()->SendMessage(WM_COMMAND, 
+											MAKEWPARAM(CWnd::GetDlgCtrlID(), CBN_SELCHANGE), 
+											(LPARAM)GetSafeHwnd());
 }
 
 BOOL CAutoComboBox::IsSimpleCombo()

@@ -465,8 +465,8 @@ BOOL CToDoCtrlData::TaskMatches(HTREEITEM hti, const SEARCHPARAMS& params, SEARC
 
 BOOL CToDoCtrlData::TaskMatches(const COleDateTime& date, const SEARCHPARAMS& params, SEARCHRESULT& result)
 {
-	if (date.m_dt >= floor(params.dateFrom.m_dt) && 
-		date.m_dt <= floor(params.dateTo.m_dt))
+	if (floor(date.m_dt) >= floor(params.dateFrom.m_dt) && 
+		floor(date.m_dt) <= floor(params.dateTo.m_dt))
 	{
 		result.dateMatch = date;
 		return TRUE;

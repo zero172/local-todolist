@@ -38,8 +38,11 @@ BEGIN_MESSAGE_MAP(CCheckComboBox, CAutoComboBox)
 	ON_WM_KEYDOWN()
 	//}}AFX_MSG_MAP
 	ON_CONTROL_REFLECT_EX(CBN_EDITCHANGE, OnEditchange)
-	ON_CONTROL_REFLECT_EX(CBN_DROPDOWN, OnDropdown)
+	ON_CONTROL_REFLECT_EX(CBN_CLOSEUP, OnDropdownCloseUp)
+	ON_CONTROL_REFLECT_EX(CBN_DROPDOWN, OnDropdownCloseUp)
 	ON_CONTROL(LBN_SELCHANGE, 1000, OnLBSelChange)
+	ON_CONTROL_REFLECT(CBN_KILLFOCUS, OnEditKillFocus)
+	ON_EN_KILLFOCUS(1001, OnEditKillFocus)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -105,6 +108,12 @@ void CCheckComboBox::RefreshMaxDropWidth()
 {
    int nMaxWidth = CDialogHelper::CalcMaxTextWidth(*this, 0, TRUE) + 18;
    SetDroppedWidth(nMaxWidth);
+}
+
+void CCheckComboBox::OnEditKillFocus()
+{
+	if (!GetDroppedState())
+		ParseText(TRUE);
 }
 
 void CCheckComboBox::DrawItemText(HDC hdc, int nItem, CRect rText, const CString& sText, UINT nState)
@@ -180,7 +189,6 @@ void CCheckComboBox::RecalcText(BOOL bUpdate, BOOL bNotify)
 			SetWindowText(sText);
 	}
 	
-//	TRACE("RecalcText(%s)\n", sText);
 	m_sText = sText;
 }
 
@@ -205,11 +213,17 @@ BOOL CCheckComboBox::GetCheck(int nIndex) const
 	return GetItemData(nIndex);
 }
 
-void CCheckComboBox::ParseText()
+void CCheckComboBox::ParseText(BOOL bNotify)
 {
 	if (IsType(CBS_DROPDOWNLIST))
 		return;
 
+	// cache what's currently checked (for notifying)
+	CStringArray aPrevChecked;
+
+	if (bNotify)
+		GetChecked(aPrevChecked);
+		
 	CString sEditText;
 	GetDlgItem(1001)->GetWindowText(sEditText);
 	
@@ -240,8 +254,21 @@ void CCheckComboBox::ParseText()
 	
 	// Redraw the window
 	CComboBox::Invalidate(FALSE);
+
+	// notify parent?
+	if (bNotify)
+	{
+		// see what's now checked
+		CStringArray aChecked;
+		GetChecked(aChecked);
+		
+		// if different notify parent
+		if (!Misc::ArraysMatch(aPrevChecked, aChecked))
+			NotifyParent(CBN_SELCHANGE);
+	}
 }
 
+// this handles messages destined for the dropped listbox
 LRESULT CCheckComboBox::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	switch (msg) 
@@ -258,6 +285,8 @@ LRESULT CCheckComboBox::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM 
 	case WM_CHAR: 
 		if (wp == VK_SPACE) 
 		{
+			ASSERT (GetDroppedState());
+
 			// Get the current selection
 			INT nIndex = GetCurSel();
 			
@@ -267,39 +296,51 @@ LRESULT CCheckComboBox::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM 
 			
 			// Invert the check mark
 			SetCheck(nIndex, !GetCheck(nIndex));
-			
-			// Notify that selection has changed
-			if (IsType(CBS_DROPDOWNLIST))
-				NotifyParent(CBN_SELCHANGE);
-
 			return 0;
 		}
-		else if (wp == VK_ESCAPE)
+		else if (wp == VK_ESCAPE && GetDroppedState())
+		{
+			m_bDropCancelled = TRUE;
 			ShowDropDown(FALSE);
+		}
 		break;
-	
+
 	case WM_LBUTTONDOWN: 
 		{
+			ASSERT (GetDroppedState());
+
+			// check first for a click in the dropped list 
 			CPoint pt(lp);
-			int nItem = GetCount();
+			CRect rList;
 
-			while (nItem--)
+			ScGetCWnd()->GetClientRect(rList);
+
+			if (rList.PtInRect(pt)) // yes, so check which item
 			{
-				CRect rItem;
-				::SendMessage(hRealWnd, LB_GETITEMRECT, nItem, (LPARAM)(LPRECT)rItem);
+				int nItem = GetCount();
 
-				if (rItem.PtInRect(pt))
+				while (nItem--)
 				{
-					// toggle check state
-					::InvalidateRect(hRealWnd, rItem, FALSE);
-					SetCheck(nItem, !GetCheck(nItem));
-					
-					// Notify that selection has changed
-					if (IsType(CBS_DROPDOWNLIST))
-						NotifyParent(CBN_SELCHANGE);
+					CRect rItem;
+					::SendMessage(hRealWnd, LB_GETITEMRECT, nItem, (LPARAM)(LPRECT)rItem);
 
-					return 0;
+					if (rItem.PtInRect(pt))
+					{
+						// toggle check state
+						::InvalidateRect(hRealWnd, rItem, FALSE);
+						SetCheck(nItem, !GetCheck(nItem));
+
+						return 0;
+					}
 				}
+			}
+			else // check for click outside the combo's top level parent
+			{
+				CRect rParent;
+				GetTopLevelParent()->GetWindowRect(rParent);
+				ScGetCWnd()->ScreenToClient(rParent);
+
+				m_bDropCancelled = (!rParent.PtInRect(pt));
 			}
 		}
 		// Do the default handling now (such as close the popup
@@ -340,7 +381,6 @@ void CCheckComboBox::NotifyParent(UINT nIDNotify)
 	{
 		UINT nID = CWnd::GetDlgCtrlID();
 		pParent->SendMessage(WM_COMMAND, MAKEWPARAM(nID, nIDNotify), (LPARAM)m_hWnd);
-//		TRACE("CCheckComboBox::NotifyParent\n");
 	}
 }
 
@@ -366,6 +406,14 @@ int CCheckComboBox::AddUniqueItem(const CString& sItem)
 		SetItemData(nIndex, 1);
 
 	return nIndex;
+}
+
+void CCheckComboBox::HandleReturnKey()
+{
+	ParseText(TRUE);
+
+	// default handling
+	CAutoComboBox::HandleReturnKey();
 }
 
 HBRUSH CCheckComboBox::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
@@ -410,19 +458,50 @@ int CCheckComboBox::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL CCheckComboBox::OnEditchange() 
 {
-   ParseText();
-
-   return FALSE; // pass to parent
+	// update check states
+	if (GetDroppedState())
+		ParseText();
+	
+	return FALSE; // pass to parent
 }
 
-BOOL CCheckComboBox::OnDropdown() 
+BOOL CCheckComboBox::OnDropdownCloseUp() 
 {
-   ParseText();
-   RecalcText(FALSE); // updates m_sText
+	static BOOL bDown = FALSE;
+	static CStringArray aPrevChecked;
+	
+	if (bDown) // therefore we're closing
+	{
+		if (!m_bDropCancelled)
+		{
+			// if the checked items have changed then notify parent
+			CStringArray aChecked;
+			GetChecked(aChecked);
 
-   return FALSE; // pass to parent
+			if (!Misc::ArraysMatch(aPrevChecked, aChecked))
+				NotifyParent(CBN_SELCHANGE);
+		}
+		else // restore prev checked
+		{
+			SetChecked(aPrevChecked);
+		}
+	}
+	else // opening
+	{
+		ParseText();
+		RecalcText(FALSE); // updates m_sText
+
+		GetChecked(aPrevChecked);
+
+		m_bDropCancelled = FALSE;
+	}
+
+	bDown = !bDown;
+	
+	return FALSE; // pass to parent
 }
 
+// this handles messages destined for the embedded edit field
 LRESULT CCheckComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	switch (msg)
@@ -435,9 +514,11 @@ LRESULT CCheckComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp
 			// eat message else it'll go to the edit window
 			return 0L;
 		}
-		else if (wp == VK_ESCAPE)
+		else if (wp == VK_ESCAPE && GetDroppedState())
+		{
+			m_bDropCancelled = TRUE;
 			ShowDropDown(FALSE);
-		
+		}
 		break;
 
 	case WM_CHAR:
@@ -448,6 +529,10 @@ LRESULT CCheckComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp
 				ScGetCWnd()->SendMessage(msg, wp, lp);
 				return 0;
 			}
+		}
+		else if (wp == VK_RETURN)
+		{
+			HandleReturnKey();
 		}
 		break;
 	}
@@ -518,8 +603,6 @@ void CCheckComboBox::SetChecked(const CStringArray& aItems)
 	if (GetDroppedState())
 		ScGetCWnd()->Invalidate();
 
-//	TRACE("CCheckComboBox::SetChecked(%d of %d)\n", nChecked, nCount);
-	
 	// Redraw the window
 	CComboBox::Invalidate(FALSE);
 }
@@ -531,6 +614,8 @@ void CCheckComboBox::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		ShowDropDown();
 		return;
 	}
+	else if (nChar == VK_ESCAPE && GetDroppedState())
+		m_bDropCancelled = TRUE;
 		
 	CAutoComboBox::OnKeyDown(nChar, nRepCnt, nFlags);
 }

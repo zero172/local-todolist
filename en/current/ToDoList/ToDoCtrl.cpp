@@ -183,6 +183,7 @@ enum
 {
 	WM_TDC_RESTOREFOCUSEDITEM = (WM_APP + 1),
 	WM_TDC_REFRESHPERCENTSPINVISIBILITY,
+	WM_TDC_AUTOCOMBOSELCHANGE,
 };
 
 enum { TIMER_TRACK = 1, TIMER_MIDNIGHT };
@@ -463,17 +464,22 @@ BEGIN_MESSAGE_MAP(CToDoCtrl, CRuntimeDlg)
 	ON_REGISTERED_MESSAGE(WM_NCG_ISITEMSELECTED, OnGutterIsItemSelected)
 	ON_REGISTERED_MESSAGE(WM_NCG_GETSELECTEDCOUNT, OnGutterGetSelectedCount)
 	ON_REGISTERED_MESSAGE(WM_EE_BTNCLICK, OnEEBtnClick)
-	ON_CBN_EDITCHANGE(IDC_ALLOCTO, OnEditChangeAllocTo)
-	ON_CBN_SELENDOK(IDC_ALLOCTO, OnSelChangeAllocTo)
-	ON_CBN_EDITCHANGE(IDC_ALLOCBY, OnEditChangeAllocBy)
-	ON_CBN_SELENDOK(IDC_ALLOCBY, OnSelChangeAllocBy)
-	ON_CBN_EDITCHANGE(IDC_STATUS, OnEditChangeStatus)
-	ON_CBN_SELENDOK(IDC_STATUS, OnSelChangeStatus)
-	ON_CBN_EDITCHANGE(IDC_VERSION, OnEditChangeVersion)
-	ON_CBN_SELENDOK(IDC_VERSION, OnSelChangeVersion)
-	ON_CBN_EDITCHANGE(IDC_CATEGORY, OnEditChangeCategory)
+//	ON_CBN_EDITCHANGE(IDC_ALLOCTO, OnEditChangeAllocTo)
+//	ON_CBN_SELENDOK(IDC_ALLOCTO, OnSelChangeAllocTo)
+	ON_CBN_SELCHANGE(IDC_ALLOCTO, OnSelChangeAllocTo)
+//	ON_CBN_EDITCHANGE(IDC_ALLOCBY, OnEditChangeAllocBy)
+//	ON_CBN_SELENDOK(IDC_ALLOCBY, OnSelChangeAllocBy)
+	ON_CBN_SELCHANGE(IDC_ALLOCBY, OnSelChangeAllocBy)
+//	ON_CBN_EDITCHANGE(IDC_STATUS, OnEditChangeStatus)
+//	ON_CBN_SELENDOK(IDC_STATUS, OnSelChangeStatus)
+	ON_CBN_SELCHANGE(IDC_STATUS, OnSelChangeStatus)
+//	ON_CBN_EDITCHANGE(IDC_VERSION, OnEditChangeVersion)
+//	ON_CBN_SELENDOK(IDC_VERSION, OnSelChangeVersion)
+	ON_CBN_SELCHANGE(IDC_VERSION, OnSelChangeVersion)
+//	ON_CBN_EDITCHANGE(IDC_CATEGORY, OnEditChangeCategory)
+//	ON_CBN_SELENDOK(IDC_CATEGORY, OnSelChangeCategory)
 	ON_CBN_SELCHANGE(IDC_CATEGORY, OnSelChangeCategory)
-	ON_CBN_SELENDOK(IDC_CATEGORY, OnSelChangeCategory)
+	ON_MESSAGE(WM_TDC_AUTOCOMBOSELCHANGE, OnAutoComboSelChange)
 	ON_EN_CHANGE(IDC_PERCENT, OnChangePercent)
 	ON_EN_CHANGE(IDC_FILEPATH, OnChangeFileRefPath)
 	ON_REGISTERED_MESSAGE(WM_FE_GETFILEICON, OnFileEditWantIcon)
@@ -1121,7 +1127,6 @@ void CToDoCtrl::OnTreeSelChanged(NMHDR* pNMHDR, LRESULT* pResult)
 	else if (hti == NULL)
 	{
 		hti = GetSelectedItem();
-		ASSERT (hti);
 
 		if (hti)
 			m_tree.SetItemState(hti, TVIS_SELECTED, TVIS_SELECTED);
@@ -5642,23 +5647,18 @@ BOOL CToDoCtrl::IsReservedShortcut(DWORD dwShortcut)
 
 BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg) 
 {
-	if (pMsg->message == WM_SYSKEYDOWN && pMsg->wParam == 'B')
-	{
-		int a = 5;
-	}
+	BOOL bCtrl = (GetKeyState(VK_CONTROL) & 0x8000);
+	BOOL bShift = (GetKeyState(VK_SHIFT) & 0x8000);
+	BOOL bAlt = (GetKeyState(VK_MENU) & 0x8000);
 
 	// handle plain 'TAB' key when the comments field has the focus
 	// because certain types of windows will eat it
 	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_TAB &&
 		IsChildOrSame(m_ctrlComments, pMsg->hwnd))
 	{
-		BOOL bCtrl = (GetKeyState(VK_CONTROL) & 0x8000);
-
 		if (!bCtrl)
 		{
-			BOOL bShift = (GetKeyState(VK_SHIFT) & 0x8000);
 			::SetFocus(::GetNextDlgTabItem(*this, pMsg->hwnd, bShift));
-
 			return TRUE;
 		}
 	}
@@ -5687,11 +5687,8 @@ BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg)
 
 	case WM_KEYDOWN:
 		{
-			if (pMsg->wParam == VK_TAB)
-				return CRuntimeDlg::PreTranslateMessage(pMsg);
-
 			// handle <return> and <escape> for tree label editing
-			else if (pMsg->hwnd == (HWND)m_tree.SendMessage(TVM_GETEDITCONTROL))
+			if (pMsg->hwnd == (HWND)m_tree.SendMessage(TVM_GETEDITCONTROL))
 			{
 				switch (pMsg->wParam)
 				{
@@ -5714,10 +5711,6 @@ BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg)
 				// <shift>+cursor handled in OnTreeSelChanged
 				// <ctrl>+cursor handled here
 				// <ctrl>+<shift>+cursor here
-				BOOL bCtrl = (GetKeyState(VK_CONTROL) & 0x8000);
-				BOOL bShift = (GetKeyState(VK_SHIFT) & 0x8000);
-				BOOL bAlt = (GetKeyState(VK_MENU) & 0x8000);
-
 				if (!bAlt)
 				{
 					// get the real currently selected item
@@ -6694,20 +6687,22 @@ LRESULT CToDoCtrl::OnAutoComboChange(WPARAM wp, LPARAM /*lp*/)
 	switch (nCtrlID)
 	{
 	case IDC_CATEGORY:
-		UpdateTask(TDCA_CATEGORY);
+//		UpdateTask(TDCA_CATEGORY);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_CATEGORY);
 		break;
 
 	case IDC_STATUS:
+//		UpdateTask(TDCA_STATUS);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_STATUS);
 		break;
 
 	case IDC_ALLOCTO:
-		UpdateTask(TDCA_ALLOCTO);
+//		UpdateTask(TDCA_ALLOCTO);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_ALLOCTO);
 		break;
 
 	case IDC_ALLOCBY:
+//		UpdateTask(TDCA_ALLOCBY);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_ALLOCBY);
 		break;
 	}
@@ -6715,64 +6710,85 @@ LRESULT CToDoCtrl::OnAutoComboChange(WPARAM wp, LPARAM /*lp*/)
 	return 0L;
 }
 
+/*
 void CToDoCtrl::OnEditChangeAllocTo()
 {
 	UpdateTask(TDCA_ALLOCTO);
 }
+*/
 
 void CToDoCtrl::OnSelChangeAllocTo()
 {
 	// we work off the edit field which will not have been 
-	// updated yet. so we just post a CBN_EDITCHANGE to handle it
-	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_ALLOCTO, CBN_EDITCHANGE), (LPARAM)m_cbAllocTo.GetSafeHwnd());
+	// updated yet. so we just post a WM_TDC_AUTOCOMBOSELCHANGE to handle it
+//	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_ALLOCTO, CBN_EDITCHANGE), (LPARAM)m_cbAllocTo.GetSafeHwnd());
+	PostMessage(WM_TDC_AUTOCOMBOSELCHANGE, 0, (LPARAM)TDCA_ALLOCTO);
 }
 
+/*
 void CToDoCtrl::OnEditChangeAllocBy()
 {
 	UpdateTask(TDCA_ALLOCBY);
 }
+*/
 
 void CToDoCtrl::OnSelChangeAllocBy()
 {
 	// we work off the edit field which will not have been 
-	// updated yet. so we just post a CBN_EDITCHANGE to handle it
-	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_ALLOCBY, CBN_EDITCHANGE), (LPARAM)(HWND)m_cbAllocBy);
+	// updated yet. so we just post a WM_TDC_AUTOCOMBOSELCHANGE to handle it
+//	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_ALLOCBY, CBN_EDITCHANGE), (LPARAM)(HWND)m_cbAllocBy);
+	PostMessage(WM_TDC_AUTOCOMBOSELCHANGE, 0, (LPARAM)TDCA_ALLOCBY);
 }
 
+/*
 void CToDoCtrl::OnEditChangeStatus()
 {
 	UpdateTask(TDCA_STATUS);
 }
+*/
 
 void CToDoCtrl::OnSelChangeStatus()
 {
 	// we work off the edit field which will not have been 
-	// updated yet. so we just post a CBN_EDITCHANGE to handle it
-	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_STATUS, CBN_EDITCHANGE), (LPARAM)(HWND)m_cbStatus);
+	// updated yet. so we just post a WM_TDC_AUTOCOMBOSELCHANGE to handle it
+//	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_STATUS, CBN_EDITCHANGE), (LPARAM)(HWND)m_cbStatus);
+	PostMessage(WM_TDC_AUTOCOMBOSELCHANGE, 0, (LPARAM)TDCA_STATUS);
 }
 
+LRESULT CToDoCtrl::OnAutoComboSelChange(WPARAM /*wParam*/, LPARAM lParam)
+{
+	UpdateTask((TDC_ATTRIBUTE)lParam);
+	return 0L;
+}
+
+/*
 void CToDoCtrl::OnEditChangeVersion()
 {
 	UpdateTask(TDCA_VERSION);
 }
+*/
 
 void CToDoCtrl::OnSelChangeVersion()
 {
 	// we work off the edit field which will not have been 
-	// updated yet. so we just post a CBN_EDITCHANGE to handle it
-	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_VERSION, CBN_EDITCHANGE), (LPARAM)(HWND)m_cbVersion);
+	// updated yet. so we just post a WM_TDC_AUTOCOMBOSELCHANGE to handle it
+	PostMessage(WM_TDC_AUTOCOMBOSELCHANGE, 0, (LPARAM)TDCA_VERSION);
+//	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_VERSION, CBN_EDITCHANGE), (LPARAM)(HWND)m_cbVersion);
 }
 
+/*
 void CToDoCtrl::OnEditChangeCategory()
 {
 	UpdateTask(TDCA_CATEGORY);
 }
+*/
 
 void CToDoCtrl::OnSelChangeCategory()
 {
 	// we work off the edit field which will not have been 
-	// updated yet. so we just post a CBN_EDITCHANGE to handle it
-	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_CATEGORY, CBN_EDITCHANGE), (LPARAM)m_cbCategory.GetSafeHwnd());
+	// updated yet. so we just post a WM_TDC_AUTOCOMBOSELCHANGE to handle it
+	PostMessage(WM_TDC_AUTOCOMBOSELCHANGE, 0, (LPARAM)TDCA_CATEGORY);
+//	PostMessage(WM_COMMAND, MAKEWPARAM(IDC_CATEGORY, CBN_EDITCHANGE), (LPARAM)m_cbCategory.GetSafeHwnd());
 }
 
 void CToDoCtrl::OnChangeTimeEstimate()
@@ -6873,8 +6889,11 @@ CString CToDoCtrl::FormatInfoTip(const HTREEITEM hti, const TODOITEM* pTDI) cons
 		sTip += CEnString("\n%s %s", CEnString(IDS_TDCTIP_DONEDATE), CDateHelper::FormatDate(pTDI->dateDone, HasStyle(TDCS_SHOWDATESINISO)));
 	else
 	{
-		if (IsColumnShowing(TDCC_PRIORITY) && pTDI->nPriority)
+		if (IsColumnShowing(TDCC_PRIORITY) && pTDI->nPriority != FT_NOPRIORITY)
 			sTip += CEnString("\n%s %d", CEnString(IDS_TDCTIP_PRIORITY), pTDI->nPriority);
+		
+		if (IsColumnShowing(TDCC_RISK) && pTDI->nRisk != FT_NORISK)
+			sTip += CEnString("\n%s %d", CEnString(IDS_TDCTIP_RISK), pTDI->nRisk);
 		
 		if (IsColumnShowing(TDCC_STARTDATE) && pTDI->HasStart())
 			sTip += CEnString("\n%s %s", CEnString(IDS_TDCTIP_STARTDATE), CDateHelper::FormatDate(pTDI->dateStart, HasStyle(TDCS_SHOWDATESINISO)));

@@ -282,7 +282,6 @@ BOOL CShortcutManager::IsEditShortcut(DWORD dwShortcut)
 	case MAKELONG('V', HOTKEYF_CONTROL): // paste
 	case MAKELONG('X', HOTKEYF_CONTROL): // cut
 	case MAKELONG('Z', HOTKEYF_CONTROL): // undo
-	case MAKELONG('\t', HOTKEYF_CONTROL): // tab
 	case MAKELONG(VK_LEFT, HOTKEYF_CONTROL | HOTKEYF_EXT): // left one word
 	case MAKELONG(VK_RIGHT, HOTKEYF_CONTROL | HOTKEYF_EXT): // right one word
 	case MAKELONG(VK_DELETE, 0):

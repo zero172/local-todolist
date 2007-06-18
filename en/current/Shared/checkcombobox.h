@@ -33,6 +33,7 @@ protected:
 	CString m_sText;
 	BOOL m_bItemHeightSet;
 	mutable BOOL m_bDrawing;
+	BOOL m_bDropCancelled;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -61,19 +62,21 @@ protected:
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	//}}AFX_MSG
 	afx_msg BOOL OnEditchange();
-	afx_msg BOOL OnDropdown();
+	afx_msg BOOL OnDropdownCloseUp();
 	afx_msg void OnLBSelChange();
+	afx_msg void OnEditKillFocus();
 
 	DECLARE_MESSAGE_MAP()
 
 protected:
 	void RecalcText(BOOL bUpdate = TRUE, BOOL bNotify = TRUE);
-	void ParseText();
+	void ParseText(BOOL bNotify = FALSE);
 	BOOL IsType(UINT nComboType);
 	void NotifyParent(UINT nIDNotify);
 	virtual BOOL DeleteSelectedLBItem();
 	virtual void DrawItemText(HDC hdc, int nItem, CRect rText, const CString& sText, UINT nState);
-   virtual void RefreshMaxDropWidth();
+	virtual void RefreshMaxDropWidth();
+	virtual void HandleReturnKey();
 
 };
 

@@ -519,6 +519,10 @@ bool CRTFContentControl::ProcessMessage(MSG* pMsg)
 				case 'R':
 					DoRightAlign();
 					return TRUE;
+
+				case '\t':
+					GetRichEditCtrl().ReplaceSel("\t", TRUE);
+					return TRUE;
 				}
 			}
 		}

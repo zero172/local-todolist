@@ -300,6 +300,27 @@ BOOL CALLBACK FindOtherInstance(HWND hwnd, LPARAM lParam)
 
 BOOL CToDoListApp::PreTranslateMessage(MSG* pMsg) 
 {
+/*
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		if (pMsg->wParam != VK_CONTROL && pMsg->wParam != VK_SHIFT && pMsg->wParam != VK_MENU)
+		{
+			CString sKeys;
+
+			if (GetKeyState(VK_CONTROL) & 0x8000)
+				sKeys += 'C';
+
+			if (GetKeyState(VK_SHIFT) & 0x8000)
+				sKeys += 'S';
+
+			if (GetKeyState(VK_MENU) & 0x8000)
+				sKeys += 'A';
+
+			TRACE("CToDoListApp::PreTranslateMessage(%d, %s)\n", pMsg->wParam, sKeys);
+		}
+	}
+*/
+
 	// give first chance to main window for handling accelerators
 	if (m_pMainWnd && m_pMainWnd->PreTranslateMessage(pMsg))
 		return TRUE;

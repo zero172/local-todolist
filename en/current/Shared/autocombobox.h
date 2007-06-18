@@ -70,7 +70,7 @@ protected:
 	virtual void RefreshMaxDropWidth();
 	
 	BOOL IsSimpleCombo();
-	void HandleReturnKey();
+	virtual void HandleReturnKey();
 
 };
 
