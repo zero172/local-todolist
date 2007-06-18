@@ -428,15 +428,15 @@ protected:
 	afx_msg void OnChangePercent();
 	afx_msg void OnChangeTimeEstimate();
 	afx_msg void OnChangeTimeSpent();
-	afx_msg void OnEditChangeAllocTo();
+//	afx_msg void OnEditChangeAllocTo();
 	afx_msg void OnSelChangeAllocTo();
-	afx_msg void OnEditChangeAllocBy();
+//	afx_msg void OnEditChangeAllocBy();
 	afx_msg void OnSelChangeAllocBy();
-	afx_msg void OnEditChangeStatus();
+//	afx_msg void OnEditChangeStatus();
 	afx_msg void OnSelChangeStatus();
-	afx_msg void OnEditChangeVersion();
+//	afx_msg void OnEditChangeVersion();
 	afx_msg void OnSelChangeVersion();
-	afx_msg void OnEditChangeCategory();
+//	afx_msg void OnEditChangeCategory();
 	afx_msg void OnSelChangeCategory();
 	afx_msg void OnChangeRisk();
 	afx_msg void OnChangeProjectName();
@@ -445,6 +445,7 @@ protected:
 	afx_msg void OnChangeExternalID();
 	afx_msg void OnChangeFileRefPath();
 	afx_msg void OnChangeRecurrence();
+	afx_msg LRESULT OnAutoComboSelChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGutterWantRedraw(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGutterDrawItem(WPARAM wParam, LPARAM lParam); 
 	afx_msg LRESULT OnGutterPostDrawItem(WPARAM wParam, LPARAM lParam);

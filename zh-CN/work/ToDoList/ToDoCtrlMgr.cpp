@@ -322,13 +322,8 @@ int CToDoCtrlMgr::RemoveToDoCtrl(int nIndex, BOOL bDelete)
 	m_aToDoCtrls.RemoveAt(nIndex);
 	m_tabCtrl.DeleteItem(nIndex);
 
-	if (bDelete)
-	{
-		tdc.DestroyWindow();
-		delete &tdc;
-	}
-
-	// set new selection as close to previous as poss
+	// set new selection as close to previous as possible
+	// *before* deleting the tasklist
 	if (GetCount())
 	{
 		if (nIndex <= nSel)
@@ -337,6 +332,12 @@ int CToDoCtrlMgr::RemoveToDoCtrl(int nIndex, BOOL bDelete)
 			nNewSel = nSel;
 
 		m_tabCtrl.SetCurSel(nNewSel);
+	}
+
+	if (bDelete)
+	{
+		tdc.DestroyWindow();
+		delete &tdc;
 	}
 
    return nNewSel;
@@ -837,7 +838,7 @@ void CToDoCtrlMgr::SetAllNeedPreferenceUpdate(BOOL bNeed, int nExcept)
 	}
 }
 
-int CToDoCtrlMgr::FindToDoCtrl(LPCTSTR szFilePath)
+int CToDoCtrlMgr::FindToDoCtrl(LPCTSTR szFilePath) const
 {
 	if (!szFilePath || GetFileAttributes(szFilePath) != 0xffffffff)
 	{
@@ -853,7 +854,20 @@ int CToDoCtrlMgr::FindToDoCtrl(LPCTSTR szFilePath)
 	return -1;
 }
 
-void CToDoCtrlMgr::PreparePopupMenu(CMenu& menu, UINT nID1, int nMax)
+int CToDoCtrlMgr::FindToDoCtrl(const CFilteredToDoCtrl* pTDC) const
+{
+	int nCtrl = GetCount();
+	
+	while (nCtrl--)
+	{
+		if (pTDC == GetTDCItem(nCtrl).pTDC)
+			return nCtrl;
+	}
+
+	return -1;
+}
+
+void CToDoCtrlMgr::PreparePopupMenu(CMenu& menu, UINT nID1, int nMax) const
 {
 	//fabio_2005
 	int nTDC = 0;

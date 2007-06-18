@@ -34,7 +34,7 @@ IDR_MANIFEST            RT_MANIFEST             "res\\todolist.exe.manifest"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,2,6,0
+ FILEVERSION 5,2,8,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -53,7 +53,7 @@ BEGIN
             VALUE "Comments", "±ﬂ≥«øÒ»À ∫∫ªØ"
             VALUE "CompanyName", "AbstractSpoon Software"
             VALUE "FileDescription", "ToDoList"
-            VALUE "FileVersion", "5, 2, 6, 0"
+            VALUE "FileVersion", "5, 2, 8, 0"
             VALUE "InternalName", "ToDoList"
             VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2003-07"
             VALUE "OriginalFilename", "ToDoList.exe"

@@ -48,7 +48,8 @@ public:
 	BOOL HasTasks(int nIndex) const;
 	BOOL AnyHasTasks() const;
 
-	int FindToDoCtrl(LPCTSTR szFilePath);
+	int FindToDoCtrl(const CFilteredToDoCtrl* pTDC) const;
+	int FindToDoCtrl(LPCTSTR szFilePath) const;
 	CString GetFilePath(int nIndex, BOOL bStrict = TRUE) const;
 	void ClearFilePath(int nIndex);
 	BOOL IsFilePathEmpty(int nIndex) const;
@@ -96,7 +97,7 @@ public:
 	BOOL GetNeedsPreferenceUpdate(int nIndex) const;
 	void SetAllNeedPreferenceUpdate(BOOL bNeed, int nExcept = -1);
 
-	void PreparePopupMenu(CMenu& menu, UINT nID1, int nMax = 20);
+	void PreparePopupMenu(CMenu& menu, UINT nID1, int nMax = 20) const;
 
 	// Implementation
 protected:

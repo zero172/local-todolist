@@ -737,11 +737,12 @@ BOOL CRuntimeDlg::PreTranslateMessage(MSG* pMsg)
 */
 	
 	// also filter out what look like accelerator keys 
-// 	if (pMsg->message == WM_KEYDOWN)
-// 	{
-// 		if (pMsg->wParam != VK_CONTROL && (GetKeyState(VK_CONTROL) & 0x8000))
-// 			return FALSE;
-// 	}
+ 	if (pMsg->message == WM_KEYDOWN)
+ 	{
+ 		if (pMsg->wParam != VK_CONTROL && (GetKeyState(VK_CONTROL) & 0x8000))
+ 			return FALSE;
+ 	}
+	
 	// filter out mouse moves because CDialog::PreTranslateMessage
 	// eats them and prevents tooltips working
 //	else if (pMsg->message == WM_MOUSEMOVE)

@@ -2859,7 +2859,12 @@ BOOL CToDoListWnd::DoDueTaskNotification(const CFilteredToDoCtrl* pCtrl, int nDu
 	
 	if (!pCtrl)
 		return FALSE;
-	
+
+	int nTDC = m_mgrToDoCtrls.FindToDoCtrl(pCtrl);
+
+	if (nTDC != -1 && !VerifyTaskListOpen(nTDC, FALSE))
+		return TRUE; // no error. user cancelled
+
 	CPreferencesDlg& prefs = Prefs();
 	
 	// preferences
@@ -2981,7 +2986,7 @@ void CToDoListWnd::EnsureVisible()
 
 void CToDoListWnd::OnAbout() 
 {
-	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.6</b>",
+	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.8</b>",
 		CEnString(IDS_ABOUTHEADING), CEnString(IDS_ABOUTCOPYRIGHT), 1, 2, 8);
 	
 	dialog.DoModal();
@@ -4810,7 +4815,8 @@ void CToDoListWnd::OnSelchangeTabcontrol(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 		// make sure it's loaded
 		if (!VerifyTaskListOpen(nCurSel, (nDueBy == -1)))
 		{
-			// TODO
+			// restore the previous tab
+			m_tabCtrl.SetCurSel(m_nLastSelItem);
 			return;
 		}
 
