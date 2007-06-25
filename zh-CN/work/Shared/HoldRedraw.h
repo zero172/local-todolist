@@ -64,16 +64,14 @@ class CHoldRedraw : protected CRedrawAll
 public:
 	CHoldRedraw(CWnd* pWnd, BOOL bUpdateWindow = FALSE) : CRedrawAll(pWnd, bUpdateWindow)
 	{
-		m_hWnd = pWnd ? pWnd->GetSafeHwnd() : NULL;
-		
-		::SendMessage(m_hWnd, WM_SETREDRAW, FALSE, 0);
+		if (m_hWnd)
+			::SendMessage(m_hWnd, WM_SETREDRAW, FALSE, 0);
 	}
 
 	CHoldRedraw(HWND hWnd, BOOL bUpdateWindow = FALSE) : CRedrawAll(hWnd, bUpdateWindow)
 	{
-		m_hWnd = hWnd; 
-
-		::SendMessage(m_hWnd, WM_SETREDRAW, FALSE, 0);
+		if (m_hWnd)
+			::SendMessage(m_hWnd, WM_SETREDRAW, FALSE, 0);
 	}
 
 	virtual ~CHoldRedraw()

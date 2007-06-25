@@ -2883,7 +2883,9 @@ BOOL CToDoCtrl::SetSelectedTaskAllocTo(const CStringArray& aAllocTo)
 			nRes = SET_CHANGE;
 	}
 	
-	SetModified(TRUE, TDCA_ALLOCTO);
+	if (nRes == SET_CHANGE)
+		SetModified(TRUE, TDCA_ALLOCTO);
+	
 	return TRUE;
 }
 
@@ -2964,7 +2966,9 @@ BOOL CToDoCtrl::SetSelectedTaskCategories(const CStringArray& aCats)
 			nRes = SET_CHANGE;
 	}
 	
-	SetModified(TRUE, TDCA_CATEGORY);
+	if (nRes == SET_CHANGE)
+		SetModified(TRUE, TDCA_CATEGORY);
+
 	return TRUE;
 }
 
@@ -5829,7 +5833,7 @@ BOOL CToDoCtrl::PreTranslateMessage(MSG* pMsg)
 					
 					// else move focus to tree
 					SetFocusToTree();
-					return TRUE;
+					return FALSE; // allow further routing
 				}
 			}
 		}
@@ -6687,22 +6691,22 @@ LRESULT CToDoCtrl::OnAutoComboChange(WPARAM wp, LPARAM /*lp*/)
 	switch (nCtrlID)
 	{
 	case IDC_CATEGORY:
-//		UpdateTask(TDCA_CATEGORY);
+		UpdateTask(TDCA_CATEGORY);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_CATEGORY);
 		break;
 
 	case IDC_STATUS:
-//		UpdateTask(TDCA_STATUS);
+		UpdateTask(TDCA_STATUS);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_STATUS);
 		break;
 
 	case IDC_ALLOCTO:
-//		UpdateTask(TDCA_ALLOCTO);
+		UpdateTask(TDCA_ALLOCTO);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_ALLOCTO);
 		break;
 
 	case IDC_ALLOCBY:
-//		UpdateTask(TDCA_ALLOCBY);
+		UpdateTask(TDCA_ALLOCBY);
 		GetParent()->SendMessage(WM_TDCN_LISTCHANGE, 0, TDCA_ALLOCBY);
 		break;
 	}
@@ -9114,10 +9118,20 @@ LRESULT CToDoCtrl::OnFileEditWantIcon(WPARAM wParam, LPARAM lParam)
 
 LRESULT CToDoCtrl::OnFileEditDisplayFile(WPARAM wParam, LPARAM lParam)
 {
-	if (wParam == IDC_FILEPATH && GotoFile((LPCTSTR)lParam, FALSE))
-		return TRUE;
+	if (wParam == IDC_FILEPATH)
+	{
+		// we don't use GoToFile here as we only want to handle tdl://
+		CString sFile((LPCTSTR)lParam);
+
+		if (sFile.Find(TDL_PROTOCOL) >= 0)
+		{
+			OnTDCDoTaskLink(0, (LPARAM)(LPCTSTR)sFile);
+			return TRUE;
+		}
+	}
 	
-	return 0;
+	// all else defer to file edit
+	return FALSE;
 }
 
 BOOL CToDoCtrl::GotoFile(const CString& sUrl, BOOL bShellExecute)

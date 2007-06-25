@@ -48,6 +48,7 @@ const LPCTSTR TIME_UNITS = _T("Time Units");
 
 const LPCTSTR FILEEDIT_ASSOCAPPFAILURE = _T("不能打开与'%s'关联的程序。\n\n请检查文件关联，然后重试。");
 const LPCTSTR FILEEDIT_FILEOPENFAILED = _T("不能打开'%s' (%d)。\n\n请检查文件是否存在以及你是否有正确的权限，然后重试。");
+const LPCTSTR FILEEDIT_FILENOTFOUND = _T("没找到'%s'。");
 const LPCTSTR FILEEDIT_BROWSE = _T("浏览");
 const LPCTSTR FILEEDIT_BROWSE_TITLE = _T("选择文件");
 const LPCTSTR FILEEDIT_SELECTFOLDER = _T("选择目录");
