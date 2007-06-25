@@ -296,27 +296,30 @@ void CFileEdit::OnBtnClick(UINT nID)
 				if (!m_sCurFolder.IsEmpty())
 					_chdir(m_sCurFolder);
 
-				int nRes = (int)FileMisc::Run(*this, sPath, m_sCurFolder, SW_SHOWNORMAL); 
-
-				if (nRes < 32)
+				// try our parent first
+				if (!GetParent()->SendMessage(WM_FE_DISPLAYFILE, GetDlgCtrlID(), (LPARAM)(LPCTSTR)sPath))
 				{
-					// try our parent before we spit the dummy
-					if (!GetParent()->SendMessage(WM_FE_DISPLAYFILE, GetDlgCtrlID(), 
-													(LPARAM)(LPCTSTR)sPath))
+					int nRes = (int)FileMisc::Run(*this, sPath, m_sCurFolder, SW_SHOWNORMAL); 
+
+					if (nRes < 32)
 					{
 						CString sMessage;
 						
 						switch (nRes)
 						{
+						case SE_ERR_FNF:
+							sMessage.Format(FILEEDIT_FILENOTFOUND, sPath);
+							break;
+							
 						case SE_ERR_NOASSOC:
 							sMessage.Format(FILEEDIT_ASSOCAPPFAILURE, sPath);
 							break;
-
+							
 						default:
 							sMessage.Format(FILEEDIT_FILEOPENFAILED, sPath, nRes);
 							break;
 						}
-
+						
 						AfxMessageBox(sMessage, MB_OK);
 					}
 				}

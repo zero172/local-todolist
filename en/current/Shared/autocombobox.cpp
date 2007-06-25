@@ -87,6 +87,8 @@ END_MESSAGE_MAP()
 
 BOOL CAutoComboBox::OnKillfocus() 
 {
+	HandleReturnKey();
+/*
 	CString sText;
 	GetWindowText(sText);
 	
@@ -102,6 +104,8 @@ BOOL CAutoComboBox::OnKillfocus()
 								MAKEWPARAM(CWnd::GetDlgCtrlID(), nItem), 
 								(LPARAM)(LPCTSTR)sText);
 	}
+	else
+*/
 	
 	return FALSE; // continue routing
 }
@@ -340,22 +344,31 @@ LRESULT CAutoComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 void CAutoComboBox::HandleReturnKey()
 {
-	int nSel = GetCurSel();
+	if (IsHooked())
+	{
+		CString sEdit;
+		GetCWnd()->GetWindowText(sEdit);
+		
+		int nAdd = AddUniqueItem(sEdit);
+		
+		if (nAdd != CB_ERR)
+			CComboBox::GetParent()->SendMessage(WM_ACB_ITEMADDED, 
+												MAKEWPARAM(CWnd::GetDlgCtrlID(), nAdd),
+												(LPARAM)(LPCTSTR)sEdit);
+		else // send a possible selection change
+			NotifyParent(CBN_SELCHANGE);
+	}
+}
 
-	CString sEdit;
-	GetCWnd()->GetWindowText(sEdit);
-	
-	int nAdd = AddUniqueItem(sEdit);
-	
-	if (nAdd != CB_ERR)
-		CComboBox::GetParent()->SendMessage(WM_ACB_ITEMADDED, 
-											MAKEWPARAM(CWnd::GetDlgCtrlID(), nAdd),
-											(LPARAM)(LPCTSTR)sEdit);
-	// also send a selection change
-	if (GetCurSel() != nSel)
-		CComboBox::GetParent()->SendMessage(WM_COMMAND, 
-											MAKEWPARAM(CWnd::GetDlgCtrlID(), CBN_SELCHANGE), 
-											(LPARAM)GetSafeHwnd());
+void CAutoComboBox::NotifyParent(UINT nIDNotify)
+{
+	CWnd* pParent = CWnd::GetParent();
+
+	if (pParent)
+	{
+		UINT nID = CWnd::GetDlgCtrlID();
+		pParent->SendMessage(WM_COMMAND, MAKEWPARAM(nID, nIDNotify), (LPARAM)m_hWnd);
+	}
 }
 
 BOOL CAutoComboBox::IsSimpleCombo()

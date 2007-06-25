@@ -71,6 +71,7 @@ protected:
 	
 	BOOL IsSimpleCombo();
 	virtual void HandleReturnKey();
+	void NotifyParent(UINT nIDNotify);
 
 };
 

@@ -48,6 +48,7 @@ const LPCTSTR TIME_UNITS = _T("Time Units");
 
 const LPCTSTR FILEEDIT_ASSOCAPPFAILURE = _T("The application associated with '%s'\ncould not be launched.\n\nPlease check the file associations in Explorer before trying again.");
 const LPCTSTR FILEEDIT_FILEOPENFAILED = _T("'%s' could not be opened (%d).\n\nPlease check that the file exists and that you have the appropriate access rights before trying again.");
+const LPCTSTR FILEEDIT_FILENOTFOUND = _T("'%s' could not be found.");
 const LPCTSTR FILEEDIT_BROWSE = _T("Browse");
 const LPCTSTR FILEEDIT_BROWSE_TITLE = _T("Select File");
 const LPCTSTR FILEEDIT_SELECTFOLDER = _T("Select Folder");
