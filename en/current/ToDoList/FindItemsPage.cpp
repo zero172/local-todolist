@@ -24,7 +24,7 @@ CFindItemsPage::CFindItemsPage() : CPropertyPage(CFindItemsPage::IDD)
 	//{{AFX_DATA_INIT(CFindItemsPage)
 	m_sItems = _T("");
 	//}}AFX_DATA_INIT
-	m_bMatchAllItems = TRUE;
+	m_bMatchAllItems = FALSE;
 }
 
 CFindItemsPage::~CFindItemsPage()
@@ -122,7 +122,7 @@ BOOL CFindItemsPage::OnInitDialog()
 	}
 	
 	m_sItems = AfxGetApp()->GetProfileString(sKey, "LastLookFor");
-	m_bMatchAllItems = AfxGetApp()->GetProfileInt(sKey, "LastMatchAllItems", TRUE);
+	m_bMatchAllItems = AfxGetApp()->GetProfileInt(sKey, "LastMatchAllItems", FALSE);
 
 	UpdateData(FALSE);
 	

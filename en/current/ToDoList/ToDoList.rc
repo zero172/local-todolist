@@ -35,7 +35,7 @@ IDR_MANIFEST            24      DISCARDABLE     "res\\todolist.exe.manifest"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,2,8,0
+ FILEVERSION 5,2,9,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -54,7 +54,7 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 2, 8, 0\0"
+            VALUE "FileVersion", "5, 2, 9, 0\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-07\0"
             VALUE "LegalTrademarks", "\0"
@@ -1151,7 +1151,7 @@ END
 IDD_COLUMNSELECTION_DIALOG DIALOG DISCARDABLE  0, 0, 260, 196
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Column Selection"
-FONT 8, "MS Sans Serif"
+FONT 8, "Tahoma"
 BEGIN
     LISTBOX         IDC_COLUMNS,7,7,246,129,LBS_OWNERDRAWFIXED | 
                     LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_MULTICOLUMN | 
@@ -2283,7 +2283,7 @@ BEGIN
         MENUITEM "ToDoList &License",           ID_HELP_LICENSE
         MENUITEM SEPARATOR
         MENUITEM "&Feedback and Support",       ID_HELP_FEEDBACKANDSUPPORT
-        MENUITEM "Contact &Us",                 ID_HELP_CONTACTUS
+        MENUITEM "Contact U&s",                 ID_HELP_CONTACTUS
         MENUITEM SEPARATOR
         MENUITEM "Check for &Updates...",       ID_TOOLS_CHECKFORUPDATES
         MENUITEM SEPARATOR

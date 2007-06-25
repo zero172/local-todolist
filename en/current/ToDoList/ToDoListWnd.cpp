@@ -815,7 +815,7 @@ BOOL CToDoListWnd::PreTranslateMessage(MSG* pMsg)
 {
 	// the only way we get a WM_CLOSE here is if it was sent from an external app
 	// so we shut down as gracefully as possible
-	if (pMsg->message == WM_CLOSE)
+	if (pMsg->message == WM_CLOSE && pMsg->hwnd == GetSafeHwnd())
 	{
 		DoExit();
 		return TRUE;
@@ -2986,7 +2986,7 @@ void CToDoListWnd::EnsureVisible()
 
 void CToDoListWnd::OnAbout() 
 {
-	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.8</b>",
+	CAboutDlg dialog(IDR_MAINFRAME, ABS_EDITCOPYRIGHT, "<b>ToDoList 5.2.9</b>",
 		CEnString(IDS_ABOUTHEADING), CEnString(IDS_ABOUTCOPYRIGHT), 1, 2, 8);
 	
 	dialog.DoModal();
@@ -5037,6 +5037,7 @@ BOOL CToDoListWnd::VerifyTaskListOpen(int nIndex, BOOL bWantNotifyDueTasks)
 		if (TDCO_SUCCESS == OpenTaskList(&tdc, tdc.GetFilePath(), sArchivePath, nRemove))
 		{
 			m_mgrToDoCtrls.SetLoaded(nIndex);
+			m_mgrToDoCtrls.UpdateTabItemText(nIndex);
 
 			if (bWantNotifyDueTasks)
 				DoDueTaskNotification(&tdc, Prefs().GetNotifyDueByOnLoad());
@@ -6430,9 +6431,8 @@ LRESULT CToDoListWnd::OnFindDlgFind(WPARAM /*wp*/, LPARAM /*lp*/)
 				
 				CFilteredToDoCtrl& tdc = GetToDoCtrl(nCtrl);
 				CResultArray aResults;
-				
-				CHoldRedraw hr(&m_findDlg);
-				
+				CHoldRedraw hr(m_bFindShowing ? m_findDlg : NULL);
+
 				if (tdc.FindTasks(sp, aResults))
 				{
 					// use tasklist title from tabctrl
@@ -6494,6 +6494,8 @@ LRESULT CToDoListWnd::OnFindDlgFind(WPARAM /*wp*/, LPARAM /*lp*/)
 				m_findDlg.Show(FALSE);	
 		}
 	}
+	else
+		m_findDlg.SetActiveWindow();
 	
 	return 0;
 }
@@ -7538,10 +7540,17 @@ LRESULT CToDoListWnd::OnToDoCtrlDoTaskLink(WPARAM wParam, LPARAM lParam)
 			FileMisc::SplitPath(sPathName, &sDrive, &sFolder);
 			FileMisc::MakePath(sFile, sDrive, sFolder, sFile);
 		}
+
 		// else its a full path already
+		TDC_FILE nRet = OpenTaskList(sFile);
 		
-		if (OpenTaskList(sFile) == TDCO_SUCCESS && wParam)
-			GetToDoCtrl().SelectTask(wParam);
+		if (nRet == TDCO_SUCCESS)
+		{
+			if (wParam > 0)
+				GetToDoCtrl().SelectTask(wParam);
+		}
+		else
+			HandleLoadTasklistError(nRet, sFile);
 	}
 	
 	return 0L;
