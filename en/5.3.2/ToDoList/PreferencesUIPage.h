@@ -1,0 +1,131 @@
+#if !defined(AFX_PREFERENCESUIPAGE_H__5AE787F2_44B0_4A48_8D75_24C6C16B45DF__INCLUDED_)
+#define AFX_PREFERENCESUIPAGE_H__5AE787F2_44B0_4A48_8D75_24C6C16B45DF__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+// PreferencesUIPage.h : header file
+//
+
+#include "..\shared\contentMgr.h"
+#include "..\shared\fileedit.h"
+#include "..\shared\groupline.h"
+#include "..\shared\preferencesbase.h"
+#include "..\shared\contenttypecombobox.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// CPreferencesUIPage dialog
+
+enum 
+{ 
+	PUIP_TOP,
+	PUIP_BOTTOM,
+	PUIP_ABOVE,
+	PUIP_BELOW,
+};
+
+enum
+{
+	PUIP_BOTTOMCOMMENTS,
+	PUIP_RIGHTCOMMENTS,
+//	PUIP_BOTTOMRIGHTCOMMENTS,
+};
+
+class CPreferencesUIPage : public CPreferencesPageBase
+{
+	DECLARE_DYNCREATE(CPreferencesUIPage)
+
+// Construction
+public:
+	CPreferencesUIPage(const CContentMgr* pMgr = NULL);
+	~CPreferencesUIPage();
+
+	BOOL GetShowCtrlsAsColumns() const { return m_bShowCtrlsAsColumns; }
+	BOOL GetShowEditMenuAsColumns() const { return m_bShowEditMenuAsColumns; }
+	BOOL GetShowCommentsAlways() const { return m_bShowCommentsAlways; }
+	BOOL GetAutoReposCtrls() const { return m_bAutoReposCtrls; }
+	BOOL GetSharedCommentsHeight() const { return m_bSharedCommentsHeight; }
+	BOOL GetAutoHideTabbar() const { return m_bAutoHideTabbar; }
+	BOOL GetStackTabbarItems() const { return m_bStackTabbarItems; }
+	BOOL GetRightAlignLabels() const { return m_bRightAlignLabels; }
+	BOOL GetFocusTreeOnEnter() const { return m_bFocusTreeOnEnter; }
+	BOOL GetLargeToolbarIcons() const { return m_bLargeToolbarIcons; }
+	int GetNewTaskPos() const { return m_nNewTaskPos; }
+	int GetNewSubtaskPos() const { return m_nNewSubtaskPos; }
+	BOOL GetKeepTabsOrdered() const { return m_bKeepTabsOrdered; }
+	BOOL GetShowTasklistCloseButton() const { return m_bShowTasklistCloseButton; }
+	BOOL GetEnableCtrlMBtnClose() const { return m_bEnableCtrlMBtnClose; }
+	BOOL GetEnableHeaderSorting() const { return m_bEnableHeaderSorting; }
+	BOOL GetAutoReSort() const { return m_bAutoReSort; }
+	BOOL GetSortVisibleOnly() const { return m_bSortVisibleOnly; }
+	BOOL GetSortDoneTasksAtBottom() const { return m_bSortDoneTasksAtBottom; }
+	BOOL GetRTLComments() const { return m_bRTLComments; }
+	int GetCommentsPos() const { return m_nCommentsPos; }
+	CONTENTFORMAT GetDefaultCommentsFormat() const { return m_cfDefault; }
+	DWORD GetMultiSelFilterFlags() const;
+	BOOL GetAutoReFilter() const { return m_bAutoReFilter; }
+	BOOL GetRestoreTasklistFilters() const { return m_bRestoreTasklistFilters; }
+//	BOOL Get() const { return ; }
+
+protected:
+// Dialog Data
+	//{{AFX_DATA(CPreferencesUIPage)
+	enum { IDD = IDD_PREFUI_PAGE };
+	BOOL	m_bShowCtrlsAsColumns;
+	BOOL	m_bShowCommentsAlways;
+	BOOL	m_bAutoReposCtrls;
+	BOOL	m_bSpecifyToolbarImage;
+	BOOL	m_bSharedCommentsHeight;
+	BOOL	m_bAutoHideTabbar;
+	BOOL	m_bStackTabbarItems;
+	BOOL	m_bRightAlignLabels;
+	BOOL	m_bFocusTreeOnEnter;
+	BOOL	m_bLargeToolbarIcons;
+	int		m_nNewTaskPos;
+	int		m_nNewSubtaskPos;
+	BOOL	m_bKeepTabsOrdered;
+	BOOL	m_bShowTasklistCloseButton;
+	BOOL	m_bEnableCtrlMBtnClose;
+	BOOL	m_bRTLComments;
+	BOOL	m_bShowEditMenuAsColumns;
+	BOOL	m_bMultiSelCategoryFilter;
+	BOOL	m_bAutoReFilter;
+	BOOL	m_bRestoreTasklistFilters;
+	BOOL	m_bMultiSelAllocToFilter;
+	//}}AFX_DATA
+	int		m_nCommentsPos;
+	CContentTypeComboBox	m_cbCommentsFmt;
+	BOOL	m_bAutoReSort;
+	BOOL	m_bSortVisibleOnly;
+	BOOL	m_bSortDoneTasksAtBottom;
+	BOOL	m_bEnableHeaderSorting;
+	const CContentMgr* m_pContentMgr;
+	CGroupLineManager m_mgrGroupLines;
+	CONTENTFORMAT m_cfDefault;
+	int m_nDefaultCommentsFormat;
+
+// Overrides
+	// ClassWizard generate virtual function overrides
+	//{{AFX_VIRTUAL(CPreferencesUIPage)
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//}}AFX_VIRTUAL
+
+// Implementation
+protected:
+	// Generated message map functions
+	//{{AFX_MSG(CPreferencesUIPage)
+	//}}AFX_MSG
+	virtual BOOL OnInitDialog();
+	afx_msg void OnSelchangeCommentsformat();
+	DECLARE_MESSAGE_MAP()
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
+
+};
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+
+#endif // !defined(AFX_PREFERENCESUIPAGE_H__5AE787F2_44B0_4A48_8D75_24C6C16B45DF__INCLUDED_)
