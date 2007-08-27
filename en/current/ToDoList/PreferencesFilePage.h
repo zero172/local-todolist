@@ -10,6 +10,7 @@
 #include "..\shared\fontcombobox.h"
 #include "..\shared\fileedit.h"
 #include "..\shared\groupline.h"
+#include "..\shared\preferencesbase.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesFilePage dialog
@@ -25,7 +26,7 @@ enum
 	PFP_DUENEXTMONTH,
 };
 
-class CPreferencesFilePage : public CPropertyPage
+class CPreferencesFilePage : public CPreferencesPageBase
 {
 	DECLARE_DYNCREATE(CPreferencesFilePage)
 
@@ -50,10 +51,11 @@ public:
 	CString GetSaveExportStylesheet() const { return m_sSaveExportStylesheet; }
 	CString GetDueTaskPerson() const { return m_bOnlyShowDueTasksForPerson ? m_sDueTaskPerson : ""; }
 	BOOL GetWarnAddDeleteArchive() const { return m_bWarnAddDeleteArchive; }
-	BOOL GetAutoSaveUnsaved() const { return !m_bDontAutoSaveUnsaved; }
 	BOOL GetDontRemoveFlagged() const { return m_bDontRemoveFlagged; }
 	BOOL GetExpandTasksOnLoad() const { return m_bExpandTasks; }
 	BOOL GetCheckForChangesBeforeSaving() const { return m_bCheckForChangesBeforeSaving; }
+	BOOL GetAutoSaveOnSwitchTasklist() const { return m_bAutoSaveOnSwitchTasklist; }
+	BOOL GetAutoSaveOnSwitchApp() const { return m_bAutoSaveOnSwitchApp; }
 //	BOOL Get() const { return m_b; }
 
 protected:
@@ -76,10 +78,11 @@ protected:
 	BOOL	m_bOnlyShowDueTasksForPerson;
 	CString	m_sDueTaskPerson;
 	BOOL	m_bWarnAddDeleteArchive;
-	BOOL	m_bDontAutoSaveUnsaved;
 	BOOL	m_bDontRemoveFlagged;
 	BOOL	m_bExpandTasks;
 	BOOL	m_bCheckForChangesBeforeSaving;
+	BOOL	m_bAutoSaveOnSwitchTasklist;
+	BOOL	m_bAutoSaveOnSwitchApp;
 	//}}AFX_DATA
 	BOOL	m_bNotifyDueOnLoad, m_bNotifyDueOnSwitch;
 	int		m_nNotifyDueByOnLoad, m_nNotifyDueByOnSwitch;
@@ -99,7 +102,6 @@ protected:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
-	virtual void OnOK();
 
 // Implementation
 protected:
@@ -118,6 +120,9 @@ protected:
 	afx_msg void OnRemovearchiveditems();
 	afx_msg void OnAutosave();
 	DECLARE_MESSAGE_MAP()
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

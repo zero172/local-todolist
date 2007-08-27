@@ -15,8 +15,12 @@ public:
 	CEnCommandLineInfo();
 	virtual ~CEnCommandLineInfo();
 
-	BOOL GetOption(LPCTSTR szFlag, CStringArray* pParams = NULL) const; 
+	BOOL HasOption(LPCTSTR szFlag) const; 
+	BOOL GetOption(LPCTSTR szFlag, CStringArray& aParams) const; 
 	BOOL GetOption(LPCTSTR szFlag, CString& sParam) const; 
+	CString GetOption(LPCTSTR szFlag) const; 
+
+	void DeleteOption(LPCTSTR szFlag);
 
 	BOOL SetOption(LPCTSTR szFlag, LPCTSTR szParam); 
 	BOOL SetOption(LPCTSTR szFlag, DWORD dwParam); 

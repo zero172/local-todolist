@@ -36,11 +36,9 @@ public:
 	CString FormatTime(BOOL bUnits) const; 
 
 	static void SetUnits(int nUnits, LPCTSTR szLongUnits, LPCTSTR szAbbrevUnits);
-	static void SetRecalcTimePrompt(LPCTSTR szTitle, LPCTSTR szPrompt);
 
 protected:
 	int m_nUnits, m_nMaxDecPlaces;
-	static CString s_sRecalcTimePrompt, s_sRecalcTimeTitle;
 
 protected:
 // Overrides

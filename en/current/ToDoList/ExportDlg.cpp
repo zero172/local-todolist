@@ -47,11 +47,6 @@ CExportDlg::CExportDlg(const CImportExportMgr& mgr, BOOL bSingleTaskList, LPCTST
 	if (m_sFolderPath.IsEmpty())
 		m_sFolderPath = AfxGetApp()->GetProfileString("Exporting", "LastFolder");
 
-//	if (m_bSingleTaskList || m_nExportOption == ACTIVETASKLIST)
-//		m_bExportOneFile = TRUE;
-//	else 
-//		m_bExportOneFile = AfxGetApp()->GetProfileInt("Exporting", "ExportOneFile", FALSE);
-
 	if (m_bSingleTaskList || m_nExportOption == ACTIVETASKLIST || m_bExportOneFile)
 	{
 		m_sExportPath = m_sFilePath; // default
@@ -298,7 +293,6 @@ void CExportDlg::OnOK()
 	if (!m_bSingleTaskList)
 	{
 		AfxGetApp()->WriteProfileInt("Exporting", "ExportOption", m_nExportOption);
-//		AfxGetApp()->WriteProfileInt("Exporting", "ExportOneFile", m_bExportOneFile);
 
 		if (bExporterHasFileExt)
 		{

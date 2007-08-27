@@ -56,6 +56,10 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
 # ADD LINK32 /nologo /dll /machine:I386 /out:"Release/ToDoListLOC.dll" /noentry
 # SUBTRACT LINK32 /pdb:none
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=mkdir ..\release	copy release\todolistloc.dll ..\release /y
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "ToDoLOC - Win32 Debug"
 
@@ -86,6 +90,10 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 /nologo /dll /incremental:no /machine:I386 /out:"Debug/ToDoListLOC.dll" /pdbtype:sept /noentry
 # SUBTRACT LINK32 /pdb:none /debug
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=mkdir ..\debug	copy debug\todolistloc.dll ..\debug /y
+# End Special Build Tool
 
 !ENDIF 
 

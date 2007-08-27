@@ -48,8 +48,10 @@ void AFXAPI DDX_AutoCBString(CDataExchange* pDX, int nIDC, CString& value)
 
 		if (nIndex == CB_ERR)
 		{
-			// just set the edit text (will be ignored if DROPDOWNLIST)
-			SetWindowText(hWndCtrl, value);
+			if (value.IsEmpty())
+				::SendMessage(hWndCtrl, CB_SETCURSEL, (WPARAM)-1, 0L);
+			else
+				::SendMessage(hWndCtrl, CB_SELECTSTRING, (WPARAM)-1, (LPARAM)(LPCTSTR)value);
 		}
 		else
 		{
@@ -79,36 +81,60 @@ BEGIN_MESSAGE_MAP(CAutoComboBox, CComboBox)
 	ON_WM_SIZE()
 	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
-	ON_CONTROL_REFLECT_EX(CBN_KILLFOCUS, OnKillfocus)
+//	ON_WM_KILLFOCUS()
+//	ON_CONTROL_REFLECT_EX(CBN_KILLFOCUS, OnKillfocus)
+	ON_CONTROL_REFLECT_EX(CBN_SELENDOK, OnSelEndOK)
+	ON_CONTROL_REFLECT_EX(CBN_SELCHANGE, OnSelChange)
+	ON_CONTROL_REFLECT_EX(CBN_CLOSEUP, OnCloseUp)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CAutoComboBox message handlers
 
+BOOL CAutoComboBox::OnCloseUp()
+{
+	// notify parent of (possible) selection change
+	NotifyParent(CBN_SELCHANGE);
+	
+	return FALSE; // pass to parent
+}
+
+BOOL CAutoComboBox::OnSelEndOK()
+{
+	OnSelChange();
+	HandleReturnKey();
+	return FALSE; // continue routing
+}
+
+BOOL CAutoComboBox::OnSelChange()
+{
+	// make sure the edit control is up to date
+	if (IsHooked())
+		SetWindowText(GetSelectedItem());
+
+	// eat notification if dropped down
+	// ie we don't send selection notifications until the dropdown closes
+	return GetDroppedState();
+}
+
+CString CAutoComboBox::GetSelectedItem() const
+{
+	CString sSel;
+	int nSel = GetCurSel();
+
+	if (nSel != CB_ERR)
+		GetLBText(nSel, sSel);
+	
+	return sSel;
+}
+
+/*
 BOOL CAutoComboBox::OnKillfocus() 
 {
 	HandleReturnKey();
-/*
-	CString sText;
-	GetWindowText(sText);
-	
-	int nItem = AddUniqueItem(sText);
-	
-    // select
-    if (nItem != CB_ERR)
-	{
-        SetCurSel(nItem);
-		
-		// notify parent
-		CComboBox::GetParent()->SendMessage(WM_ACB_ITEMADDED, 
-								MAKEWPARAM(CWnd::GetDlgCtrlID(), nItem), 
-								(LPARAM)(LPCTSTR)sText);
-	}
-	else
-*/
-	
 	return FALSE; // continue routing
 }
+*/
 
 int CAutoComboBox::FindStringExact(int nIndexStart, const CString& sItem, BOOL bCaseSensitive) const
 {
@@ -167,23 +193,23 @@ int CAutoComboBox::FindStringExact(int nIndexStart, const CString& sItem, BOOL b
 
 int CAutoComboBox::AddUniqueItem(const CString& sItem)
 {
-   int nIndex = CB_ERR;
-   
-   if (!sItem.IsEmpty())
-   {
-	   int nFind = FindStringExact(-1, sItem, m_bCaseSensitive);
-	   
-	   if (nFind == CB_ERR)
-	   {
-		   nIndex = CComboBox::AddString(sItem); // add at end
-		   
-		   if (nIndex != CB_ERR)
-			   RefreshMaxDropWidth();
-	   }
-	   else // reinsert as text may have changed
-		   nIndex = InsertUniqueItem(nFind, sItem);
-   }
-   
+	int nIndex = CB_ERR;
+	
+	if (!sItem.IsEmpty())
+	{
+		int nFind = FindStringExact(-1, sItem, m_bCaseSensitive);
+		
+		if (nFind == CB_ERR)
+		{
+			nIndex = CComboBox::AddString(sItem); // add at end
+			
+			if (nIndex != CB_ERR)
+				RefreshMaxDropWidth();
+		}
+		else // reinsert as text may have changed
+			nIndex = InsertUniqueItem(nFind, sItem);
+	}
+	
 	return nIndex;
 }
 
@@ -219,7 +245,6 @@ int CAutoComboBox::InsertUniqueItem(int nIndex, const CString& sItem)
 				
 				return nIndex;
 			}
-			// else no change
 		}
 		else
 		{
@@ -298,7 +323,8 @@ int CAutoComboBox::GetItems(CStringArray& aItems) const
     return aItems.GetSize();
 }
 
-LRESULT CAutoComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
+// messages destined for the edit control
+LRESULT CAutoComboBox::WindowProc(HWND /*hRealWnd*/, UINT msg, WPARAM wp, LPARAM lp)
 {
 	switch (msg)
 	{
@@ -313,13 +339,21 @@ LRESULT CAutoComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 			}
 		}
 		// <Return>
-		else if (wp == VK_RETURN && ::GetFocus() == hRealWnd)
+		else if (wp == VK_RETURN)
 		{
-			// can be simple or not dropped
-			if (IsSimpleCombo() || !GetDroppedState())
-				HandleReturnKey();
+			if (GetDroppedState())
+				ShowDropDown(FALSE);
 
+			// can be simple or not dropped
+//			if (IsSimpleCombo() || !GetDroppedState())
+			HandleReturnKey();
+			
 			return 0L;
+		}
+		else if (wp == VK_DOWN && !GetDroppedState())
+		{
+			ShowDropDown();
+			return 0L; // eat
 		}
 		break;
 		
@@ -336,6 +370,10 @@ LRESULT CAutoComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 					return DLGC_WANTALLKEYS;
 			}
 		}
+		break;
+
+	case WM_KILLFOCUS:
+		HandleReturnKey();
 		break;
 	}
 	
@@ -356,7 +394,10 @@ void CAutoComboBox::HandleReturnKey()
 												MAKEWPARAM(CWnd::GetDlgCtrlID(), nAdd),
 												(LPARAM)(LPCTSTR)sEdit);
 		else // send a possible selection change
+		{
+			SelectString(-1, sEdit);
 			NotifyParent(CBN_SELCHANGE);
+		}
 	}
 }
 
@@ -422,4 +463,11 @@ BOOL CAutoComboBox::DeleteSelectedLBItem()
 
 	// else
 	return FALSE;
+}
+
+void CAutoComboBox::OnKillFocus(CWnd* pNewWnd) 
+{
+	CComboBox::OnKillFocus(pNewWnd);
+	
+	HandleReturnKey();
 }

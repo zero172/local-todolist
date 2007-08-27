@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "PlainTextImporter.h"
+#include "optionsdlg.h"
 #include <time.h>
 #include <unknwn.h>
 #include "..\SHARED\iTasklist.h"
@@ -24,28 +25,31 @@ CPlainTextImporter::~CPlainTextImporter()
 
 bool CPlainTextImporter::Import(const char* szSrcFilePath, ITaskList* pDestTaskFile)
 {
+	COptionsDlg dialog(TRUE);
+
+	if (dialog.DoModal() != IDOK)
+		return false;
+
+	INDENT = dialog.GetIndent();
+
 	CStdioFile file;
 
 	if (!file.Open(szSrcFilePath, CFile::modeRead))
 		return false;
 
-	// what follows is definitely a hack!
-	// but that's the joy of programming :)
-	if (AfxGetApp()->GetProfileInt("Preferences", "UseSpaceIndents", TRUE))
-		INDENT = CString(' ', AfxGetApp()->GetProfileInt("Preferences", "TextIndent", 2));
-	else
-		INDENT = '\t';
-
+	// else
 	ITaskList4* pITL4 = static_cast<ITaskList4*>(pDestTaskFile);
 
-	// the first line is always the outline name which corresponds to  
-	// the project name
-	CString sProjectName;
-	file.ReadString(sProjectName);
-	sProjectName.TrimRight();
-	sProjectName.TrimLeft();
+	// the first line can be the project name
+	if (dialog.GetWantProject())
+	{
+		CString sProjectName;
+		file.ReadString(sProjectName);
+		sProjectName.TrimRight();
+		sProjectName.TrimLeft();
 
-	pITL4->SetProjectName(sProjectName);
+		pITL4->SetProjectName(sProjectName);
+	}
 
 	// what follows are the tasks, indented to express subtasks
 	int nLastDepth = 0;
@@ -120,7 +124,7 @@ int CPlainTextImporter::GetDepth(const CString& sLine)
 
 		while (nPos < sLine.GetLength())
 		{
-			if (sLine.Find(INDENT, nPos) == 0)
+			if (sLine.Find(INDENT, nPos) == nPos)
 				nDepth++;
 			else
 				break;

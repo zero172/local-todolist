@@ -163,7 +163,7 @@ CString& CTaskListHtmlExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM h
 		if (pTasks->TaskHasAttribute(hTask, TDL_TASKFILEREFPATH))
 		{
 			CString sFilePath = pTasks->GetTaskFileReferencePath(hTask);
-			sFileRef.Format("<br>(file ref: <a href=\"%s\">%s</a>)", sFilePath, sFilePath);
+			sFileRef.Format("<br>(link: <a href=\"%s\">%s</a>)", sFilePath, sFilePath);
 		}
 		
 		// comments

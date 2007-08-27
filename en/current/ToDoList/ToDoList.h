@@ -63,7 +63,7 @@ protected:
 	BOOL SendDataMessage(HWND hwnd, int nType, LPCTSTR szData);
 	BOOL SendDataMessage(HWND hwnd, int nType, DWORD dwData);
 	void UpgradePreferences(BOOL bUseIni);
-	void ParseCommandLine(CEnCommandLineInfo* pInfo);
+	BOOL ParseCommandLine(CEnCommandLineInfo* pInfo);
 
 	BOOL RelocateFileStateSettings(const CString& sSection, BOOL bUseIni);
 	BOOL RelocateSplitPosSettings(BOOL bUseIni, CTDLPrefMigrationDlg* pFeedbackDlg);

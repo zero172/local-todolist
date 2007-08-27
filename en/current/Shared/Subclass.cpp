@@ -182,8 +182,9 @@ const MSG* CSubclassWnd::GetCurrentMessage()
 //
 LRESULT CALLBACK CSubclassWnd::HookWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
-#ifdef _USRDLL
-	// If this is a DLL, need to set up MFC state
+	// If this is a non-extension DLL, dynamically linked to MFC
+	// then we need to set up MFC state
+#if defined(_WINDLL) && defined(_AFXDLL) && !defined(_AFXEXT)
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 #endif
 

@@ -87,7 +87,7 @@ BOOL CPropertyPageHost::Create(LPRECT lpRect, CWnd* pParent, UINT uCtrlID)
 	return SetActivePage(0);
 }
 
-int CPropertyPageHost::GetActiveIndex()
+int CPropertyPageHost::GetActiveIndex() const
 {
 	return m_nSelIndex;
 }
@@ -130,65 +130,76 @@ BOOL CPropertyPageHost::SetActivePage(int nIndex, BOOL bAndFocus)
 		return FALSE;
 
 	CWnd* pFocus = GetFocus();
+	BOOL bNeedCreate = (pPage->GetSafeHwnd() == NULL);
 
-	if (!pPage->GetSafeHwnd() && !pPage->Create(pPage->m_psp.pszTemplate, this))
-		return FALSE;
-
-	// make sure we can into/out of the page
-	pPage->ModifyStyleEx(0, WS_EX_CONTROLPARENT | DS_CONTROL);
-
-	// make sure the page is a child and modify it if necessary
-	pPage->ModifyStyle(WS_POPUPWINDOW | WS_OVERLAPPEDWINDOW, 0);
-
-	if (!(pPage->GetStyle() & WS_CHILD))
+	if (bNeedCreate) // first time only
 	{
-		pPage->ModifyStyle(0, WS_CHILD);
-		pPage->SetParent(this);
-		ASSERT (pPage->GetParent() == this);
-	}
+		if (!pPage->Create(pPage->m_psp.pszTemplate, this))
+			return FALSE;
 
-	// set font to our parent's font
-	CWnd* pOurParent = GetParent();
-	ASSERT (pOurParent);
+		// make sure we can into/out of the page
+		pPage->ModifyStyleEx(0, WS_EX_CONTROLPARENT | DS_CONTROL);
 
-	CFont* pFont = pOurParent->GetFont();
+		// make sure the page is a child and modify it if necessary
+		pPage->ModifyStyle(WS_POPUPWINDOW | WS_OVERLAPPEDWINDOW, 0);
 
-	if (pFont)
-		CDialogHelper::SetFont(pPage, (HFONT)pFont->GetSafeHandle(), FALSE);
-
-	CRect rClient;
-	GetClientRect(rClient);
-
-	pPage->SetParent(this);
-	pPage->MoveWindow(rClient);
-
-	if (m_nSelIndex != -1)
-	{
-		CPropertyPage* pPage = GetActivePage();
-		ASSERT (pPage);
-
-		if (pPage)
+		if (!(pPage->GetStyle() & WS_CHILD))
 		{
-			pPage->ShowWindow(SW_HIDE);
-			pPage->OnKillActive();
+			pPage->ModifyStyle(0, WS_CHILD);
+			pPage->SetParent(this);
+			ASSERT (pPage->GetParent() == this);
 		}
+
+		// set font to our parent's font
+		CWnd* pOurParent = GetParent();
+		ASSERT (pOurParent);
+
+		CFont* pFont = pOurParent->GetFont();
+
+		if (pFont)
+			CDialogHelper::SetFont(pPage, (HFONT)pFont->GetSafeHandle(), FALSE);
+
+		CRect rClient;
+		GetClientRect(rClient);
+
+		pPage->SetParent(this);
+		pPage->MoveWindow(rClient);
 	}
 
-	pPage->OnSetActive();
-	pPage->ShowWindow(SW_SHOW);
+	// hide the current page provided it's not just about to be reshown
+	BOOL bSamePage = (m_nSelIndex == nIndex);
 
-	// move the focus to the first dlg ctrl
-	if (bAndFocus)
+	if (!bSamePage)
 	{
-		CWnd* pCtrl = pPage->GetNextDlgTabItem(NULL);
+		if (m_nSelIndex != -1)
+		{
+			CPropertyPage* pCurPage = GetActivePage();
+			ASSERT (pCurPage);
 
-		if (pCtrl)
-			pCtrl->SetFocus();
+			if (pCurPage)
+			{
+				pCurPage->ShowWindow(SW_HIDE);
+				pCurPage->OnKillActive();
+			}
+		}
+
+		pPage->OnSetActive();
+		pPage->ShowWindow(SW_SHOW);
+
+		// move the focus to the first dlg ctrl
+		if (bAndFocus)
+		{
+			CWnd* pCtrl = pPage->GetNextDlgTabItem(NULL);
+
+			if (pCtrl)
+				pCtrl->SetFocus();
+		}
+		else
+			pFocus->SetFocus();
+
+		m_nSelIndex = nIndex;
 	}
-	else
-		pFocus->SetFocus();
 
-	m_nSelIndex = nIndex;
 	return TRUE;
 }
 
@@ -345,7 +356,7 @@ int CPropertyPageHost::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-CString CPropertyPageHost::GetPageTitle(int nIndex)
+CString CPropertyPageHost::GetPageTitle(int nIndex) const
 {
 	if (nIndex < 0 || nIndex > m_aPages.GetSize())
 		return "";
@@ -353,7 +364,7 @@ CString CPropertyPageHost::GetPageTitle(int nIndex)
 	return m_aPages[nIndex].sTitle;
 }
 
-DWORD CPropertyPageHost::GetPageItemData(int nIndex)
+DWORD CPropertyPageHost::GetPageItemData(int nIndex) const
 {
 	if (nIndex < 0 || nIndex > m_aPages.GetSize())
 		return 0;

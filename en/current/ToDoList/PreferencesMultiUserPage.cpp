@@ -14,26 +14,13 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesMultiUserPage property page
 
-IMPLEMENT_DYNCREATE(CPreferencesMultiUserPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CPreferencesMultiUserPage, CPreferencesPageBase)
 
-CPreferencesMultiUserPage::CPreferencesMultiUserPage() : CPropertyPage(CPreferencesMultiUserPage::IDD)
+CPreferencesMultiUserPage::CPreferencesMultiUserPage() : 
+   CPreferencesPageBase(CPreferencesMultiUserPage::IDD)
 {
 	//{{AFX_DATA_INIT(CPreferencesMultiUserPage)
-	m_bFormatXmlOutput = FALSE;
 	//}}AFX_DATA_INIT
-	m_bEnableSourceControl = AfxGetApp()->GetProfileInt("Preferences", "EnableSourceControl", FALSE);
-	m_bSourceControlLanOnly = AfxGetApp()->GetProfileInt("Preferences", "SourceControlLanOnly", TRUE);
-	m_bPromptReloadOnWritable = AfxGetApp()->GetProfileInt("Preferences", "PromptReloadOnWritable", TRUE);
-	m_bAutoCheckOut = AfxGetApp()->GetProfileInt("Preferences", "AutoCheckOut", FALSE);
-	m_bPromptReloadOnTimestamp = AfxGetApp()->GetProfileInt("Preferences", "PromptReloadOnTimestamp", TRUE);
-	m_bCheckoutOnCheckin = AfxGetApp()->GetProfileInt("Preferences", "CheckoutOnCheckin", FALSE);
-	m_nReadonlyReloadOption = AfxGetApp()->GetProfileInt("Preferences", "ReadonlyReloadOption", RO_ASK) - 1;
-	m_nTimestampReloadOption = AfxGetApp()->GetProfileInt("Preferences", "TimestampReloadOption", RO_ASK) - 1;
-	m_bCheckinOnClose = AfxGetApp()->GetProfileInt("Preferences", "CheckinOnClose", TRUE);
-	m_nRemoteFileCheckFreq = AfxGetApp()->GetProfileInt("Preferences", "RemoteFileCheckFrequency", 30);
-	m_nCheckinNoEditTime = AfxGetApp()->GetProfileInt("Preferences", "CheckinNoEditTime", 10);
-	m_bCheckinNoChange = AfxGetApp()->GetProfileInt("Preferences", "CheckinNoEdit", FALSE);
-	m_bFormatXmlOutput = AfxGetApp()->GetProfileInt("Preferences", "FormatXmlOutput", FALSE);
 }
 
 CPreferencesMultiUserPage::~CPreferencesMultiUserPage()
@@ -42,7 +29,7 @@ CPreferencesMultiUserPage::~CPreferencesMultiUserPage()
 
 void CPreferencesMultiUserPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesMultiUserPage)
 	DDX_Control(pDX, IDC_NOCHANGETIME, m_cbNoEditTime);
 	DDX_Check(pDX, IDC_CHECKINONNOEDIT, m_bCheckinNoChange);
@@ -91,7 +78,7 @@ void CPreferencesMultiUserPage::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CPreferencesMultiUserPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesMultiUserPage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesMultiUserPage)
 	ON_BN_CLICKED(IDC_CHECKINONNOEDIT, OnCheckinonnoedit)
 	//}}AFX_MSG_MAP
@@ -105,7 +92,7 @@ END_MESSAGE_MAP()
 
 BOOL CPreferencesMultiUserPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	CPreferencesPageBase::OnInitDialog();
 
 	GetDlgItem(IDC_SOURCECONTROLLANONLY)->EnableWindow(m_bEnableSourceControl);
 	GetDlgItem(IDC_AUTOCHECKOUT)->EnableWindow(m_bEnableSourceControl);
@@ -120,27 +107,6 @@ BOOL CPreferencesMultiUserPage::OnInitDialog()
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CPreferencesMultiUserPage::OnOK() 
-{
-	CPropertyPage::OnOK();
-	
-	// save settings
-	AfxGetApp()->WriteProfileInt("Preferences", "PromptReloadOnWritable", m_bPromptReloadOnWritable);
-	AfxGetApp()->WriteProfileInt("Preferences", "PromptReloadOnTimestamp", m_bPromptReloadOnTimestamp);
-	AfxGetApp()->WriteProfileInt("Preferences", "EnableSourceControl", m_bEnableSourceControl);
-	AfxGetApp()->WriteProfileInt("Preferences", "SourceControlLanOnly", m_bSourceControlLanOnly);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoCheckOut", m_bAutoCheckOut);
-	AfxGetApp()->WriteProfileInt("Preferences", "CheckoutOnCheckin", m_bCheckoutOnCheckin);
-	AfxGetApp()->WriteProfileInt("Preferences", "ReadonlyReloadOption", m_nReadonlyReloadOption + 1);
-	AfxGetApp()->WriteProfileInt("Preferences", "TimestampReloadOption", m_nTimestampReloadOption + 1);
-	AfxGetApp()->WriteProfileInt("Preferences", "CheckinOnClose", m_bCheckinOnClose);
-	AfxGetApp()->WriteProfileInt("Preferences", "RemoteFileCheckFrequency", m_nRemoteFileCheckFreq);
-	AfxGetApp()->WriteProfileInt("Preferences", "CheckinNoEditTime", m_nCheckinNoEditTime);
-	AfxGetApp()->WriteProfileInt("Preferences", "CheckinNoEdit", m_bCheckinNoChange);
-	AfxGetApp()->WriteProfileInt("Preferences", "FormatXmlOutput", m_bFormatXmlOutput);
-//	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
 }
 
 void CPreferencesMultiUserPage::OnEnablesourcecontrol() 
@@ -187,4 +153,40 @@ void CPreferencesMultiUserPage::OnCheckinonnoedit()
 {
 	UpdateData();
 	GetDlgItem(IDC_NOCHANGETIME)->EnableWindow(m_bEnableSourceControl && m_bCheckinNoChange);
+}
+
+void CPreferencesMultiUserPage::LoadPreferences(const CPreferencesStorage& prefs)
+{
+	m_bEnableSourceControl = prefs.GetProfileInt("Preferences", "EnableSourceControl", FALSE);
+	m_bSourceControlLanOnly = prefs.GetProfileInt("Preferences", "SourceControlLanOnly", TRUE);
+	m_bPromptReloadOnWritable = prefs.GetProfileInt("Preferences", "PromptReloadOnWritable", TRUE);
+	m_bAutoCheckOut = prefs.GetProfileInt("Preferences", "AutoCheckOut", FALSE);
+	m_bPromptReloadOnTimestamp = prefs.GetProfileInt("Preferences", "PromptReloadOnTimestamp", TRUE);
+	m_bCheckoutOnCheckin = prefs.GetProfileInt("Preferences", "CheckoutOnCheckin", FALSE);
+	m_nReadonlyReloadOption = prefs.GetProfileInt("Preferences", "ReadonlyReloadOption", RO_ASK) - 1;
+	m_nTimestampReloadOption = prefs.GetProfileInt("Preferences", "TimestampReloadOption", RO_ASK) - 1;
+	m_bCheckinOnClose = prefs.GetProfileInt("Preferences", "CheckinOnClose", TRUE);
+	m_nRemoteFileCheckFreq = prefs.GetProfileInt("Preferences", "RemoteFileCheckFrequency", 30);
+	m_nCheckinNoEditTime = prefs.GetProfileInt("Preferences", "CheckinNoEditTime", 10);
+	m_bCheckinNoChange = prefs.GetProfileInt("Preferences", "CheckinNoEdit", FALSE);
+	m_bFormatXmlOutput = prefs.GetProfileInt("Preferences", "FormatXmlOutput", FALSE);
+}
+
+void CPreferencesMultiUserPage::SavePreferences(CPreferencesStorage& prefs)
+{
+	// save settings
+	prefs.WriteProfileInt("Preferences", "PromptReloadOnWritable", m_bPromptReloadOnWritable);
+	prefs.WriteProfileInt("Preferences", "PromptReloadOnTimestamp", m_bPromptReloadOnTimestamp);
+	prefs.WriteProfileInt("Preferences", "EnableSourceControl", m_bEnableSourceControl);
+	prefs.WriteProfileInt("Preferences", "SourceControlLanOnly", m_bSourceControlLanOnly);
+	prefs.WriteProfileInt("Preferences", "AutoCheckOut", m_bAutoCheckOut);
+	prefs.WriteProfileInt("Preferences", "CheckoutOnCheckin", m_bCheckoutOnCheckin);
+	prefs.WriteProfileInt("Preferences", "ReadonlyReloadOption", m_nReadonlyReloadOption + 1);
+	prefs.WriteProfileInt("Preferences", "TimestampReloadOption", m_nTimestampReloadOption + 1);
+	prefs.WriteProfileInt("Preferences", "CheckinOnClose", m_bCheckinOnClose);
+	prefs.WriteProfileInt("Preferences", "RemoteFileCheckFrequency", m_nRemoteFileCheckFreq);
+	prefs.WriteProfileInt("Preferences", "CheckinNoEditTime", m_nCheckinNoEditTime);
+	prefs.WriteProfileInt("Preferences", "CheckinNoEdit", m_bCheckinNoChange);
+	prefs.WriteProfileInt("Preferences", "FormatXmlOutput", m_bFormatXmlOutput);
+//	prefs.WriteProfileInt("Preferences", "", m_b);
 }

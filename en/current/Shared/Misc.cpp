@@ -50,6 +50,13 @@ void Misc::CopyTexttoClipboard(const CString& sText, HWND hwnd)
 	::CloseClipboard();
 }
 
+BOOL Misc::IsGuid(LPCTSTR szGuid)
+{
+	GUID guid;
+
+	return GuidFromString(szGuid, guid);
+}
+
 BOOL Misc::GuidFromString(LPCTSTR szGuid, GUID& guid)
 {
 #pragma comment(lib, "Rpcrt4.lib")
@@ -58,7 +65,7 @@ BOOL Misc::GuidFromString(LPCTSTR szGuid, GUID& guid)
 					
 	if (rpcs != RPC_S_OK)
 	{
-		ZeroMemory(&guid, sizeof(GUID));
+		NullGuid(guid);
 		return FALSE;
 	}
 
@@ -103,10 +110,10 @@ HFONT Misc::CreateFont(HFONT hFont, DWORD dwFlags)
 	LOGFONT lf;
 	::GetObject(hFont, sizeof(lf), &lf);
 	
-	lf.lfUnderline = (BYTE)(dwFlags & UNDERLINED);
-	lf.lfItalic = (BYTE)(dwFlags & ITALIC);
-	lf.lfStrikeOut = (BYTE)(dwFlags & STRIKETHRU);
-	lf.lfWeight = (dwFlags & BOLD) ? FW_BOLD : FW_NORMAL;
+	lf.lfUnderline = (BYTE)(dwFlags & MFS_UNDERLINED);
+	lf.lfItalic = (BYTE)(dwFlags & MFS_ITALIC);
+	lf.lfStrikeOut = (BYTE)(dwFlags & MFS_STRIKETHRU);
+	lf.lfWeight = (dwFlags & MFS_BOLD) ? FW_BOLD : FW_NORMAL;
 	
 	HFONT hFontOut = CreateFontIndirect(&lf);
 
@@ -138,7 +145,7 @@ HFONT Misc::CreateFont(LPCTSTR szFaceName, int nPoint, DWORD dwFlags)
 	::GetObject(hDefFont, sizeof(lf), &lf);
 	
 	// set the charset
-	if (dwFlags & SYMBOL)
+	if (dwFlags & MFS_SYMBOL)
 		lf.lfCharSet = SYMBOL_CHARSET;
 
 	else if (!lf.lfCharSet)
@@ -155,10 +162,10 @@ HFONT Misc::CreateFont(LPCTSTR szFaceName, int nPoint, DWORD dwFlags)
 	}
 	
 	lf.lfWidth = 0;
-	lf.lfUnderline = (BYTE)(dwFlags & UNDERLINED);
-	lf.lfItalic = (BYTE)(dwFlags & ITALIC);
-	lf.lfStrikeOut = (BYTE)(dwFlags & STRIKETHRU);
-	lf.lfWeight = (dwFlags & BOLD) ? FW_BOLD : FW_NORMAL;
+	lf.lfUnderline = (BYTE)(dwFlags & MFS_UNDERLINED);
+	lf.lfItalic = (BYTE)(dwFlags & MFS_ITALIC);
+	lf.lfStrikeOut = (BYTE)(dwFlags & MFS_STRIKETHRU);
+	lf.lfWeight = (dwFlags & MFS_BOLD) ? FW_BOLD : FW_NORMAL;
 	
 	HFONT hFont = CreateFontIndirect(&lf);
 
@@ -190,10 +197,10 @@ DWORD Misc::GetFontFlags(HFONT hFont)
 
 	DWORD dwFlags = 0;
 	
-	dwFlags |= (lf.lfItalic ? ITALIC : 0);
-	dwFlags |= (lf.lfUnderline ? UNDERLINED : 0);
-	dwFlags |= (lf.lfStrikeOut ? STRIKETHRU : 0);
-	dwFlags |= (lf.lfWeight >= FW_BOLD ? BOLD : 0);
+	dwFlags |= (lf.lfItalic ? MFS_ITALIC : 0);
+	dwFlags |= (lf.lfUnderline ? MFS_UNDERLINED : 0);
+	dwFlags |= (lf.lfStrikeOut ? MFS_STRIKETHRU : 0);
+	dwFlags |= (lf.lfWeight >= FW_BOLD ? MFS_BOLD : 0);
 	
 	return dwFlags;
 }
@@ -533,7 +540,7 @@ CFont& Misc::WingDings()
 	static CFont font;
 				
 	if (!font.GetSafeHandle())
-		font.Attach(CreateFont("Wingdings", -1, SYMBOL));
+		font.Attach(CreateFont("Wingdings", -1, MFS_SYMBOL));
 
 	return font;
 }
@@ -856,4 +863,47 @@ CString Misc::Format(double dVal, int nDecPlaces)
 	free(szLocale);
 
 	return sValue;
+}
+
+BOOL Misc::KeyIsPressed(DWORD dwVirtKey) 
+{ 
+	return (GetKeyState(dwVirtKey) & 0x8000); 
+}
+
+BOOL Misc::ModKeysArePressed(DWORD dwKeys) 
+{
+	// test for failure
+	if (dwKeys & MKS_CTRL)
+	{
+		if (!KeyIsPressed(VK_CONTROL))
+			return FALSE;
+	}
+	else if (KeyIsPressed(VK_CONTROL))
+			return FALSE;
+
+	if (dwKeys & MKS_SHIFT)
+	{
+		if (!KeyIsPressed(VK_SHIFT))
+			return FALSE;
+	}
+	else if (KeyIsPressed(VK_SHIFT))
+			return FALSE;
+
+	if (dwKeys & MKS_ALT)
+	{
+		if (!KeyIsPressed(VK_MENU))
+			return FALSE;
+	}
+	else if (KeyIsPressed(VK_MENU))
+			return FALSE;
+
+	return TRUE;
+}
+
+BOOL Misc::HasFlag(DWORD dwFlags, DWORD dwFlag) 
+{ 
+	if ((dwFlags & dwFlag) == dwFlag)
+		return TRUE;
+	else
+		return FALSE; 
 }

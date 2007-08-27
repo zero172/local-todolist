@@ -12,7 +12,7 @@
 #include "Subclass.h"
 #include <afxtempl.h>
 
-class CToolbarHelper : protected CSubclassWnd  
+class CToolbarHelper : protected CSubclassWnd, protected CSubclasser 
 {
 public:
 	CToolbarHelper();
@@ -50,6 +50,7 @@ protected:
 	CMap<UINT, UINT, THButton, THButton&> m_mapTHButtons;
 	BOOL m_bMultiline;
 	int m_nMultilineWidth;
+	CToolTipCtrl m_tt;
 
 protected:
 	LRESULT WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -57,7 +58,10 @@ protected:
 	BOOL DisplayDropMenu(UINT nCmdID, BOOL bPressBtn = FALSE);
 	BOOL IsCmdEnabled(UINT nCmdID) const;
 	BOOL SetButton(UINT nBtnCmdID, UINT nMenuID, int nSubMenu, UINT nDefCmdID, char cHotkey, LPCTSTR szTip);
+	void RefreshTooltipRects();
+	void InitTooltips();
 
+	LRESULT ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp);
 };
 
 #endif // !defined(AFX_TOOLBARHELPER_H__86A32540_80BF_421C_97E3_6E760BF427A8__INCLUDED_)

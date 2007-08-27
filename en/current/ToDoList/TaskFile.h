@@ -10,30 +10,44 @@
 #endif // _MSC_VER > 1000
 
 #include "..\SHARED\ITaskList.h"
-#include "..\SHARED\xmlfileex.h"
 
 #include <afxtempl.h>
 
+#ifdef NO_TL_ENCRYPTDECRYPT
+#	include "..\SHARED\xmlfile.h"
+#	define XMLBASE CXmlFile
+#else
+#	include "..\SHARED\xmlfileex.h"
+#	define XMLBASE CXmlFileEx
+#endif
+
 struct TDIRECURRENCE; // predeclaration
 
-class CTaskFile : public ITASKLISTBASE, public CXmlFileEx
+class CTaskFile : public ITASKLISTBASE, public XMLBASE
 {
 public:
 	CTaskFile(LPCTSTR szPassword = NULL);
 	virtual ~CTaskFile();
 
 	BOOL Load(LPCTSTR szFilePath, IXmlParse* pCallback = NULL, BOOL bDecrypt = TRUE);
+
 	virtual BOOL LoadEx(IXmlParse* pCallback = NULL);
 	virtual BOOL SaveEx();
 	virtual BOOL LoadHeader(LPCTSTR szFilePath);
 
+#ifndef NO_TL_ENCRYPTDECRYPT
 	virtual BOOL Decrypt(LPCTSTR szPassword = NULL); 
+#endif
 
-	void Copy(const CTaskFile& tasks);
+	BOOL Copy(const CTaskFile& tasks);
+	BOOL Copy(const ITaskList* pTasks);
+
 	int GetTaskCount() const { return m_mapHandles.GetCount(); }
 
+#ifndef NO_TL_MERGE
 	int Merge(const CTaskFile& tasks, BOOL bByID, BOOL bMoveExist);
 	int Merge(LPCTSTR szTaskFilePath, BOOL bByID, BOOL bMoveExist);
+#endif
 
 	HTASKITEM NewTask(const char* szTitle, HTASKITEM hParent, DWORD dwID);
 
@@ -51,8 +65,8 @@ public:
 	BOOL SetEarliestDueDate(const COleDateTime& date);
 	BOOL GetEarliestDueDate(COleDateTime& date) const;
 
-	BOOL SetCustomCommentsType(const GUID& guid); 
-	BOOL GetCustomCommentsType(GUID& guid) const; 
+	BOOL SetCommentsType(LPCTSTR szID); 
+	CString GetCommentsType() const; 
 
 	COleDateTime GetTaskLastModifiedOle(HTASKITEM hTask) const;
 	COleDateTime GetTaskDoneDateOle(HTASKITEM hTask) const;
@@ -90,8 +104,8 @@ public:
 	BOOL SetTaskAllocatedTo(HTASKITEM hTask, const CStringArray& aAllocTo);
 	int  GetTaskAllocatedTo(HTASKITEM hTask, CStringArray& aAllocTo) const;
 
-	BOOL SetTaskCustomComments(HTASKITEM hTask, const CString& sContent);
-	BOOL GetTaskCustomComments(HTASKITEM hTask, CString& sContent) const;
+	BOOL SetTaskCustomComments(HTASKITEM hTask, const CString& sContent, const CString& sType);
+	BOOL GetTaskCustomComments(HTASKITEM hTask, CString& sContent, CString& sType) const;
 	BOOL SetTaskHtmlComments(HTASKITEM hTask, const CString& sContent, BOOL bForTransform);
 	
 	BOOL DeleteTaskAttributes(HTASKITEM hTask);// deletes all but child tasks
@@ -307,9 +321,9 @@ protected:
 				  	 const char* szItemTag, CStringArray& aItems) const;
 
 	virtual CXmlItem* NewItem(LPCTSTR szName = NULL);
+	BOOL CopyTask(HTASKITEM hSrcTask, const ITaskList* pSrcTasks, HTASKITEM hDestParent);
 
 	static CString GetWebColor(COLORREF color);
-
 };
 
 #endif // !defined(AFX_TASKFILE_H__BA5D71E7_2770_45FD_A693_A2344B589DF4__INCLUDED_)

@@ -5,8 +5,7 @@
 #include "stdafx.h"
 #include "MergeToDoList.h"
 #include "tdlschemadef.h"
-
-#include "..\shared\xmlfileex.h"
+#include "Taskfile.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -30,7 +29,7 @@ CMergeToDoList::~CMergeToDoList()
 
 int CMergeToDoList::Merge(LPCTSTR szSrcPath, LPCTSTR szDestPath)
 {
-	CXmlFileEx fileSrc(TDL_ROOT);
+	CTaskFile fileSrc(TDL_ROOT);
 
 	if (fileSrc.Load(szSrcPath))
 		return Merge(fileSrc.Root(), szDestPath);
@@ -53,7 +52,7 @@ int CMergeToDoList::Merge(const CXmlItem* pXISrc, CXmlItem* pXIDest)
 
 int CMergeToDoList::Merge(const CXmlItem* pXISrc, LPCTSTR szDestPath)
 {
-	CXmlFileEx fileDest(TDL_ROOT);
+	CTaskFile fileDest(TDL_ROOT);
 
 	if (fileDest.Load(szDestPath))
 		return Merge(pXISrc, fileDest.Root());
@@ -63,7 +62,7 @@ int CMergeToDoList::Merge(const CXmlItem* pXISrc, LPCTSTR szDestPath)
 
 int CMergeToDoList::Merge(LPCTSTR szSrcPath, CXmlItem* pXIDest)
 {
-	CXmlFileEx fileSrc(TDL_ROOT);
+	CTaskFile fileSrc(TDL_ROOT);
 
 	if (fileSrc.Load(szSrcPath))
 		return Merge(fileSrc.Root(), pXIDest);
@@ -112,7 +111,7 @@ int CMergeToDoList::MergeTasksByID(const CXmlItem* pXISrc, CXmlItem* pXIDest)
 	if (dwSrcID)
 	{
 		// keep track of max ID
-		m_dwNextID = max(m_dwNextID, dwSrcID);
+		m_dwNextID = max(m_dwNextID, dwSrcID + 1);
 
 		if (MergeAttributes(pXISrc, pXIDest))			
 			nMerged++;

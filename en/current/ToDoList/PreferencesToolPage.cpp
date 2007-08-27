@@ -23,9 +23,9 @@ static char THIS_FILE[] = __FILE__;
 const char* REALQUOTE = "\"";
 const char* SAFEQUOTE = "{QUOTES}";
 
-IMPLEMENT_DYNCREATE(CPreferencesToolPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CPreferencesToolPage, CPreferencesPageBase)
 
-CPreferencesToolPage::CPreferencesToolPage() : CPropertyPage(CPreferencesToolPage::IDD),
+CPreferencesToolPage::CPreferencesToolPage() : CPreferencesPageBase(CPreferencesToolPage::IDD),
 												m_eToolPath(FES_COMBOSTYLEBTN | FES_ALLOWURL),
 												m_eIconPath(FES_COMBOSTYLEBTN)
 {
@@ -35,39 +35,6 @@ CPreferencesToolPage::CPreferencesToolPage() : CPropertyPage(CPreferencesToolPag
 	m_bRunMinimized = FALSE;
 	m_sIconPath = _T("");
 	//}}AFX_DATA_INIT
-
-	// load tools
-	int nToolCount = AfxGetApp()->GetProfileInt("Tools", "ToolCount", 0);
-
-	for (int nTool = 1; nTool <= nToolCount; nTool++)
-	{
-		CString sKey;
-		sKey.Format("Tools\\Tool%d", nTool);
-
-		USERTOOL ut;
-		ut.sToolName = AfxGetApp()->GetProfileString(sKey, "Name", "");
-		ut.sToolPath = AfxGetApp()->GetProfileString(sKey, "Path", "");
-		ut.sCmdline = AfxGetApp()->GetProfileString(sKey, "CmdLine", "0xffffffff"); // deliberately odd default to test for existence
-		ut.bRunMinimized = AfxGetApp()->GetProfileInt(sKey, "RunMinimized", FALSE);
-
-		ut.sIconPath = AfxGetApp()->GetProfileString(sKey, "IconPath", "");
-		
-		if (ut.sCmdline == "0xffffffff")
-		{
-			// backward compatibility
-			BOOL nIncludeCmdlinePath = AfxGetApp()->GetProfileInt(sKey, "IncludeCmdlinePath", -1);
-
-			if (nIncludeCmdlinePath) // 1 or -1
-				ut.sCmdline = CmdIDToPlaceholder(ID_TOOLS_PATHNAME);
-			else
-				ut.sCmdline.Empty();
-		}
-
-		// replace safe quotes with real quotes
-		ut.sCmdline.Replace(SAFEQUOTE, REALQUOTE);
-
-		m_aTools.Add(ut);
-	}
 
 	m_eCmdLine.AddButton(1, "", CEnString(IDS_PTP_PLACEHOLDERS));
 	m_eCmdLine.SetDropMenuButton(1);
@@ -79,7 +46,7 @@ CPreferencesToolPage::~CPreferencesToolPage()
 
 void CPreferencesToolPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesToolPage)
 	DDX_Control(pDX, IDC_CMDLINE, m_eCmdLine);
 	DDX_Control(pDX, IDC_TOOLPATH, m_eToolPath);
@@ -92,7 +59,7 @@ void CPreferencesToolPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-BEGIN_MESSAGE_MAP(CPreferencesToolPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesToolPage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesToolPage)
 	ON_BN_CLICKED(IDC_NEWTOOL, OnNewtool)
 	ON_BN_CLICKED(IDC_DELETETOOL, OnDeletetool)
@@ -116,7 +83,7 @@ END_MESSAGE_MAP()
 
 BOOL CPreferencesToolPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	CPreferencesPageBase::OnInitDialog();
 
 	m_ilSys.Initialize();
 	m_lcTools.SetImageList(m_ilSys.GetImageList(), LVSIL_SMALL);
@@ -134,14 +101,15 @@ BOOL CPreferencesToolPage::OnInitDialog()
 	// add tools we loaded from the registry
 	for (int nTool = 0; nTool < m_aTools.GetSize(); nTool++)
 	{
-		int nImage = m_ilSys.GetFileImageIndex(m_aTools[nTool].sToolPath);
+      CString sToolPath = m_aTools[nTool].sToolPath;
+		int nImage = m_ilSys.GetFileImageIndex(sToolPath);
 		
 		if (!m_aTools[nTool].sIconPath.IsEmpty()) 
 			nImage = m_ilSys.GetFileImageIndex(m_aTools[nTool].sIconPath);
 			
 		int nIndex = m_lcTools.InsertItem(nTool, m_aTools[nTool].sToolName, nImage);
 
-		m_lcTools.SetItemText(nIndex, 1, m_aTools[nTool].sToolPath);
+		m_lcTools.SetItemText(nIndex, 1, sToolPath);
 		m_lcTools.SetItemText(nIndex, 2, m_aTools[nTool].sCmdline);
 		m_lcTools.SetItemText(nIndex, 3, m_aTools[nTool].sIconPath);
 		m_lcTools.SetItemData(nIndex, m_aTools[nTool].bRunMinimized);
@@ -323,9 +291,10 @@ BOOL CPreferencesToolPage::GetUserTool(int nTool, USERTOOL& tool) const
 
 void CPreferencesToolPage::OnOK() 
 {
-	CPropertyPage::OnOK();
+	CPreferencesPageBase::OnOK();
 	
-	// save tools to registry and m_aTools
+	// save tools to m_aTools
+   m_aTools.RemoveAll();
 	int nToolCount = m_lcTools.GetItemCount();
 
 	for (int nTool = 0; nTool < nToolCount; nTool++)
@@ -338,23 +307,12 @@ void CPreferencesToolPage::OnOK()
 		ut.sIconPath = m_lcTools.GetItemText(nTool, 3);
 		ut.bRunMinimized = m_lcTools.GetItemData(nTool);
 
-		CString sKey;
-		sKey.Format("Tools\\Tool%d", nTool + 1);
-		
-		AfxGetApp()->WriteProfileString(sKey, "Name", ut.sToolName);
-		AfxGetApp()->WriteProfileString(sKey, "Path", ut.sToolPath);
-		AfxGetApp()->WriteProfileString(sKey, "IconPath", ut.sIconPath);
-		AfxGetApp()->WriteProfileInt(sKey, "RunMinimized", ut.bRunMinimized);
-		
 		// GetPrivateProfileString strips a leading/trailing quote pairs if 
 		// it finds them so we replace quotes with safe quotes
 		ut.sCmdline.Replace(REALQUOTE, SAFEQUOTE);
-		AfxGetApp()->WriteProfileString(sKey, "Cmdline", ut.sCmdline);
 		
 		m_aTools.Add(ut);
 	}
-
-	AfxGetApp()->WriteProfileInt("Tools", "ToolCount", nToolCount);
 }
 
 void CPreferencesToolPage::OnKeydownToollist(NMHDR* pNMHDR, LRESULT* pResult) 
@@ -536,4 +494,68 @@ void CPreferencesToolPage::OnImport()
 		else
 			bContinue = FALSE; // cancelled
 	}
+}
+
+void CPreferencesToolPage::LoadPreferences(const CPreferencesStorage& prefs)
+{
+	// load tools
+	int nToolCount = prefs.GetProfileInt("Tools", "ToolCount", 0);
+
+	for (int nTool = 1; nTool <= nToolCount; nTool++)
+	{
+		CString sKey;
+		sKey.Format("Tools\\Tool%d", nTool);
+
+		USERTOOL ut;
+		ut.sToolName = prefs.GetProfileString(sKey, "Name", "");
+		ut.sToolPath = prefs.GetProfileString(sKey, "Path", "");
+		ut.sCmdline = prefs.GetProfileString(sKey, "CmdLine", "0xffffffff"); // deliberately odd default to test for existence
+		ut.bRunMinimized = prefs.GetProfileInt(sKey, "RunMinimized", FALSE);
+
+		ut.sIconPath = prefs.GetProfileString(sKey, "IconPath", "");
+		
+		if (ut.sCmdline == "0xffffffff")
+		{
+			// backward compatibility
+			BOOL nIncludeCmdlinePath = prefs.GetProfileInt(sKey, "IncludeCmdlinePath", -1);
+
+			if (nIncludeCmdlinePath) // 1 or -1
+				ut.sCmdline = CmdIDToPlaceholder(ID_TOOLS_PATHNAME);
+			else
+				ut.sCmdline.Empty();
+		}
+
+		// replace safe quotes with real quotes
+		ut.sCmdline.Replace(SAFEQUOTE, REALQUOTE);
+
+		m_aTools.Add(ut);
+	}
+}
+
+void CPreferencesToolPage::SavePreferences(CPreferencesStorage& prefs)
+{
+	// save tools to registry and m_aTools
+	int nToolCount = m_aTools.GetSize();
+
+	for (int nTool = 0; nTool < nToolCount; nTool++)
+	{
+		USERTOOL ut = m_aTools[nTool];
+
+      CString sKey;
+		sKey.Format("Tools\\Tool%d", nTool + 1);
+		
+		prefs.WriteProfileString(sKey, "Name", ut.sToolName);
+		prefs.WriteProfileString(sKey, "Path", ut.sToolPath);
+		prefs.WriteProfileString(sKey, "IconPath", ut.sIconPath);
+		prefs.WriteProfileInt(sKey, "RunMinimized", ut.bRunMinimized);
+		
+		// GetPrivateProfileString strips a leading/trailing quote pairs if 
+		// it finds them so we replace quotes with safe quotes
+		ut.sCmdline.Replace(REALQUOTE, SAFEQUOTE);
+		prefs.WriteProfileString(sKey, "Cmdline", ut.sCmdline);
+		
+		m_aTools.Add(ut);
+	}
+
+	prefs.WriteProfileInt("Tools", "ToolCount", nToolCount);
 }

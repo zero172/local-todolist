@@ -9,19 +9,20 @@
 class CNcRedraw // note: there is no inheritance intentionally.
 {
 public:
-	CNcRedraw(CWnd* pWnd)
+	CNcRedraw(CWnd* pWnd) : m_hWnd(NULL)
 	{
-		m_hWnd = pWnd ? pWnd->GetSafeHwnd() : NULL; 
+		if (pWnd)
+			m_hWnd = pWnd->GetSafeHwnd();
 	}
 
-	CNcRedraw(HWND hWnd)
+	CNcRedraw(HWND hWnd) : m_hWnd(NULL)
 	{
 		m_hWnd = hWnd; 
 	}
 
 	virtual ~CNcRedraw()
 	{
-		if (m_hWnd)
+		if (m_hWnd && ::IsWindowVisible(m_hWnd))
 			::SendMessage(m_hWnd, WM_NCPAINT, 0, 0);
 	}
 
@@ -32,19 +33,20 @@ protected:
 class CRedrawAll
 {
 public:
-	CRedrawAll(CWnd* pWnd, BOOL bUpdateWindow = FALSE) : m_bUpdateWindow(bUpdateWindow)
+	CRedrawAll(CWnd* pWnd, BOOL bUpdateWindow = FALSE) : m_hWnd(NULL), m_bUpdateWindow(bUpdateWindow)
 	{
-		m_hWnd = pWnd ? pWnd->GetSafeHwnd() : NULL; 
+		if (pWnd)
+			m_hWnd = pWnd->GetSafeHwnd();
 	}
 
-	CRedrawAll(HWND hWnd, BOOL bUpdateWindow = FALSE) : m_bUpdateWindow(bUpdateWindow)
+	CRedrawAll(HWND hWnd, BOOL bUpdateWindow = FALSE) : m_hWnd(NULL), m_bUpdateWindow(bUpdateWindow)
 	{
 		m_hWnd = hWnd; 
 	}
 
 	virtual ~CRedrawAll()
 	{
-		if (m_hWnd)
+		if (m_hWnd && ::IsWindowVisible(m_hWnd))
 		{
 			::SendMessage(m_hWnd, WM_NCPAINT, 0, 0);
 			::InvalidateRect(m_hWnd, NULL, FALSE);

@@ -105,7 +105,7 @@ SOURCE=..\Shared\AutoFlag.cpp
 # Begin Source File
 
 SOURCE=..\3rdParty\Base64Coder.cpp
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /Yu
 # End Source File
 # Begin Source File
 
@@ -128,11 +128,23 @@ SOURCE=..\Shared\colorcombobox.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\3rdParty\ColourPicker.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\3rdParty\ColourPopup.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\ContentCtrl.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\Shared\ContentMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\contenttypecombobox.cpp
 # End Source File
 # Begin Source File
 
@@ -362,10 +374,6 @@ SOURCE=.\OffsetDatesDlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\olericheditctrl.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\Shared\OrderedTreeCtrl.cpp
 # End Source File
 # Begin Source File
@@ -376,6 +384,10 @@ SOURCE=..\Shared\OSVersion.cpp
 
 SOURCE=..\Shared\passworddialog.cpp
 # ADD CPP /I "..\ToDoList"
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\PreferencesBase.cpp
 # End Source File
 # Begin Source File
 
@@ -447,11 +459,19 @@ SOURCE=..\3rdParty\RegUtil.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\richeditbasectrl.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\RichEditHelper.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\Shared\RichEditNcBorder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\RichEditSpellCheck.cpp
 # End Source File
 # Begin Source File
 
@@ -558,6 +578,10 @@ SOURCE=.\TDLRiskComboBox.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\TDLSendTasksDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\TDLTransformDialog.cpp
 # End Source File
 # Begin Source File
@@ -631,6 +655,14 @@ SOURCE=..\Shared\TreeDragDropHelper.cpp
 # Begin Source File
 
 SOURCE=..\Shared\TreeSelectionHelper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\UIExtensionMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\UIExtensionUIHelper.cpp
 # End Source File
 # Begin Source File
 
@@ -714,11 +746,23 @@ SOURCE=..\Shared\ColorDef.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\3rdParty\ColourPicker.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\3rdParty\ColourPopup.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\ContentCtrl.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\Shared\ContentMgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\contenttypecombobox.h
 # End Source File
 # Begin Source File
 
@@ -938,6 +982,10 @@ SOURCE=..\Shared\ITransText.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\IUIExtension.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\KeyboardShortcutDisplayDlg.h
 # End Source File
 # Begin Source File
@@ -986,10 +1034,6 @@ SOURCE=.\OffsetDatesDlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\olericheditctrl.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\Shared\OrderedTreeCtrl.h
 # End Source File
 # Begin Source File
@@ -999,6 +1043,10 @@ SOURCE=..\Shared\OSVersion.h
 # Begin Source File
 
 SOURCE=..\Shared\passworddialog.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\PreferencesBase.h
 # End Source File
 # Begin Source File
 
@@ -1074,6 +1122,10 @@ SOURCE=.\Resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\richeditbasectrl.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\RichEditHelper.h
 # End Source File
 # Begin Source File
@@ -1082,11 +1134,19 @@ SOURCE=..\Shared\RichEditNcBorder.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\RichEditSpellCheck.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\RuntimeDlg.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\3rdParty\Schemadef.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\3rdParty\SendFileTo.h
 # End Source File
 # Begin Source File
 
@@ -1206,6 +1266,10 @@ SOURCE=.\tdlschemadef.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\TDLSendTasksDlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\TDLTransformDialog.h
 # End Source File
 # Begin Source File
@@ -1287,6 +1351,14 @@ SOURCE=..\Shared\TreeDragDropHelper.h
 # Begin Source File
 
 SOURCE=..\Shared\TreeSelectionHelper.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\UIExtensionMgr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\UIExtensionUIHelper.h
 # End Source File
 # Begin Source File
 

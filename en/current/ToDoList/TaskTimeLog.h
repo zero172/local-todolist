@@ -15,8 +15,8 @@ public:
 	CTaskTimeLog(LPCTSTR szRefPath);
 	virtual ~CTaskTimeLog();
 
-	BOOL LogTime(DWORD dwTaskID, double dTime, BOOL bLogSeparately);
-	double CalcAccumulatedTime(DWORD dwTaskID, BOOL bLogSeparately);
+	BOOL LogTime(DWORD dwTaskID, double dTime, BOOL bLogSeparately); // time must be in hours
+	double CalcAccumulatedTime(DWORD dwTaskID, BOOL bLogSeparately); // returns time in hours
 	CString GetLogPath(DWORD dwTaskID, BOOL bLogSeparately);
 
 protected:

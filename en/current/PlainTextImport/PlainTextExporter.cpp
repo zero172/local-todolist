@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "PlainTextImport.h"
 #include "PlainTextExporter.h"
+#include "optionsdlg.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -30,43 +31,44 @@ CPlainTextExporter::~CPlainTextExporter()
 
 bool CPlainTextExporter::Export(const ITaskList* pSrcTaskFile, const char* szDestFilePath)
 {
+	COptionsDlg dialog(FALSE);
+
+	if (dialog.DoModal() != IDOK)
+		return false;
+	
+	INDENT = dialog.GetIndent();
+
 	CStdioFile fileOut;
 
-	if (fileOut.Open(szDestFilePath, CFile::modeCreate | CFile::modeWrite))
+	if (!fileOut.Open(szDestFilePath, CFile::modeCreate | CFile::modeWrite))
+		return false;
+
+	// else
+	int nDepth = 0;
+	const ITaskList4* pITL4 = static_cast<const ITaskList4*>(pSrcTaskFile);
+	
+	// export report title as dummy task
+	if (dialog.GetWantProject())
 	{
-		int nDepth = 0;
-
-		// what follows is definitely a hack!
-		// but that's the joy of programming :)
-		if (AfxGetApp()->GetProfileInt("Preferences", "UseSpaceIndents", TRUE))
-			INDENT = CString(' ', AfxGetApp()->GetProfileInt("Preferences", "TextIndent", 2));
-		else
-			INDENT = '\t';
-
-		const ITaskList4* pITL4 = static_cast<const ITaskList4*>(pSrcTaskFile);
-
-		// export report title as dummy task
 		CString sTitle = pITL4->GetReportTitle();
-
+		
 		if (sTitle.IsEmpty())
 			sTitle = pITL4->GetProjectName();
-
-		if (!sTitle.IsEmpty())
-			nDepth++;
-
+		
+//		if (!sTitle.IsEmpty())
+//			nDepth++;
+	
 		// note: we export the title even if it's empty
 		// to maintain consistency with the importer that the first line
 		// is always the outline name
 		sTitle += ENDL;
 		fileOut.WriteString(sTitle);
-
-		// export first task
-		ExportTask(pSrcTaskFile, pSrcTaskFile->GetFirstTask(), fileOut, nDepth);
-
-		return true;
 	}
-
-	return false;
+	
+	// export first task
+	ExportTask(pSrcTaskFile, pSrcTaskFile->GetFirstTask(), fileOut, nDepth);
+	
+	return true;
 }
 
 void CPlainTextExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, 

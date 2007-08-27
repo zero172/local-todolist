@@ -47,6 +47,9 @@ public:
 	BOOL CopyImage(CBitmap* pBitmap);
 	BOOL Copy(HIMAGELIST hImageList);
 
+	static BOOL CopyImageFileToClipboard(LPCTSTR szImagePath, COLORREF crBack = -1);
+	BOOL CopyToClipboard(HWND hWnd = NULL) const;
+
 	BOOL ProcessImage(C32BitImageProcessor* pProcessor, COLORREF crMask = -1);
 	BOOL ProcessImage(C32BIPArray& aProcessors, COLORREF crMask = -1); // ordered list of processors
 

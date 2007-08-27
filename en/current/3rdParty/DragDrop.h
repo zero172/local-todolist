@@ -26,7 +26,7 @@ enum
 	DD_DROPEFFECT_LINK
 };
 
-// flags used for window type in window map
+// bit flags used for window type in window map
 enum
 {
     DDW_NONE   = 0x00,
@@ -87,6 +87,7 @@ struct DRAGDROPINFO
 {
 	HWND hwndSource;		// source window
 	HWND hwndTarget;		// target window
+	BOOL bLeftDrag;			// left or right button drag
 	CDragDropData* pData;	// data to drag/drop
 	POINT pt;				// current point (cursor) in client coords
 							// of whatever window is identified by WPARAM
@@ -119,10 +120,10 @@ public:
 	void RemoveWindow(HWND hwnd);
 
 	void DragShowNolock(BOOL bShow);
-	inline BOOL IsDragging() { return m_iState>=DRAGGING; }
+	inline BOOL IsDragging() { return m_iState>=LDRAGGING; }
     
 protected:
-	enum { NONE=0, CAPTURED, DRAGGING }; // internal states
+	enum { NONE=0, CAPTURED, LDRAGGING, RDRAGGING }; // internal states
 
 	// static stuff 
 	CWnd*			m_pMainWnd;				 // main window
@@ -139,9 +140,9 @@ protected:
 
 protected:
 	// mouse input handlers: can override if you derive
-	virtual BOOL OnLButtonDown(const MSG& msg);
+	virtual BOOL OnButtonDown(const MSG& msg);
+	virtual BOOL OnButtonUp(const MSG& msg);
 	virtual BOOL OnMouseMove(const MSG& msg);
-	virtual BOOL OnLButtonUp(const MSG& msg);
 
 	// internal helper functions
 	void SetState(UINT iState);

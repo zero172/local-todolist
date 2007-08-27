@@ -65,11 +65,11 @@ void CMaskEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 	default:
 		if (!m_sMask.IsEmpty())
 		{
-		if ((m_dwFlags & ME_EXCLUDE) && m_sMask.Find((char)nChar) != -1)
-			return;
+			if ((m_dwFlags & ME_EXCLUDE) && m_sMask.Find((char)nChar) != -1)
+				return;
 
-		else if (!(m_dwFlags & ME_EXCLUDE) && m_sMask.Find((char)nChar) == -1)
-			return;
+			else if (!(m_dwFlags & ME_EXCLUDE) && m_sMask.Find((char)nChar) == -1)
+				return;
 		}
 		break;
 	}

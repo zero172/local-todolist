@@ -32,8 +32,9 @@ public:
 	BOOL Initialize(CWnd* pOwner, BOOL bEnabled = TRUE, BOOL bAllowNcDrag = TRUE);
 	void EnableDragDrop(BOOL bEnable) { m_bEnabled = bEnable; }
 	UINT ProcessMessage(const MSG* pMsg);
-	
 
+	BOOL AddTargetWnd(CWnd* pWnd);
+	
 	BOOL MoveSelection(TDDH_MOVE nDirection);
 	BOOL CanMoveSelection(TDDH_MOVE nDirection) const;
 

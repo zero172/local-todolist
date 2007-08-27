@@ -123,6 +123,28 @@ CRect CDeferWndMove::OffsetCtrl(CWnd* pParent, UINT nCtrlID, int x, int y)
 	return CRect(0, 0, 0, 0);
 }
 
+CRect CDeferWndMove::MoveCtrl(CWnd* pParent, UINT nCtrlID, int x, int y)
+{
+	CWnd* pCtrl = pParent->GetDlgItem(nCtrlID);
+
+	if (pCtrl)
+	{
+		CRect rChild;
+		pCtrl->GetWindowRect(rChild);
+		pParent->ScreenToClient(rChild);
+
+		if (x || y)
+		{
+			rChild.OffsetRect(x - rChild.left, y - rChild.top);
+			MoveWindow(pCtrl, rChild); // our own version
+		}
+
+		return rChild;
+	}
+
+	return CRect(0, 0, 0, 0);
+}
+
 CRect CDeferWndMove::ResizeCtrl(CWnd* pParent, UINT nCtrlID, int cx, int cy)
 {
 	CWnd* pCtrl = pParent->GetDlgItem(nCtrlID);

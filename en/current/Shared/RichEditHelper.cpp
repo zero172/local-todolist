@@ -178,7 +178,7 @@ BOOL CReFileObject::Create(LPCTSTR szFilePath)
 
    formatEtc.cfFormat = 0;
    formatEtc.ptd = NULL;
-   formatEtc.dwAspect = DVASPECT_ICON;//DVASPECT_CONTENT;
+   formatEtc.dwAspect = DVASPECT_CONTENT;
    formatEtc.lindex = -1;
    formatEtc.tymed = TYMED_NULL;
 
@@ -188,7 +188,7 @@ BOOL CReFileObject::Create(LPCTSTR szFilePath)
    sc = ::OleCreateFromFile(clsid, T2OLE(szFilePath),
                            IID_IUnknown,
                            OLERENDER_DRAW,
-                           &formatEtc,
+                           NULL,//&formatEtc,
                            m_pClientSite,
                            m_pStorage,
                            (void**)&m_pObject);
@@ -204,6 +204,8 @@ BOOL CReFileObject::Create(LPCTSTR szFilePath)
 
    if (!m_pObject)
       Reset();
+   else
+	   OleSetContainedObject(m_pObject, TRUE);
 
    return (m_pObject != NULL);
 }

@@ -288,7 +288,7 @@ BOOL CTrayIcon::ModifyTip(UINT uIDNewTip)
 	{
 		nid.uFlags |= NIF_TIP;
 //fabio_2005
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
 		_tcsncpy_s(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
 #else
 		_tcsncpy(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
@@ -313,7 +313,7 @@ BOOL CTrayIcon::ModifyTip(LPCTSTR sNewTip)
 	{
 		nid.uFlags |= NIF_TIP;
 //fabio_2005
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
 		_tcsncpy_s(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
 #else
 		_tcsncpy(nid.szTip, (LPTSTR)(LPCTSTR)m_sTip, sizeof(nid.szTip)/sizeof(TCHAR));
@@ -454,7 +454,7 @@ BOOL CTrayIcon::ShowBalloon(LPCTSTR szText, LPCTSTR szTitle, DWORD dwIcon, UINT 
 	nid.uID = GetDlgCtrlID();
 	nid.uFlags = NIF_INFO;
 //fabio_2005
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
     _tcsncpy_s(nid.szInfo, szText, 256);
     if (szTitle)
         _tcsncpy_s(nid.szInfoTitle, szTitle, 64);

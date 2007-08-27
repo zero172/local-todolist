@@ -14,40 +14,14 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesGenPage property page
 
-IMPLEMENT_DYNCREATE(CPreferencesGenPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CPreferencesGenPage, CPreferencesPageBase)
 
-CPreferencesGenPage::CPreferencesGenPage() : CPropertyPage(CPreferencesGenPage::IDD), m_hkGlobal(TRUE)
+CPreferencesGenPage::CPreferencesGenPage() : 
+   CPreferencesPageBase(CPreferencesGenPage::IDD), m_hkGlobal(TRUE)
 {
 	//{{AFX_DATA_INIT(CPreferencesGenPage)
-	m_bAddFilesToMRU = FALSE;
-	m_bEnableTDLExtension = FALSE;
-	m_bDontAutoSaveUnsaved = FALSE;
-	m_bAutoCheckForUpdates = FALSE;
-	m_bEscapeMinimizes = FALSE;
-	m_bEnableTDLProtocol = FALSE;
-	m_bEnableDelayedLoading = FALSE;
 	//}}AFX_DATA_INIT
 
-	// load settings
-	m_bAlwaysOnTop = AfxGetApp()->GetProfileInt("Preferences", "AlwaysOnTop", FALSE);
-	m_bUseSysTray = AfxGetApp()->GetProfileInt("Preferences", "UseSysTray", FALSE);
-	m_bAutoSaveOnSysTray = AfxGetApp()->GetProfileInt("Preferences", "AutoSave", TRUE);
-	m_bConfirmDelete = AfxGetApp()->GetProfileInt("Preferences", "ConfirmDelete", TRUE);
-	m_bConfirmSaveOnExit = AfxGetApp()->GetProfileInt("Preferences", "ConfirmSaveOnExit", TRUE);
-	m_bMultiInstance = AfxGetApp()->GetProfileInt("Preferences", "MultiInstance", FALSE);
-	m_bShowOnStartup = AfxGetApp()->GetProfileInt("Preferences", "ShowOnStartup", TRUE);
-	m_nSysTrayOption = AfxGetApp()->GetProfileInt("Preferences", "SysTrayOption", STO_ONCLOSE);
-	m_bToggleTrayVisibility = AfxGetApp()->GetProfileInt("Preferences", "ToggleTrayVisibility", FALSE);
-	m_dwGlobalHotkey = AfxGetApp()->GetProfileInt("Preferences", "GlobalHotkey", 0);
-	m_bSpecifyGlobalHotkey = (m_dwGlobalHotkey ? 1 : 0);
-	m_bAddFilesToMRU = AfxGetApp()->GetProfileInt("Preferences", "AddFilesToMRU", TRUE);
-	m_bEnableTDLExtension = AfxGetApp()->GetProfileInt("Preferences", "EnableTDLExtension", TRUE);
-	m_bEnableTDLProtocol = AfxGetApp()->GetProfileInt("Preferences", "EnableTDLProtocol", FALSE);
-	m_bDontAutoSaveUnsaved = AfxGetApp()->GetProfileInt("Preferences", "DontAutoSaveUnsaved", FALSE);
-	m_bAutoCheckForUpdates = AfxGetApp()->GetProfileInt("Preferences", "AutoCheckForUpdates", FALSE);
-	m_bEscapeMinimizes = AfxGetApp()->GetProfileInt("Preferences", "EscapeMinimizes", TRUE);
-	m_bEnableDelayedLoading = AfxGetApp()->GetProfileInt("Preferences", "EnableDelayedLoading", TRUE);
-//	m_b = AfxGetApp()->GetProfileInt("Preferences", "", TRUE);
 }
 
 CPreferencesGenPage::~CPreferencesGenPage()
@@ -56,7 +30,7 @@ CPreferencesGenPage::~CPreferencesGenPage()
 
 void CPreferencesGenPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesGenPage)
 	DDX_Control(pDX, IDC_GLOBALHOTKEY, m_hkGlobal);
 	DDX_Check(pDX, IDC_MULTIINSTANCE, m_bMultiInstance);
@@ -66,7 +40,6 @@ void CPreferencesGenPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SPECIFYGLOBALHOTKEY, m_bSpecifyGlobalHotkey);
 	DDX_Check(pDX, IDC_ADDFILESTOMRU, m_bAddFilesToMRU);
 	DDX_Check(pDX, IDC_ENABLETDLEXTENSION, m_bEnableTDLExtension);
-	DDX_Check(pDX, IDC_DONTAUTOSAVEUNSAVED, m_bDontAutoSaveUnsaved);
 	DDX_Check(pDX, IDC_CHECKFORUPDATES, m_bAutoCheckForUpdates);
 	DDX_Check(pDX, IDC_ESCAPEMINIMIZES, m_bEscapeMinimizes);
 	DDX_Check(pDX, IDC_ENABLETDLPROTOCOL, m_bEnableTDLProtocol);
@@ -74,7 +47,6 @@ void CPreferencesGenPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 	DDX_Check(pDX, IDC_ALWAYSONTOP, m_bAlwaysOnTop);
 	DDX_Check(pDX, IDC_USESYSTRAY, m_bUseSysTray);
-	DDX_Check(pDX, IDC_AUTOSAVEONSYSTRAY, m_bAutoSaveOnSysTray);
 	DDX_Check(pDX, IDC_CONFIRMDELETE, m_bConfirmDelete);
 	DDX_Check(pDX, IDC_CONFIRMSAVEONEXIT, m_bConfirmSaveOnExit);
 
@@ -89,12 +61,11 @@ void CPreferencesGenPage::DoDataExchange(CDataExchange* pDX)
 		m_hkGlobal.SetHotKey(m_dwGlobalHotkey);
 }
 
-BEGIN_MESSAGE_MAP(CPreferencesGenPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesGenPage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesGenPage)
 	ON_BN_CLICKED(IDC_SPECIFYGLOBALHOTKEY, OnSpecifyglobalhotkey)
 	ON_BN_CLICKED(IDC_MULTIINSTANCE, OnMultiinstance)
 	ON_BN_CLICKED(IDC_CLEARMRU, OnClearMRU)
-	ON_BN_CLICKED(IDC_AUTOSAVEONSYSTRAY, OnAutosaveonsystray)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_USESYSTRAY, OnUseSystray)
 END_MESSAGE_MAP()
@@ -106,8 +77,6 @@ BOOL CPreferencesGenPage::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	GetDlgItem(IDC_AUTOSAVEONSYSTRAY)->EnableWindow(m_bUseSysTray);
-	GetDlgItem(IDC_DONTAUTOSAVEUNSAVED)->EnableWindow(m_bUseSysTray && m_bAutoSaveOnSysTray);
 	GetDlgItem(IDC_SYSTRAYOPTION)->EnableWindow(m_bUseSysTray);
 	GetDlgItem(IDC_TOGGLETRAYVISIBILITY)->EnableWindow(m_bUseSysTray);
 	GetDlgItem(IDC_CONFIRMSAVEONEXIT)->EnableWindow(!m_bUseSysTray);
@@ -123,39 +92,11 @@ void CPreferencesGenPage::OnUseSystray()
 {
 	UpdateData();
 
-	GetDlgItem(IDC_AUTOSAVEONSYSTRAY)->EnableWindow(m_bUseSysTray);
-	GetDlgItem(IDC_DONTAUTOSAVEUNSAVED)->EnableWindow(m_bUseSysTray && m_bAutoSaveOnSysTray);
 	GetDlgItem(IDC_SYSTRAYOPTION)->EnableWindow(m_bUseSysTray);
 	GetDlgItem(IDC_TOGGLETRAYVISIBILITY)->EnableWindow(m_bUseSysTray);
 
 	GetDlgItem(IDC_CONFIRMSAVEONEXIT)->EnableWindow(!m_bUseSysTray); // mutually exclusive
 }
-
-void CPreferencesGenPage::OnOK() 
-{
-	CPropertyPage::OnOK();
-	
-	// save settings
-	AfxGetApp()->WriteProfileInt("Preferences", "AlwaysOnTop", m_bAlwaysOnTop);
-	AfxGetApp()->WriteProfileInt("Preferences", "UseSysTray", m_bUseSysTray);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoSave", m_bAutoSaveOnSysTray);
-	AfxGetApp()->WriteProfileInt("Preferences", "ConfirmDelete", m_bConfirmDelete);
-	AfxGetApp()->WriteProfileInt("Preferences", "ConfirmSaveOnExit", m_bConfirmSaveOnExit);
-	AfxGetApp()->WriteProfileInt("Preferences", "ShowOnStartup", m_bShowOnStartup);
-	AfxGetApp()->WriteProfileInt("Preferences", "SysTrayOption", m_nSysTrayOption);
-	AfxGetApp()->WriteProfileInt("Preferences", "ToggleTrayVisibility", m_bToggleTrayVisibility);
-	AfxGetApp()->WriteProfileInt("Preferences", "MultiInstance", m_bMultiInstance);
-	AfxGetApp()->WriteProfileInt("Preferences", "GlobalHotkey", (m_bSpecifyGlobalHotkey ? m_dwGlobalHotkey : 0));
-	AfxGetApp()->WriteProfileInt("Preferences", "AddFilesToMRU", m_bAddFilesToMRU);
-	AfxGetApp()->WriteProfileInt("Preferences", "EnableTDLExtension", m_bEnableTDLExtension);
-	AfxGetApp()->WriteProfileInt("Preferences", "EnableTDLProtocol", m_bEnableTDLProtocol);
-	AfxGetApp()->WriteProfileInt("Preferences", "DontAutoSaveUnsaved", m_bDontAutoSaveUnsaved);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoCheckForUpdates", m_bAutoCheckForUpdates);
-	AfxGetApp()->WriteProfileInt("Preferences", "EscapeMinimizes", m_bEscapeMinimizes);
-	AfxGetApp()->WriteProfileInt("Preferences", "EnableDelayedLoading", m_bEnableDelayedLoading);
-//	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
-}
-
 
 void CPreferencesGenPage::OnSpecifyglobalhotkey() 
 {
@@ -178,9 +119,45 @@ void CPreferencesGenPage::OnClearMRU()
    AfxGetMainWnd()->SendMessage(WM_PGP_CLEARMRU);
 }
 
-void CPreferencesGenPage::OnAutosaveonsystray() 
+void CPreferencesGenPage::LoadPreferences(const CPreferencesStorage& prefs)
 {
-	UpdateData();
-	
-	GetDlgItem(IDC_DONTAUTOSAVEUNSAVED)->EnableWindow(m_bUseSysTray && m_bAutoSaveOnSysTray);
+	// load settings
+	m_bAlwaysOnTop = prefs.GetProfileInt("Preferences", "AlwaysOnTop", FALSE);
+	m_bUseSysTray = prefs.GetProfileInt("Preferences", "UseSysTray", FALSE);
+	m_bConfirmDelete = prefs.GetProfileInt("Preferences", "ConfirmDelete", TRUE);
+	m_bConfirmSaveOnExit = prefs.GetProfileInt("Preferences", "ConfirmSaveOnExit", TRUE);
+	m_bMultiInstance = prefs.GetProfileInt("Preferences", "MultiInstance", FALSE);
+	m_bShowOnStartup = prefs.GetProfileInt("Preferences", "ShowOnStartup", TRUE);
+	m_nSysTrayOption = prefs.GetProfileInt("Preferences", "SysTrayOption", STO_ONCLOSE);
+	m_bToggleTrayVisibility = prefs.GetProfileInt("Preferences", "ToggleTrayVisibility", FALSE);
+	m_dwGlobalHotkey = prefs.GetProfileInt("Preferences", "GlobalHotkey", 0);
+	m_bSpecifyGlobalHotkey = (m_dwGlobalHotkey ? 1 : 0);
+	m_bAddFilesToMRU = prefs.GetProfileInt("Preferences", "AddFilesToMRU", TRUE);
+	m_bEnableTDLExtension = prefs.GetProfileInt("Preferences", "EnableTDLExtension", TRUE);
+	m_bEnableTDLProtocol = prefs.GetProfileInt("Preferences", "EnableTDLProtocol", FALSE);
+	m_bAutoCheckForUpdates = prefs.GetProfileInt("Preferences", "AutoCheckForUpdates", FALSE);
+	m_bEscapeMinimizes = prefs.GetProfileInt("Preferences", "EscapeMinimizes", TRUE);
+	m_bEnableDelayedLoading = prefs.GetProfileInt("Preferences", "EnableDelayedLoading", TRUE);
+//	m_b = prefs.GetProfileInt("Preferences", "", TRUE);
+}
+
+void CPreferencesGenPage::SavePreferences(CPreferencesStorage& prefs)
+{
+	// save settings
+	prefs.WriteProfileInt("Preferences", "AlwaysOnTop", m_bAlwaysOnTop);
+	prefs.WriteProfileInt("Preferences", "UseSysTray", m_bUseSysTray);
+	prefs.WriteProfileInt("Preferences", "ConfirmDelete", m_bConfirmDelete);
+	prefs.WriteProfileInt("Preferences", "ConfirmSaveOnExit", m_bConfirmSaveOnExit);
+	prefs.WriteProfileInt("Preferences", "ShowOnStartup", m_bShowOnStartup);
+	prefs.WriteProfileInt("Preferences", "SysTrayOption", m_nSysTrayOption);
+	prefs.WriteProfileInt("Preferences", "ToggleTrayVisibility", m_bToggleTrayVisibility);
+	prefs.WriteProfileInt("Preferences", "MultiInstance", m_bMultiInstance);
+	prefs.WriteProfileInt("Preferences", "GlobalHotkey", (m_bSpecifyGlobalHotkey ? m_dwGlobalHotkey : 0));
+	prefs.WriteProfileInt("Preferences", "AddFilesToMRU", m_bAddFilesToMRU);
+	prefs.WriteProfileInt("Preferences", "EnableTDLExtension", m_bEnableTDLExtension);
+	prefs.WriteProfileInt("Preferences", "EnableTDLProtocol", m_bEnableTDLProtocol);
+	prefs.WriteProfileInt("Preferences", "AutoCheckForUpdates", m_bAutoCheckForUpdates);
+	prefs.WriteProfileInt("Preferences", "EscapeMinimizes", m_bEscapeMinimizes);
+	prefs.WriteProfileInt("Preferences", "EnableDelayedLoading", m_bEnableDelayedLoading);
+//	prefs.WriteProfileInt("Preferences", "", m_b);
 }

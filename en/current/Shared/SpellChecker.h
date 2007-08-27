@@ -12,7 +12,7 @@
 #include "..\SHARED\ISpellCheck.h"
 #include "..\3rdparty\myspell\MySpell.hxx"
 
-class CSpellChecker : public ISpellCheck, protected MySpell
+class CSpellChecker : public ISpellChecker, protected MySpell
 {
 public:
 	CSpellChecker(const char* szAffPath, const char* szDicPath);

@@ -83,7 +83,8 @@ TODOITEM::TODOITEM(const TODOITEM& tdi) :
 	sCreatedBy(tdi.sCreatedBy),
 	nRisk(tdi.nRisk),
 	sExternalID(tdi.sExternalID),
-	trRecurrence(tdi.trRecurrence)
+	trRecurrence(tdi.trRecurrence),
+	sCommentsTypeID(tdi.sCommentsTypeID)
 { 
     if (dateCreated.m_dt == 0.0)
 		dateCreated = COleDateTime::GetCurrentTime();
@@ -155,7 +156,7 @@ void TODOITEM::SetModified()
 
 void TODOITEM::ResetCalcs() const 
 {
-	nCalcPriority = nCalcPercent = nCalcRisk = -1;
+	nCalcPriority = nCalcPriorityIncDue = nCalcPercent = nCalcRisk = -1;
 	dCalcTimeEstimate = dCalcTimeSpent = dCalcCost = -1;
 	dateEarliestDue.m_dt = -1;
 	bGoodAsDone = bDue = -1;
@@ -178,7 +179,6 @@ BOOL TODOITEM::GetNextOccurence(COleDateTime& dtNext) const
 		return trRecurrence.GetNextOccurence(dateDue, dtNext);
 
 	// else
-//	return trRecurrence.GetNextOccurence(dateDone, dtNext);
 	return trRecurrence.GetNextOccurence(COleDateTime::GetCurrentTime(), dtNext);
 }
 
@@ -523,7 +523,7 @@ BOOL CToDoCtrlData::TaskMatches(const CStringArray& aItems, const SEARCHPARAMS& 
 	return bMatch;
 }
 
-BOOL CToDoCtrlData::TaskMatches(const double& dValue, const SEARCHPARAMS& params, SEARCHRESULT& result)
+BOOL CToDoCtrlData::TaskMatches(double dValue, const SEARCHPARAMS& params, SEARCHRESULT& result)
 {
 	if (dValue >= params.dFrom && dValue <= params.dTo)
 	{
@@ -567,13 +567,18 @@ CString CToDoCtrlData::GetTaskComments(DWORD dwID) const
 	return "";
 }
 
-CString CToDoCtrlData::GetTaskCustomComments(DWORD dwID) const
+CString CToDoCtrlData::GetTaskCustomComments(DWORD dwID, CString& sCommentsTypeID) const
 {
 	TODOITEM* pTDI = GetTask(dwID);
 	
 	if (pTDI)
+	{
+		sCommentsTypeID = pTDI->sCommentsTypeID;
 		return pTDI->sCustomComments;
+	}
 	
+	// else
+	sCommentsTypeID.Empty();
 	return "";
 }
 
@@ -1400,7 +1405,7 @@ int CToDoCtrlData::Compare(int nNum1, int nNum2)
     return (nNum1 - nNum2);
 }
 
-int CToDoCtrlData::Compare(const double& dNum1, const double& dNum2)
+int CToDoCtrlData::Compare(double dNum1, double dNum2)
 {
     return (dNum1 < dNum2) ? -1 : (dNum1 > dNum2) ? 1 : 0;
 }
@@ -1458,9 +1463,10 @@ BOOL CToDoCtrlData::GetSubtaskTotals(HTREEITEM hti, const TODOITEM* pTDI,
 	{
 		nSubtasksCount = pTDI->nSubtasksCount;
 		nSubtasksDone = pTDI->nSubtasksDone;
-      return TRUE;
+		return TRUE;
 	}
 	
+	TRACE ("CToDoCtrlData::GetSubtaskTotals(recalc)\n");
 	nSubtasksDone = nSubtasksCount = 0;
 	
 	HTREEITEM htiChild = m_tree.GetChildItem(hti);
@@ -1488,6 +1494,7 @@ int CToDoCtrlData::CalcPercentDone(HTREEITEM hti, const TODOITEM* pTDI) const
 	if (pTDI->nCalcPercent >= 0)
 		return pTDI->nCalcPercent;
 	
+	TRACE ("CToDoCtrlData::CalcPercentDone(recalc)\n");
 	int nPercent = 0;
 	
 	if (!HasStyle(TDCS_AVERAGEPERCENTSUBCOMPLETION))
@@ -1603,6 +1610,7 @@ double CToDoCtrlData::CalcCost(HTREEITEM hti, const TODOITEM* pTDI) const
 	// update calc'ed value in hours
 	if (pTDI->dCalcCost < 0)
 	{	
+		TRACE ("CToDoCtrlData::CalcCost(recalc)\n");
 		double dCost = pTDI->dCost; // parent's own cost
 		
 		if (m_tree.ItemHasChildren(hti))
@@ -1629,6 +1637,7 @@ double CToDoCtrlData::CalcTimeEstimate(HTREEITEM hti, const TODOITEM* pTDI, int 
 	// update calc'ed value in hours
 	if (pTDI->dCalcTimeEstimate < 0)
 	{	
+		TRACE ("CToDoCtrlData::CalcTimeEstimate(recalc)\n");
 		double dTime = 0;
 		BOOL bIsParent = m_tree.ItemHasChildren(hti);
 		
@@ -1671,6 +1680,7 @@ double CToDoCtrlData::CalcTimeSpent(HTREEITEM hti, const TODOITEM* pTDI, int nUn
 	// update calc'ed value in hours
 	if (pTDI->dCalcTimeSpent < 0)
 	{
+		TRACE ("CToDoCtrlData::CalcTimeSpent(recalc)\n");
 		double dTime = 0;
 		BOOL bIsParent = m_tree.ItemHasChildren(hti);
 		
@@ -2091,6 +2101,7 @@ double CToDoCtrlData::GetEarliestDueDate(HTREEITEM hti, const TODOITEM* pTDI, BO
 	if (pTDI->dateEarliestDue.m_dt >= 0)
 		return pTDI->dateEarliestDue;
 	
+	TRACE ("CToDoCtrlData::GetEarliestDueDate(recalc)\n");
 	double dEarliest = pTDI->dateDue;
 	
 	if (IsTaskDone(hti, TDCCHECKCHILDREN))
@@ -2127,12 +2138,19 @@ int CToDoCtrlData::GetHighestPriority(HTREEITEM hti, const TODOITEM* pTDI, BOOL 
 	
 	// some optimizations
 	// try pre-calculated value first
-	if (!bIncludeDue && pTDI->nCalcPriority != -1)
+	if (bIncludeDue)
+	{
+		if (pTDI->nCalcPriorityIncDue != -1)
+			return pTDI->nCalcPriorityIncDue;
+	}
+	else if (pTDI->nCalcPriority != -1)
 		return pTDI->nCalcPriority;
 	
+	TRACE ("CToDoCtrlData::GetHighestPriority(recalc)\n");
 	int nHighest = pTDI->nPriority;
 	
-	if (pTDI->IsDone())
+	// need to recalc
+	if (pTDI->IsDone() && !HasStyle(TDCS_INCLUDEDONEINPRIORITYCALC))
 		nHighest = min(nHighest, MIN_TDPRIORITY);
 
 	else if (nHighest < MAX_TDPRIORITY)
@@ -2164,7 +2182,9 @@ int CToDoCtrlData::GetHighestPriority(HTREEITEM hti, const TODOITEM* pTDI, BOOL 
 	}
 	
 	// update calc'ed value
-	if (!bIncludeDue)
+	if (bIncludeDue)
+		pTDI->nCalcPriorityIncDue = nHighest;
+	else
 		pTDI->nCalcPriority = nHighest;
 	
 	return nHighest;
@@ -2180,6 +2200,7 @@ int CToDoCtrlData::GetHighestRisk(HTREEITEM hti, const TODOITEM* pTDI) const
 	if (pTDI->nCalcRisk != -1)
 		return pTDI->nCalcRisk;
 	
+	TRACE ("CToDoCtrlData::GetHighestRisk(recalc)\n");
 	int nHighest = pTDI->nRisk;
 	
 	if (pTDI->IsDone())
@@ -2315,7 +2336,6 @@ BOOL CToDoCtrlData::SetTaskAttributeAsParent(HTREEITEM hti, TDC_ATTRIBUTE nAttri
 		break;
 		
 	case TDCA_ALLOCTO:
-//		nRes = SetTaskAllocTo(dwID, GetTaskAllocTo(dwParentID));
 		{
 			CStringArray aAllocTo;
 			GetTaskAllocTo(dwParentID, aAllocTo);
@@ -2487,7 +2507,7 @@ int CToDoCtrlData::SetTaskComments(DWORD dwID, LPCTSTR szComments)
 	return SET_FAILED;
 }
 
-int CToDoCtrlData::SetTaskCustomComments(DWORD dwID, const CString& sComments)
+int CToDoCtrlData::SetTaskCustomComments(DWORD dwID, const CString& sComments, LPCTSTR szCommentsTypeID)
 {
 	if (dwID)
 	{
@@ -2495,11 +2515,19 @@ int CToDoCtrlData::SetTaskCustomComments(DWORD dwID, const CString& sComments)
 		
 		if (pTDI)
 		{
-			if (pTDI->sCustomComments.GetLength() != sComments.GetLength() ||
+			if (pTDI->sCommentsTypeID != szCommentsTypeID ||
+				pTDI->sCustomComments.GetLength() != sComments.GetLength() ||
 				memcmp((LPCTSTR)pTDI->sCustomComments, (LPCTSTR)sComments, sComments.GetLength()))
 			{
-				pTDI->sCustomComments = sComments;
+				// if we're changing comments type we clear the custom comments
+				if (pTDI->sCommentsTypeID != szCommentsTypeID)
+					pTDI->sCustomComments.Empty();
+				else
+					pTDI->sCustomComments = sComments;
+
+				pTDI->sCommentsTypeID = szCommentsTypeID;
 				pTDI->SetModified();
+
 				return SET_CHANGE;
 			}
 			return SET_NOCHANGE;
@@ -2760,7 +2788,7 @@ int CToDoCtrlData::SetTaskPercent(DWORD dwID, int nPercent)
 	return SET_FAILED;
 }
 
-int CToDoCtrlData::SetTaskCost(DWORD dwID, const double& dCost)
+int CToDoCtrlData::SetTaskCost(DWORD dwID, double dCost)
 {
 	if (dCost < 0)
 		return FALSE;
@@ -2785,7 +2813,7 @@ int CToDoCtrlData::SetTaskCost(DWORD dwID, const double& dCost)
 	return SET_FAILED;
 }
 
-int CToDoCtrlData::SetTaskTimeEstimate(DWORD dwID, const double& dTime, int nUnits)
+int CToDoCtrlData::SetTaskTimeEstimate(DWORD dwID, double dTime, int nUnits)
 {
 	if (dTime < 0)
 		return FALSE;
@@ -2811,7 +2839,7 @@ int CToDoCtrlData::SetTaskTimeEstimate(DWORD dwID, const double& dTime, int nUni
 	return SET_FAILED;
 }
 
-int CToDoCtrlData::SetTaskTimeSpent(DWORD dwID, const double& dTime, int nUnits)
+int CToDoCtrlData::SetTaskTimeSpent(DWORD dwID, double dTime, int nUnits)
 {
 	if (dTime < 0)
 		return FALSE;

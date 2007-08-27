@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W4 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_EXPORTING" /D "_AFXEXT" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W4 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_EXPORTING" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "NDEBUG" /d "_AFXDLL"
@@ -54,7 +54,7 @@ LINK32=link.exe
 # ADD LINK32 /nologo /subsystem:windows /dll /machine:I386
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=mkdir ..\ToDoList	mkdir ..\ToDoList\release	copy release\rtfcontentctrl.dll ..\todolist\release /y
+PostBuild_Cmds=mkdir ..\ToDoList	mkdir ..\ToDoList\release	copy release\rtfcontentctrl.dll ..\todolist\release /y	copy release\rtfcontentctrlloc.dll ..\todolist\release /y
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "RTFContentCtrl - Win32 Debug"
@@ -71,7 +71,7 @@ PostBuild_Cmds=mkdir ..\ToDoList	mkdir ..\ToDoList\release	copy release\rtfconte
 # PROP Target_Dir ""
 F90=df.exe
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_EXPORTING" /D "_AFXEXT" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_EXPORTING" /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "_DEBUG" /d "_AFXDLL"
@@ -84,7 +84,7 @@ LINK32=link.exe
 # ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=mkdir ..\ToDoList	mkdir ..\ToDoList\debug	copy debug\rtfcontentctrl.dll ..\todolist\debug /y
+PostBuild_Cmds=mkdir ..\ToDoList	mkdir ..\ToDoList\debug	copy debug\rtfcontentctrl.dll ..\todolist\debug /y	copy debug\rtfcontentctrlloc.dll ..\todolist\debug /y
 # End Special Build Tool
 
 !ENDIF 
@@ -118,6 +118,10 @@ SOURCE=..\Shared\enfiledialog.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\Shared\EnString.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\Shared\entoolbar.cpp
 # End Source File
 # Begin Source File
@@ -138,11 +142,11 @@ SOURCE=..\Shared\Misc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\olericheditctrl.cpp
+SOURCE=..\Shared\OSVersion.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\Shared\OSVersion.cpp
+SOURCE=..\Shared\richeditbasectrl.cpp
 # End Source File
 # Begin Source File
 
@@ -151,6 +155,10 @@ SOURCE=..\Shared\RichEditHelper.cpp
 # Begin Source File
 
 SOURCE=..\Shared\RichEditNcBorder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\Shared\RichEditSpellCheck.cpp
 # End Source File
 # Begin Source File
 
@@ -276,10 +284,6 @@ SOURCE=.\ids.h
 # Begin Source File
 
 SOURCE=..\Shared\Misc.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\Shared\olericheditctrl.h
 # End Source File
 # Begin Source File
 

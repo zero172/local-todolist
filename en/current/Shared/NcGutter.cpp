@@ -24,15 +24,15 @@ UINT BORDER = 0; // set in WM_NCCALCSIZE so not const
 const UINT SORTWIDTH = 10;
 const UINT MINCLIENTWIDTH = GetSystemMetrics(SM_CXVSCROLL) * 4; 
 
-CNcGutter::CNcGutter() : 
+CNcGutter::CNcGutter(DWORD dwStyles) : 
 	m_bSetRedraw(TRUE), 
-	m_bShowHeader(TRUE), 
 	m_bFirstRecalc(TRUE),
 	m_nHeaderColDown(-1),
-	m_dwButtonDownItem(0)
+	m_dwButtonDownItem(0),
+	m_dwStyles(dwStyles)
 {
 	// add client header hot rect placeholder
-	if (m_bShowHeader && CThemed().AreControlsThemed())
+	if (HasStyle(NCGS_SHOWHEADER) && CThemed().AreControlsThemed())
 		m_hotTrack.AddRect();
 
 	// client column is always last so we add it first
@@ -64,13 +64,47 @@ BOOL CNcGutter::Initialize(HWND hwnd)
 		RecalcGutter();
 
 		// hot tracking
-		if (m_bShowHeader && CThemed().AreControlsThemed())
+		if (HasStyle(NCGS_SHOWHEADER) && CThemed().AreControlsThemed())
 			m_hotTrack.Initialize(GetCWnd());
 
 		return TRUE;
 	}
 
 	return FALSE;
+}
+
+void CNcGutter::EnableStyle(DWORD dwStyle, BOOL bEnable)
+{
+	if (bEnable)
+		m_dwStyles |= dwStyle;
+	else
+		m_dwStyles &= ~dwStyle;
+
+	if (!IsHooked() || m_bFirstRecalc)
+		return;
+
+	// special handling
+	if (dwStyle & NCGS_SHOWHEADER)
+	{
+		if (CThemed().AreControlsThemed())
+		{
+			if (!bEnable)
+				m_hotTrack.Reset();
+			else
+			{
+				m_hotTrack.Initialize(GetCWnd());
+				
+				for (int nCol = 0; nCol < m_aColumns.GetSize(); nCol++)
+					m_hotTrack.AddRect();
+				
+				UpdateHeaderHotRects();
+			}
+		}
+
+		PostMessage(WM_NCG_FORCERESIZE);
+	}
+	else if (dwStyle & NCGS_RIGHTCOLUMNS)
+		PostMessage(WM_NCG_FORCERESIZE);
 }
 
 BOOL CNcGutter::AddColumn(UINT nColID, LPCTSTR szTitle, UINT nWidth, UINT nTextAlign)
@@ -289,7 +323,7 @@ void CNcGutter::RecalcGutter(BOOL bForceRedraw)
 		if (nNewWidth != nCurWidth || m_bFirstRecalc)
 		{
 			m_bFirstRecalc = FALSE;
-			PostMessage(WM_NCG_FORCERESIZE, nCurWidth, nNewWidth);
+			PostMessage(WM_NCG_FORCERESIZE);
 
 			// notify parent then hook window
 			UINT nID = GetDlgCtrlID();
@@ -368,30 +402,6 @@ BOOL CNcGutter::RecalcColumn(UINT nColID)
 	}
 
 	return FALSE;
-}
-
-void CNcGutter::ShowHeader(BOOL bShow)
-{
-	if (m_bShowHeader != bShow)
-	{
-		if (CThemed().AreControlsThemed())
-		{
-			if (!bShow)
-				m_hotTrack.Reset();
-			else
-			{
-				m_hotTrack.Initialize(GetCWnd());
-
-				for (int nCol = 0; nCol < m_aColumns.GetSize(); nCol++)
-					m_hotTrack.AddRect();
-
-				UpdateHeaderHotRects();
-			}
-		}
-
-		m_bShowHeader = bShow;
-		PostMessage(WM_NCG_FORCERESIZE);
-	}
 }
 
 int CNcGutter::GetGutterWidth() const
@@ -532,9 +542,13 @@ LRESULT CNcGutter::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_NCHITTEST:
 		return OnNcHitTest(lp);
 
-	case WM_PAINT:
-		OnPaint();
-		return 0;
+ 	case WM_PAINT:
+		if (HasStyle(NCGS_DOUBLEBUFFERCLIENT))
+		{
+ 			OnPaint();
+ 			return 0;
+		}
+		break;
 
 	case WM_NCCALCSIZE:
 		if (wp)
@@ -585,7 +599,12 @@ LRESULT CNcGutter::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	// registered messages must be handled explicitly
 	if (msg == WM_NCG_FORCERESIZE)
-		return SetWindowPos(hRealWnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER); 
+	{
+		LRESULT lr  = SetWindowPos(hRealWnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER); 
+		UpdateHeaderHotRects();
+
+		return lr;
+	}
 
 	else if (msg == WM_HTHOTCHANGE)
 		OnHotChange(wp, lp);
@@ -613,9 +632,12 @@ LRESULT CNcGutter::OnNcCalcSize(LPNCCALCSIZE_PARAMS lpncsp)
 	UINT nGutterWidth = GetGutterWidth();
 	nGutterWidth = min(rWindow.Width() - MINCLIENTWIDTH - BORDER * 2, nGutterWidth);
 	
-	lpncsp->rgrc[0].left += nGutterWidth;
+	if (HasStyle(NCGS_RIGHTCOLUMNS))
+		lpncsp->rgrc[0].right -= nGutterWidth;
+	else
+		lpncsp->rgrc[0].left += nGutterWidth;
 	
-	if (m_bShowHeader)
+	if (HasStyle(NCGS_SHOWHEADER))
     {
         if (HEADERHEIGHT == 0)
             HEADERHEIGHT = CDlgUnits(GetParent()).ToPixelsY(11); // handles font sizes
@@ -717,6 +739,8 @@ BOOL CNcGutter::WantsRedraw(UINT nMsg, WPARAM wp, LPARAM lp, LRESULT& lr)
 
 void CNcGutter::OnPaint()
 {
+	ASSERT (HasStyle(NCGS_DOUBLEBUFFERCLIENT));
+
 	PAINTSTRUCT ps;
 			
 	HDC hdc = ::BeginPaint(GetHwnd(), &ps); // device context for painting
@@ -736,6 +760,24 @@ LRESULT CNcGutter::OnNcHitTest(CPoint point)
 	
 	switch (lHitTest)
 	{
+	case HTVSCROLL:
+		// there seems to be a bug in windows that decides that if a window has a 
+		// vertical scrollbar then everything to the right of the client area must
+		// be the scrollbar so we need to double check if we have right side columns
+		if (HasStyle(NCGS_RIGHTCOLUMNS) && (GetStyle() & WS_VSCROLL))
+		{
+			CRect rClient;
+			GetWindowClientRect(rClient, TRUE);
+
+			CRect rVScroll(rClient);
+			rVScroll.left = rVScroll.right;
+			rVScroll.right += ::GetSystemMetrics(SM_CXVSCROLL);
+
+			if (!rVScroll.PtInRect(point))
+				return HTBORDER;
+		}
+		break;
+
 	case HTNOWHERE:
 		return HTBORDER;
 		
@@ -922,33 +964,19 @@ void CNcGutter::OnNcButtonUp(UINT nMsg, CPoint point)
 
 void CNcGutter::OnHotChange(int nPrevHot, int nHot)
 {
-	ASSERT (m_bShowHeader);
+	ASSERT (HasStyle(NCGS_SHOWHEADER));
 
-	if (m_bShowHeader)
+	if (HasStyle(NCGS_SHOWHEADER))
 	{
-		CRect rWindow, rClient;
+		CRect rWindow, rClient, rHeader;
 
-		// convert rects to window coords
-		GetWindowRect(rWindow);
-		GetClientRect(rClient);
-
-		CPoint ptWindowTL = rWindow.TopLeft();
-
-		ClientToScreen(rClient);
-		rClient.OffsetRect(-ptWindowTL);
-		rWindow.OffsetRect(-ptWindowTL);
-
-		// allow for client edge, etc
-		rWindow.DeflateRect(BORDER, BORDER);
-
-		// adjust top of window rect to be top of header (if showing)
-		CRect rHeader(rWindow);
-		rHeader.bottom = rClient.top;
-		rHeader.top = rHeader.bottom - HEADERHEIGHT;
+		// get rects in window coords
+		GetWindowRectEx(rWindow, FALSE);
+		GetWindowClientRect(rClient, FALSE);
 
 		CWindowDC dc(GetCWnd());
-		CPoint ptCursor(::GetMessagePos());
-		ptCursor.Offset(-ptWindowTL);
+		CPoint ptCursor;
+		GetCursorPos(ptCursor, FALSE);
 
 		// nc portion
 		int nClientCol = m_aColumns.GetSize() - 1;
@@ -970,7 +998,7 @@ void CNcGutter::OnHotChange(int nPrevHot, int nHot)
 
 		if (bDrawNonClient)
 		{
-			rHeader.right = rClient.left;
+			GetHeaderRect(rHeader, GHR_NONCLIENT, FALSE);
 			NcDrawHeader(&dc, rHeader, NONCLIENT, &ptCursor);
 		}
 
@@ -981,8 +1009,7 @@ void CNcGutter::OnHotChange(int nPrevHot, int nHot)
 
 			if (pCD->bClickable)
 			{
-				rHeader.left = rClient.left;
-				rHeader.right = rWindow.right;
+				GetHeaderRect(rHeader, GHR_CLIENT, FALSE);
 				NcDrawHeader(&dc, rHeader, CLIENT, &ptCursor);
 			}
 		}
@@ -1030,20 +1057,17 @@ DWORD CNcGutter::ItemHitTest(CPoint ptClient) const
 
 int CNcGutter::ColumnHitTest(CPoint ptScreen) const
 {
-	CRect rClient;
-	GetClientRect(rClient);
-	ClientToScreen(rClient);
+	CRect rHeader;
+	GetHeaderRect(rHeader, GHR_CLIENT, TRUE);
 
-	rClient.top -= HEADERHEIGHT;
-
-	if (rClient.PtInRect(ptScreen))
+	if (rHeader.PtInRect(ptScreen))
 		return m_aColumns.GetSize() - 1;  // last column == client
 
 	// else must be a gutter column
-	CRect rWindow;
-	GetWindowRect(rWindow);
+	GetHeaderRect(rHeader, GHR_NONCLIENT, TRUE);
 
-	ptScreen.Offset(-rWindow.TopLeft());
+	// adjust ptScreen to be relative to start of gutter
+	ptScreen.Offset(-rHeader.TopLeft());
 
 	if (ptScreen.x <= 0)
 		return 0;
@@ -1077,23 +1101,134 @@ BOOL CNcGutter::PtInHeader(CPoint ptScreen) const
 	return (HitTest(ptScreen) == NCGHT_HEADER);
 }
 
+void CNcGutter::GetCursorPos(CPoint& ptCursor, BOOL bScreen) const
+{
+	ptCursor = CPoint(::GetMessagePos());
+
+	if (!bScreen)
+	{
+		CRect rWindow;
+		::GetWindowRect(GetHwnd(), rWindow);
+		
+		ptCursor.Offset(-rWindow.TopLeft());
+	}
+}
+
+void CNcGutter::GetHeaderRect(CRect& rHeader, GHR_WHAT nWhat, BOOL bScreen) const
+{
+	CRect rClient, rWindow;
+
+	GetWindowRectEx(rWindow, bScreen);
+	GetWindowClientRect(rClient, bScreen);
+
+	rWindow.DeflateRect(BORDER, BORDER);
+
+	rHeader.bottom = rClient.top;
+	rHeader.top = rClient.top - HEADERHEIGHT; // HEADERHEIGHT will be zero if the header is hidden
+
+	switch (nWhat)
+	{
+	case GHR_CLIENT:
+		rHeader.left = rClient.left;
+		rHeader.right = rClient.right;
+
+		// check for vert scroll bar
+		if (GetStyle() & WS_VSCROLL)
+			rHeader.right += ::GetSystemMetrics(SM_CXVSCROLL);
+
+		break;
+
+	case GHR_NONCLIENT:
+		if (HasStyle(NCGS_RIGHTCOLUMNS))
+		{
+			rHeader.left = rClient.right;
+			rHeader.right = rWindow.right;
+
+			// check for vert scroll bar
+			if (GetStyle() & WS_VSCROLL)
+				rHeader.left += ::GetSystemMetrics(SM_CXVSCROLL);
+		}
+		else
+		{
+			rHeader.left = rWindow.left;
+			rHeader.right = rClient.left;
+		}
+		break;
+
+	case GHR_ALL:
+	default:
+		rHeader.left = rWindow.left;
+		rHeader.right = rWindow.right;
+		break;
+	}
+}
+
+void CNcGutter::GetWindowRectEx(CRect& rWindow, BOOL bScreen) const
+{
+	CWnd* pWnd = GetCWnd();
+	ASSERT(pWnd);
+
+	if (pWnd)
+	{
+		pWnd->GetWindowRect(rWindow);
+
+		if (!bScreen)
+			rWindow.OffsetRect(-rWindow.TopLeft());
+	}
+}
+
+void CNcGutter::GetWindowClientRect(CRect& rClient, BOOL bScreen) const
+{
+	CWnd* pWnd = GetCWnd();
+	ASSERT(pWnd);
+
+	if (pWnd)
+	{
+		pWnd->GetClientRect(rClient);
+		pWnd->ClientToScreen(rClient); // always
+	
+		if (!bScreen) // convert to window coords
+		{
+			CRect rWindow;
+			pWnd->GetWindowRect(rWindow);
+
+			rClient.OffsetRect(-rWindow.TopLeft());
+		}
+	}
+}
+
+void CNcGutter::GetGutterRect(CRect& rGutter, BOOL bScreen) const
+{
+	CRect rWindow, rClient;
+
+	GetWindowRectEx(rWindow, bScreen);
+	GetWindowClientRect(rClient, bScreen);
+
+	rWindow.DeflateRect(BORDER, BORDER);
+	
+	rGutter = rWindow;
+
+	if (HasStyle(NCGS_RIGHTCOLUMNS))
+	{
+		rGutter.left = rClient.right;
+
+		// handle vertical scrollbar
+		if (GetStyle() & WS_VSCROLL)
+			rGutter.left += ::GetSystemMetrics(SM_CXVSCROLL);
+	}
+	else
+		rGutter.right = rClient.left;
+
+}
+
 CNcGutter::NCG_HITTEST CNcGutter::HitTest(CPoint ptScreen, DWORD& dwItem, int& nColumn) const
 {
 	CRect rClient, rHeader, rWindow, rGutter;
 
-	GetWindowRect(rWindow);
-	GetClientRect(rClient);
-	ClientToScreen(rClient);
+	GetWindowClientRect(rClient, TRUE);
+	GetGutterRect(rGutter, TRUE);
+	GetHeaderRect(rHeader, GHR_ALL, TRUE);
 
-	rHeader = rClient;
-	rHeader.bottom = rHeader.top;
-	rHeader.top -= HEADERHEIGHT; // HEADERHEIGHT will be zero if the header is hidden
-	rHeader.left = rWindow.left;
-
-	rGutter = rClient;
-	rGutter.right = rClient.left;
-	rGutter.left = rWindow.left;
-	
 	if (rHeader.PtInRect(ptScreen))
 	{
 		nColumn = ColumnHitTest(ptScreen);
@@ -1107,8 +1242,17 @@ CNcGutter::NCG_HITTEST CNcGutter::HitTest(CPoint ptScreen, DWORD& dwItem, int& n
 		CPoint point(ptScreen);
 		ScreenToClient(&point);
 
-		if (point.x < 0) // in the gutter
-			point.x = 0; // client coords
+		// must ensure that point is within client rect
+		if (HasStyle(NCGS_RIGHTCOLUMNS))
+		{
+			if (point.x > rClient.Width()) // in the gutter
+				point.x = rClient.Width(); // client coords
+		}
+		else // columns left
+		{
+			if (point.x < 0) // in the gutter
+				point.x = 0; // client coords
+		}
 
 		dwItem = ItemHitTest(point);
 		return NCGHT_ITEM;
@@ -1126,7 +1270,7 @@ BOOL CNcGutter::OnSetCursor()
 
 	NCG_HITTEST nHitTest = HitTest(ptScreen, dwItem, nCol);
 
-	if (nHitTest == NCGHT_ITEM && dwItem)
+	if (nHitTest == NCGHT_ITEM && dwItem && nCol >= 0)
 	{
 		NCGGETCURSOR ncgsc = { m_aColumns[nCol]->nColID, dwItem };
 		UINT nID = GetDlgCtrlID();
@@ -1148,99 +1292,83 @@ BOOL CNcGutter::OnSetCursor()
 
 void CNcGutter::OnNcPaint() 
 {
-//	TRACE("CNcGutter::OnNcPaint()\n");
 	// force client repaints to happen first because
 	// of the time it takes to perform the non-client paint
 	::UpdateWindow(GetHwnd());
 
 	// see if we can avoid any unnecessary drawing
-	if (GetGutterWidth() == 0 && !m_bShowHeader)
+	if (GetGutterWidth() == 0 && !HasStyle(NCGS_SHOWHEADER))
 		return;
 
-	CRect rWindow, rClient;
-	CPoint ptWindowTL;
+	CRect rWindow, rClient, rGutter, rHeader;
 
-	GetWindowRect(rWindow);
-	ptWindowTL = rWindow.TopLeft();
-	rWindow.OffsetRect(-ptWindowTL);
-
-	GetClientRect(rClient);
-	ClientToScreen(rClient);
-	rClient.OffsetRect(-ptWindowTL);
+	GetWindowClientRect(rClient, FALSE);
+	GetGutterRect(rGutter, FALSE);
+	GetHeaderRect(rHeader, GHR_ALL, FALSE);
 
 	// get cursor pos in window coords for header drawing
 	CPoint ptCursor;
 
-	if (m_bShowHeader)
-	{
-		::GetCursorPos(&ptCursor);
-		ptCursor.Offset(-ptWindowTL);
-	}
-
-	// allow for client edge, etc
-	rWindow.DeflateRect(BORDER, BORDER);
-
-	// adjust top of window rect to be top of header (if showing)
-	rWindow.top = rClient.top - (m_bShowHeader ? HEADERHEIGHT : 0);
-	CRect rWindowOrg(rWindow); // and save
+	if (HasStyle(NCGS_SHOWHEADER))
+		GetCursorPos(ptCursor, FALSE);
 
 	// to avoid creating excessively large bitmaps we'll render the client header straight
 	// into the window dc ie only the non-client gutter & header is rendered on the bitmap
-	rWindow.bottom = rClient.bottom;
-	rWindow.right = rClient.left;
-
 	CWindowDC dc(GetCWnd());
 	CDC dcMem;
 	CDC* pOutputDC = &dc; // default backup plan in case mem dc or bitmap cannot be created
 	CBitmap* pBMOld = NULL;
 
 	if (GetGutterWidth() > 0 && dcMem.CreateCompatibleDC(NULL) && 
-		PrepareBitmap(&dc, &m_bmNonClient, CRect(0, 0, rWindow.right, rWindow.bottom), FALSE))
+		PrepareBitmap(&dc, &m_bmNonClient, rGutter, FALSE))
 	{		
 		pOutputDC = &dcMem;
 		pBMOld = dcMem.SelectObject(&m_bmNonClient);
 	}
 
-	pOutputDC->FillSolidRect(rWindow.left, rClient.top, rWindow.Width(), rWindow.Height(), ::GetSysColor(COLOR_WINDOW));
+	pOutputDC->FillSolidRect(rGutter, ::GetSysColor(COLOR_WINDOW));
 
 	// iterate the top level items
 	CFont* pOldFont = PrepareFont(pOutputDC, FALSE);
 				
 	int nItem = 1;
+	CRect rItem;
 	DWORD dwItem = GetFirstVisibleTopLevelItem(nItem);
 				
 	while (dwItem)
 	{
-		CRect rItem;
 		CString sPrevPos;
-		NcDrawItem(pOutputDC, dwItem, 0, 0, nItem, rWindow, rClient, rItem, TRUE);
+
+		NcDrawItem(pOutputDC, dwItem, 0, 0, nItem, rGutter, rItem, TRUE);
 					
 		dwItem = GetNextItem(dwItem);
 		nItem++;
 					
-		if (rItem.bottom >= rWindow.bottom)
+		if (rItem.bottom >= rGutter.bottom)
 			break;
 	}
-				
-	PostNcDraw(pOutputDC, rWindow);
+			
+	// see if anyone wants to do any final drawing
+	CRect rItems(rGutter);
+	rItems.bottom = min(rGutter.bottom, rItem.bottom);
+
+	PostNcDraw(pOutputDC, rItems);
 
 	// cleanup			
 	pOutputDC->SelectObject(pOldFont);
 
 	// non-client header
-	if (m_bShowHeader)
+	if (HasStyle(NCGS_SHOWHEADER))
 	{
-		CRect rHeader(rWindowOrg);
-		rHeader.bottom = rHeader.top + HEADERHEIGHT;
-		rHeader.right = rClient.left;
+		GetHeaderRect(rHeader, GHR_NONCLIENT, FALSE);
 		NcDrawHeader(pOutputDC, rHeader, NONCLIENT, &ptCursor);
 	}
 
 	// blt to window dc if nec
 	if (pOutputDC == &dcMem)
 	{
-		dc.BitBlt(rWindow.left, rWindow.top, rWindow.Width(), rWindow.Height(),
-				  &dcMem, rWindow.left, rWindow.top, SRCCOPY);
+		dc.BitBlt(rGutter.left, rGutter.top, rGutter.Width(), rGutter.Height(),
+				  &dcMem, rGutter.left, rGutter.top, SRCCOPY);
 
 		dcMem.SelectObject(pBMOld); // V.V.IMPORTANT
 	}
@@ -1248,13 +1376,11 @@ void CNcGutter::OnNcPaint()
 	// two items we render direct to the window dc
 	
 	// 1. the client header
-	if (m_bShowHeader)
+	if (HasStyle(NCGS_SHOWHEADER))
 	{
 		CFont* pOldFont = PrepareFont(&dc, FALSE);
 
-		CRect rHeader(rWindowOrg);
-		rHeader.bottom = rHeader.top + HEADERHEIGHT;
-		rHeader.left = rClient.left;
+		GetHeaderRect(rHeader, GHR_CLIENT, FALSE);
 		NcDrawHeader(&dc, rHeader, CLIENT, &ptCursor);
 
 		// cleanup			
@@ -1263,21 +1389,25 @@ void CNcGutter::OnNcPaint()
 				
 	// 2. if the window base does not match the client bottom then 
 	// paint the extra bit gray (means there is a horz scrollbar)
-	if (rWindowOrg.bottom != rClient.bottom)
+	if (rGutter.bottom != rClient.bottom)
 	{
-		CRect rScroll(rWindowOrg.left, rClient.bottom, rClient.left, rWindowOrg.bottom);
+		rGutter.top = rClient.bottom;
+
+		// allow for vert scrollbar when columns are on right
+		if (HasStyle(NCGS_RIGHTCOLUMNS) && (GetStyle() & WS_VSCROLL))
+			rGutter.left -= ::GetSystemMetrics(SM_CXVSCROLL);
 
 		if (CThemed().IsNonClientThemed())
 		{
 			CThemed th;
 
 			if (th.Open(GetCWnd(), "SCROLLBAR"))
-				th.DrawBackground(&dc, SBP_LOWERTRACKHORZ, SCRBS_NORMAL, rScroll);
+				th.DrawBackground(&dc, SBP_LOWERTRACKHORZ, SCRBS_NORMAL, rGutter);
 			else
-				dc.FillSolidRect(rScroll, ::GetSysColor(COLOR_SCROLLBAR));
+				dc.FillSolidRect(rGutter, ::GetSysColor(COLOR_SCROLLBAR));
 		}
 		else
-			dc.FillSolidRect(rScroll, ::GetSysColor(COLOR_SCROLLBAR));
+			dc.FillSolidRect(rGutter, ::GetSysColor(COLOR_SCROLLBAR));
 	}
 }
 
@@ -1380,7 +1510,7 @@ void CNcGutter::NcDrawHeaderColumn(CDC* pDC, int nColumn, CRect rColumn, CThemed
 
 void CNcGutter::NcDrawHeader(CDC* pDC, const CRect& rHeader, HCHDRPART nPart, const LPPOINT pCursor)
 {
-	if (!m_bShowHeader)
+	if (!HasStyle(NCGS_SHOWHEADER))
 		return;
 
 	CThemed th;
@@ -1479,20 +1609,19 @@ DWORD CNcGutter::GetFirstVisibleTopLevelItem(int& nItem) const
 }
 
 void CNcGutter::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLevel, int nPos, 
-						   const CRect& rWindow, const CRect& rClient, CRect& rItem, BOOL bDrawChildren)
+						   const CRect& rGutter, CRect& rItem /* out */, BOOL bDrawChildren)
 {
-	rItem = GetItemRect(dwItem);
+	rItem = GetWindowItemRect(dwItem);
 							
 	if (!rItem.IsRectEmpty())
 	{
-		// convert rItem to window coords
-		rItem.OffsetRect(0, rClient.TopLeft().y); // convert to window coords
-		rItem.left = rWindow.left;
-		rItem.right = rWindow.right;
-
 		if (!bDrawChildren)
 		{
-			rItem.right = rClient.left;
+			if (HasStyle(NCGS_RIGHTCOLUMNS))
+				rItem.left = rGutter.left;
+			else
+				rItem.right = rGutter.right;
+
 			pDC->FillSolidRect(rItem, GetSysColor(COLOR_WINDOW));
 		}
 
@@ -1503,7 +1632,7 @@ void CNcGutter::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLeve
 		ncgDI.dwParentItem = dwParentItem;
 		ncgDI.nLevel = nLevel;
 		ncgDI.nItemPos = nPos;
-		ncgDI.rWindow = &rWindow;
+		ncgDI.rWindow = &rGutter;
 		ncgDI.rItem = &rItem;
 		ncgDI.bSelected = IsItemSelected(dwItem);
 		
@@ -1523,7 +1652,7 @@ void CNcGutter::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLeve
 			rItem.left = rItem.right;
 			
 			// if we're out of the window rect then stop
-			if (rItem.left > rWindow.right)
+			if (rItem.left > rGutter.right)
 				break;
 			
 			// don't bother with zero width columns
@@ -1543,8 +1672,8 @@ void CNcGutter::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLeve
 		}
 
 		// post draw for this item
-		rItem.left = rWindow.left;
-		rItem.right = rClient.left;
+		rItem.left = rGutter.left;
+		rItem.right = rGutter.right;
 		PostNcDrawItem(pDC, dwItem, rItem, nLevel, FALSE);
 
 		// draw children
@@ -1556,7 +1685,7 @@ void CNcGutter::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLeve
 			
 			while (dwChild)
 			{
-				NcDrawItem(pDC, dwChild, dwItem, nLevel + 1, nChild, rWindow, rClient, rChild, TRUE);
+				NcDrawItem(pDC, dwChild, dwItem, nLevel + 1, nChild, rGutter, rChild, TRUE);
 				
 				dwChild = GetNextItem(dwChild);
 				nChild++;
@@ -1564,14 +1693,14 @@ void CNcGutter::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLeve
 				// accumulate child rects into rItem
 				rItem |= rChild;
 				
-				if (rItem.bottom >= rWindow.bottom)
+				if (rItem.bottom >= rGutter.bottom)
 					break;
 			}
 			
 			// post draw only if we reached the last item
 			CRect rItemTotal(rItem);
-			rItemTotal.left = rWindow.left;
-			rItemTotal.right = rWindow.right;
+			rItemTotal.left = rGutter.left;
+			rItemTotal.right = rGutter.right;
 			
 			if (!dwChild)
 				PostNcDrawItem(pDC, dwItem, rItemTotal, nLevel, TRUE);
@@ -1580,27 +1709,19 @@ void CNcGutter::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLeve
 		}
 	}
 }
-
 void CNcGutter::RedrawItem(DWORD dwItem)
 {
 	// for speed we draw straight to the window DC so _don't_ use
 	// this internally.
-	CRect rClient, rWindow, rItem;
+	CRect rGutter, rItem;
 
-	GetClientRect(rClient);
-	GetWindowRect(rWindow);
-
-	ClientToScreen(rClient);
-	rClient.OffsetRect(-rWindow.TopLeft());
-
-	rWindow.OffsetRect(-rWindow.TopLeft());
-	rWindow.DeflateRect(BORDER, BORDER);
+	GetGutterRect(rGutter, FALSE);
 
 	// prepare the DC
 	CWindowDC dc(GetCWnd());
 	CFont* pOldFont = PrepareFont(&dc, FALSE);
 
-	NcDrawItem(&dc, dwItem, GetParentItem(dwItem), -1, -1, rWindow, rClient, rItem, FALSE);
+	NcDrawItem(&dc, dwItem, GetParentItem(dwItem), -1, -1, rGutter, rItem, FALSE);
 
 	// cleanup
 	if (pOldFont)
@@ -1621,7 +1742,7 @@ void CNcGutter::PostNcDrawItem(CDC* pDC, DWORD dwItem, const CRect& rItem, int n
 		ncgDI.dwItem = dwItem;
 
 	UINT nID = GetDlgCtrlID();
-		
+
 	// try parent then hook window
 	if (!::SendMessage(GetParent(), WM_NCG_POSTDRAWITEM, nID, (LPARAM)&ncgDI))
 		SendMessage(WM_NCG_POSTDRAWITEM, nID, (LPARAM)&ncgDI);
@@ -1676,8 +1797,6 @@ int CNcGutter::RecalcGutterWidth()
 	if (!m_bSetRedraw)
 		return GetGutterWidth();
 
-//	DWORD dwTick = GetTickCount();
-
 	CWindowDC dc(GetCWnd());
 
 	NCGRECALCCOLUMN ncrc;
@@ -1720,12 +1839,10 @@ int CNcGutter::RecalcGutterWidth()
 		nGutter += pCD->nWidth;
 	}
 
-//	TRACE ("CNcGutter::RecalcGutterWidth(%d ms)\n", GetTickCount() - dwTick);
-
 	return nGutter;
 }
 
-CRect CNcGutter::GetItemRect(DWORD dwItem) const
+CRect CNcGutter::GetWindowItemRect(DWORD dwItem) const
 {
 	UINT nID = GetDlgCtrlID();
 	NCGITEMRECT ncgGI;
@@ -1735,7 +1852,19 @@ CRect CNcGutter::GetItemRect(DWORD dwItem) const
 	if (!::SendMessage(GetParent(), WM_NCG_GETITEMRECT, nID, (LPARAM)&ncgGI))
 		SendMessage(WM_NCG_GETITEMRECT, nID, (LPARAM)&ncgGI);
 
-	return ncgGI.rItem;
+	// convert from client to window coords
+	CRect rWindow, rGutter, rItem(ncgGI.rItem);
+	GetGutterRect(rGutter, FALSE);
+	GetWindowRectEx(rWindow, TRUE);
+
+	CWnd* pWnd = GetCWnd();
+	pWnd->ClientToScreen(rItem);
+
+	rItem.OffsetRect(0, -rWindow.top);
+	rItem.right = rGutter.right;
+	rItem.left = rGutter.left;
+
+	return rItem;
 }
 
 DWORD CNcGutter::GetFirstChildItem(DWORD dwItem) const
@@ -1792,15 +1921,15 @@ BOOL CNcGutter::PrepareBitmap(CDC* pDC, CBitmap* pBitmap, const CRect& rect, BOO
 			int nBitDepth = pDC->GetDeviceCaps(BITSPIXEL);
 
 			bRecreate = (nBitDepth != BM.bmBitsPixel || 
-						rect.Width() > BM.bmWidth ||
-						rect.Height() > BM.bmHeight);
+						rect.right > BM.bmWidth ||
+						rect.bottom > BM.bmHeight);
 		}
 	}
 
 	if (bRecreate)
 	{
 		pBitmap->DeleteObject();
-		pBitmap->CreateCompatibleBitmap(pDC, rect.Width(), rect.Height());
+		pBitmap->CreateCompatibleBitmap(pDC, rect.right, rect.bottom);
 	}
 
 	return (NULL != pBitmap->GetSafeHandle());
@@ -1808,24 +1937,20 @@ BOOL CNcGutter::PrepareBitmap(CDC* pDC, CBitmap* pBitmap, const CRect& rect, BOO
 
 void CNcGutter::UpdateHeaderHotRects()
 {
-	if (!m_bShowHeader || !CThemed().AreControlsThemed())
+	if (!HasStyle(NCGS_SHOWHEADER) || !CThemed().AreControlsThemed())
 		return;
 
-	CRect rWindow, rClient;
+	CRect rWindow, rClient, rHeader;
 
-	// convert rects to client coords
+	// get rects in client coords
 	GetWindowRect(rWindow);
 	ScreenToClient(rWindow);
 
 	GetClientRect(rClient);
 
-	// allow for client edge, etc
-	rWindow.DeflateRect(BORDER, BORDER);
-
 	// adjust top of window rect to be top of header (if showing)
-	CRect rHeader(rWindow);
-	rHeader.bottom = rClient.top;
-	rHeader.top = rHeader.bottom - HEADERHEIGHT;
+	GetHeaderRect(rHeader, GHR_NONCLIENT, TRUE);
+	ScreenToClient(rHeader);
 
 	CRect rItem(rHeader);
 	rItem.right = rItem.left;

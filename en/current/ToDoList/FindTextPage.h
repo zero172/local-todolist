@@ -10,18 +10,26 @@
 /////////////////////////////////////////////////////////////////////////////
 // CFindTextPage dialog
 
+enum
+{
+	FTP_SHOWMATCHCASE		= 0x01,
+	FTP_SHOWMATCHWHOLEWORD	= 0x02,	
+	FTP_SHOWMATCHALLWORDS	= 0x04,
+};
+
 class CFindTextPage : public CPropertyPage
 {
 	DECLARE_DYNCREATE(CFindTextPage)
 
 // Construction
 public:
-	CFindTextPage(BOOL bShowMatchCase = TRUE, BOOL bShowMatchWholeWord = TRUE);
+	CFindTextPage(DWORD dwShowFlags = FTP_SHOWMATCHCASE | FTP_SHOWMATCHWHOLEWORD/* | FTP_SHOWMATCHALLWORDS*/);
 	~CFindTextPage();
 
 	CString GetText();
 	BOOL GetMatchCase();
 	BOOL GetMatchWholeWord();
+	BOOL GetMatchAllItems();
 
 // Dialog Data
 	//{{AFX_DATA(CFindTextPage)
@@ -30,9 +38,9 @@ public:
 	CString	m_sText;
 	BOOL	m_bMatchWholeWord;
 	BOOL	m_bMatchCase;
+	BOOL	m_bMatchAll;
 	//}}AFX_DATA
-	BOOL	m_bShowMatchWholeWord;
-	BOOL	m_bShowMatchCase;
+	DWORD	m_dwShowFlags;
 
 
 // Overrides

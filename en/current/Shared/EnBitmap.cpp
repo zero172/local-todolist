@@ -264,6 +264,33 @@ HBITMAP CEnBitmap::ExtractBitmap(IPicture* pPicture, COLORREF crBack)
 	return (HBITMAP)bmMem.Detach();
 }
 
+BOOL CEnBitmap::CopyToClipboard(HWND hWnd) const
+{
+	if (!GetSafeHandle())
+		return FALSE;
+
+	if (::OpenClipboard(hWnd))
+	{
+		::EmptyClipboard();
+		::SetClipboardData(CF_BITMAP, (HANDLE)GetSafeHandle());
+		::CloseClipboard();
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CEnBitmap::CopyImageFileToClipboard(LPCTSTR szImagePath, COLORREF crBack)
+{
+	CEnBitmap bm;
+
+	if (bm.LoadImage(szImagePath, crBack))
+		return bm.CopyToClipboard();
+
+	return FALSE;
+}
+
 int CEnBitmap::GetFileType(LPCTSTR szImagePath)
 {
 	CString sPath(szImagePath);

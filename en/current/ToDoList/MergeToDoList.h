@@ -42,7 +42,7 @@ protected:
 	CXmlItem* m_pXIDestRoot;
 	TDL_MERGEBY m_nMergeBy;
 	TDL_MERGEHOW m_nMergeHow;
-	DWORD m_dwNextID;
+	DWORD m_dwNextID, m_dwOrgNextID;
 	CMap<DWORD, DWORD, CXmlItem*, CXmlItem*&> m_mapID2Item;
 	
 protected:

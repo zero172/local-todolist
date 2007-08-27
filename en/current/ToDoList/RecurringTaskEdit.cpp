@@ -195,13 +195,13 @@ CRecurringTaskOptionDlg::CRecurringTaskOptionDlg(const TDIRECURRENCE& tr, const 
 	m_nRegularity = tr.nRegularity;
 	m_bRecalcFromDue = tr.bRecalcFromDue;
 	//}}AFX_DATA_INIT
-
-	m_host.AddPage(&m_pageDaily);
-	m_host.AddPage(&m_pageWeekly);
-	m_host.AddPage(&m_pageMonthly);
-	m_host.AddPage(&m_pageYearly);
-
-	// init pages
+	m_nNumDays = 1;
+	m_nNumWeeks = 1;
+	m_dwWeekdays = 0;
+	m_nNumMonths = 1;
+	m_nMonthDay = 1;
+	m_nMonth = 0;
+	m_nYearMonthDay = 1;
 
 	// first set to default values
 	if (dtDefault.m_dt > 0.0)
@@ -209,32 +209,32 @@ CRecurringTaskOptionDlg::CRecurringTaskOptionDlg(const TDIRECURRENCE& tr, const 
 		SYSTEMTIME stDefault;
 		dtDefault.GetAsSystemTime(stDefault);
 
-		m_pageWeekly.m_dwWeekdays = 2 << (stDefault.wDayOfWeek - 1);
-		m_pageMonthly.m_nDay = stDefault.wDay;
-		m_pageYearly.m_nMonth = stDefault.wMonth - 1;
-		m_pageYearly.m_nDay = stDefault.wDay;
+		m_dwWeekdays = 2 << (stDefault.wDayOfWeek - 1);
+		m_nMonthDay = stDefault.wDay;
+		m_nMonth = stDefault.wMonth - 1;
+		m_nYearMonthDay = stDefault.wDay;
 	}
 	
 	// then overwrite specific values
 	switch (tr.nRegularity)
 	{
 	case TDIR_DAILY:
-		m_pageDaily.m_nNumDays = tr.dwSpecific1;
+		m_nNumDays = tr.dwSpecific1;
 		break;
 
 	case TDIR_WEEKLY:
-		m_pageWeekly.m_nNumWeeks = tr.dwSpecific1;
-		m_pageWeekly.m_dwWeekdays = tr.dwSpecific2;
+		m_nNumWeeks = tr.dwSpecific1;
+		m_dwWeekdays = tr.dwSpecific2;
 		break;
 
 	case TDIR_MONTHLY:
-		m_pageMonthly.m_nNumMonths = tr.dwSpecific1;
-		m_pageMonthly.m_nDay = tr.dwSpecific2;
+		m_nNumMonths = tr.dwSpecific1;
+		m_nMonthDay = tr.dwSpecific2;
 		break;
 
 	case TDIR_YEARLY:
-		m_pageYearly.m_nMonth = tr.dwSpecific1 - 1;
-		m_pageYearly.m_nDay = tr.dwSpecific2;
+		m_nMonth = tr.dwSpecific1 - 1;
+		m_nYearMonthDay = tr.dwSpecific2;
 		break;
 	}
 }
@@ -244,177 +244,12 @@ void CRecurringTaskOptionDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CRecurringTaskOptionDlg)
-	DDX_CBIndex(pDX, IDC_REGULARITY, m_nRegularity);
+	DDX_Radio(pDX, IDC_ONCE, m_nRegularity);
 	DDX_CBIndex(pDX, IDC_RECALCFROM, m_bRecalcFromDue);
 	//}}AFX_DATA_MAP
-}
-
-BEGIN_MESSAGE_MAP(CRecurringTaskOptionDlg, CDialog)
-	//{{AFX_MSG_MAP(CRecurringTaskOptionDlg)
-	ON_CBN_SELCHANGE(IDC_REGULARITY, OnSelchangeRegularity)
-	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_VALUECHANGE, OnValueChange)
-END_MESSAGE_MAP()
-
-/////////////////////////////////////////////////////////////////////////////
-// CRecurringTaskOptionDlg message handlers
-/////////////////////////////////////////////////////////////////////////////
-
-void CRecurringTaskOptionDlg::OnOK()
-{
-	CDialog::OnOK();
-
-	m_host.OnOK();
-}
-
-void CRecurringTaskOptionDlg::GetRecurrenceOptions(TDIRECURRENCE& tr) const
-{
-	tr.nRegularity = (TDI_REGULARITY)m_nRegularity;
-	tr.bRecalcFromDue = m_bRecalcFromDue;
-
-	switch (tr.nRegularity)
-	{
-	case TDIR_DAILY:
-		tr.dwSpecific1 = m_pageDaily.m_nNumDays;
-		break;
-
-	case TDIR_WEEKLY:
-		tr.dwSpecific1 = m_pageWeekly.m_nNumWeeks;
-		tr.dwSpecific2 = m_pageWeekly.m_dwWeekdays;
-		break;
-
-	case TDIR_MONTHLY:
-		tr.dwSpecific1 = m_pageMonthly.m_nNumMonths;
-		tr.dwSpecific2 = m_pageMonthly.m_nDay;
-		break;
-
-	case TDIR_YEARLY:
-		tr.dwSpecific1 = m_pageYearly.m_nMonth + 1;
-		tr.dwSpecific2 = m_pageYearly.m_nDay;
-		break;
-	}
-}
-
-void CRecurringTaskOptionDlg::OnSelchangeRegularity() 
-{
-	UpdateData();
-
-	BOOL bOnce = (m_nRegularity == TDIR_ONCE);
-	UINT nShow = bOnce ? SW_HIDE : SW_SHOW;
-
-	if (!bOnce)
-		m_host.SetActivePage(m_nRegularity - 1);
-
-	m_host.ShowWindow(nShow);
-	GetDlgItem(IDC_RECALCFROMLABEL)->ShowWindow(nShow);
-	GetDlgItem(IDC_RECALCFROM)->ShowWindow(nShow);
-}
-
-BOOL CRecurringTaskOptionDlg::OnInitDialog() 
-{
-	CDialog::OnInitDialog();
-	
-	m_host.Create(IDC_REC_OPTIONS_FRAME, this);
-
-	BOOL bOnce = (m_nRegularity == TDIR_ONCE);
-	UINT nShow = bOnce ? SW_HIDE : SW_SHOW;
-
-	if (!bOnce)
-		m_host.SetActivePage(m_nRegularity - 1);
-
-	m_host.ShowWindow(nShow);
-	GetDlgItem(IDC_RECALCFROMLABEL)->ShowWindow(nShow);
-	GetDlgItem(IDC_RECALCFROM)->ShowWindow(nShow);
-	
-	return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-LRESULT CRecurringTaskOptionDlg::OnValueChange(WPARAM /*wp*/, LPARAM /*lp*/)
-{
-	BOOL bValid = FALSE;
-
-	switch (m_nRegularity)
-	{
-	case TDIR_ONCE:		bValid = TRUE;							break;
-	case TDIR_DAILY:	bValid = m_pageDaily.HasValidData();	break;
-	case TDIR_WEEKLY:	bValid = m_pageWeekly.HasValidData();	break;
-	case TDIR_MONTHLY:	bValid = m_pageMonthly.HasValidData();	break;
-	case TDIR_YEARLY:	bValid = m_pageYearly.HasValidData();	break;
-	}
-
-	GetDlgItem(IDOK)->EnableWindow(bValid);
-	return 0L;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CRecTaskDailyPage property page
-
-IMPLEMENT_DYNCREATE(CRecTaskDailyPage, CPropertyPage)
-
-CRecTaskDailyPage::CRecTaskDailyPage() : CPropertyPage(IDD_REC_TASK_DAILY_PAGE)
-{
-	//{{AFX_DATA_INIT(CRecTaskDailyPage)
-	m_nNumDays = 1;
-	//}}AFX_DATA_INIT
-}
-
-CRecTaskDailyPage::~CRecTaskDailyPage()
-{
-}
-
-void CRecTaskDailyPage::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CRecTaskDailyPage)
-	//}}AFX_DATA_MAP
 	CDialogHelper::DDX_Text(pDX, IDC_DAYS, m_nNumDays);
-}
-
-
-BEGIN_MESSAGE_MAP(CRecTaskDailyPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CRecTaskDailyPage)
-	ON_EN_CHANGE(IDC_DAYS, OnChangeValues)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CRecTaskDailyPage::HasValidData()
-{
-	if (GetSafeHwnd())
-		UpdateData();
-
-	return (m_nNumDays > 0);
-}
-
-void CRecTaskDailyPage::OnChangeValues() 
-{
-	UpdateData();
-	GetParent()->GetParent()->SendMessage(WM_VALUECHANGE);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CRecTaskWeeklyPage property page
-
-IMPLEMENT_DYNCREATE(CRecTaskWeeklyPage, CPropertyPage)
-
-CRecTaskWeeklyPage::CRecTaskWeeklyPage() : CPropertyPage(IDD_REC_TASK_WEEKLY_PAGE)
-{
-	//{{AFX_DATA_INIT(CRecTaskWeeklyPage)
-	m_nNumWeeks = 1;
-	m_dwWeekdays = 0;
-	//}}AFX_DATA_INIT
-}
-
-CRecTaskWeeklyPage::~CRecTaskWeeklyPage()
-{
-}
-
-void CRecTaskWeeklyPage::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CRecTaskWeeklyPage)
 	DDX_Control(pDX, IDC_WEEKDAYS, m_lbWeekdays);
-	//}}AFX_DATA_MAP
+
 	CDialogHelper::DDX_Text(pDX, IDC_WEEKS, m_nNumWeeks);
 
 	if (pDX->m_bSaveAndValidate)
@@ -452,19 +287,81 @@ void CRecTaskWeeklyPage::DoDataExchange(CDataExchange* pDX)
 		m_lbWeekdays.SetCheck(5, (m_dwWeekdays & TDIW_FRIDAY) ? 1 : 0);
 		m_lbWeekdays.SetCheck(6, (m_dwWeekdays & TDIW_SATURDAY) ? 1 : 0);
 	}
+	CDialogHelper::DDX_Text(pDX, IDC_MONTHS, m_nNumMonths);
+	CDialogHelper::DDX_Text(pDX, IDC_MONTHDAY, m_nMonthDay);
+
+	DDX_Control(pDX, IDC_MONTHLIST, m_cbMonths);
+	DDX_CBIndex(pDX, IDC_MONTHLIST, m_nMonth);
+	DDX_Text(pDX, IDC_YEARMONTHDAY, m_nYearMonthDay);
 }
 
-
-BEGIN_MESSAGE_MAP(CRecTaskWeeklyPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CRecTaskWeeklyPage)
-	ON_EN_CHANGE(IDC_WEEKS, OnChangeValues)
-	ON_CLBN_CHKCHANGE(IDC_WEEKDAYS, OnChangeValues)
+BEGIN_MESSAGE_MAP(CRecurringTaskOptionDlg, CDialog)
+	//{{AFX_MSG_MAP(CRecurringTaskOptionDlg)
 	//}}AFX_MSG_MAP
+//	ON_MESSAGE(WM_VALUECHANGE, OnValueChange)
+	ON_BN_CLICKED(IDC_ONCE, OnSelchangeRegularity)
+	ON_BN_CLICKED(IDC_DAILY, OnSelchangeRegularity)
+	ON_BN_CLICKED(IDC_WEEKLY, OnSelchangeRegularity)
+	ON_BN_CLICKED(IDC_MONTHLY, OnSelchangeRegularity)
+	ON_BN_CLICKED(IDC_YEARLY, OnSelchangeRegularity)
+	ON_EN_CHANGE(IDC_DAYS, OnChangeDailyValues)
+	ON_EN_CHANGE(IDC_WEEKS, OnChangeWeeklyValues)
+	ON_CLBN_CHKCHANGE(IDC_WEEKDAYS, OnChangeWeeklyValues)
+	ON_EN_CHANGE(IDC_MONTHDAY, OnChangeMonthlyValues)
+	ON_EN_CHANGE(IDC_MONTHS, OnChangeMonthlyValues)
+	ON_CBN_SELCHANGE(IDC_MONTHLIST, OnChangeYearlyValues)
+	ON_EN_CHANGE(IDC_YEARMONTHDAY, OnChangeYearlyValues)
 END_MESSAGE_MAP()
 
-BOOL CRecTaskWeeklyPage::OnInitDialog() 
+/////////////////////////////////////////////////////////////////////////////
+// CRecurringTaskOptionDlg message handlers
+/////////////////////////////////////////////////////////////////////////////
+
+void CRecurringTaskOptionDlg::GetRecurrenceOptions(TDIRECURRENCE& tr) const
 {
-	CPropertyPage::OnInitDialog();
+	tr.nRegularity = (TDI_REGULARITY)m_nRegularity;
+	tr.bRecalcFromDue = m_bRecalcFromDue;
+
+	switch (tr.nRegularity)
+	{
+	case TDIR_DAILY:
+		tr.dwSpecific1 = m_nNumDays;
+		break;
+
+	case TDIR_WEEKLY:
+		tr.dwSpecific1 = m_nNumWeeks;
+		tr.dwSpecific2 = m_dwWeekdays;
+		break;
+
+	case TDIR_MONTHLY:
+		tr.dwSpecific1 = m_nNumMonths;
+		tr.dwSpecific2 = m_nMonthDay;
+		break;
+
+	case TDIR_YEARLY:
+		tr.dwSpecific1 = m_nMonth + 1;
+		tr.dwSpecific2 = m_nYearMonthDay;
+		break;
+	}
+}
+
+void CRecurringTaskOptionDlg::OnSelchangeRegularity() 
+{
+	UpdateData();
+
+	GetDlgItem(IDC_RECALCFROM)->EnableWindow(m_nRegularity != TDIR_ONCE);
+	GetDlgItem(IDC_DAYS)->EnableWindow(m_nRegularity == TDIR_DAILY);
+	GetDlgItem(IDC_WEEKDAYS)->EnableWindow(m_nRegularity == TDIR_WEEKLY);
+	GetDlgItem(IDC_WEEKS)->EnableWindow(m_nRegularity == TDIR_WEEKLY);
+	GetDlgItem(IDC_MONTHDAY)->EnableWindow(m_nRegularity == TDIR_MONTHLY);
+	GetDlgItem(IDC_MONTHS)->EnableWindow(m_nRegularity == TDIR_MONTHLY);
+	GetDlgItem(IDC_MONTHLIST)->EnableWindow(m_nRegularity == TDIR_YEARLY);
+	GetDlgItem(IDC_YEARMONTHDAY)->EnableWindow(m_nRegularity == TDIR_YEARLY);
+}
+
+BOOL CRecurringTaskOptionDlg::OnInitDialog()  
+{
+	CDialog::OnInitDialog();
 	
 	// init weekdays
 	for (int nDay = 1; nDay <= 7; nDay++)
@@ -477,121 +374,39 @@ BOOL CRecTaskWeeklyPage::OnInitDialog()
 	CRect rListbox;
 	m_lbWeekdays.GetClientRect(rListbox);
 	m_lbWeekdays.SetColumnWidth(rListbox.Width() / 2);
+
+	OnSelchangeRegularity();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-BOOL CRecTaskWeeklyPage::HasValidData()
-{
-	if (GetSafeHwnd())
-		UpdateData();
-
-	return (m_nNumWeeks > 0/* && m_dwWeekdays != 0*/);
-}
-
-void CRecTaskWeeklyPage::OnChangeValues() 
+void CRecurringTaskOptionDlg::OnChangeDailyValues()
 {
 	UpdateData();
-	GetParent()->GetParent()->SendMessage(WM_VALUECHANGE);
+
+	GetDlgItem(IDOK)->EnableWindow(m_nNumDays > 0);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CRecTaskMonthlyPage property page
-
-IMPLEMENT_DYNCREATE(CRecTaskMonthlyPage, CPropertyPage)
-
-CRecTaskMonthlyPage::CRecTaskMonthlyPage() : CPropertyPage(IDD_REC_TASK_MONTHLY_PAGE)
-{
-	//{{AFX_DATA_INIT(CRecTaskMonthlyPage)
-	m_nNumMonths = 1;
-	m_nDay = 1;
-	//}}AFX_DATA_INIT
-}
-
-CRecTaskMonthlyPage::~CRecTaskMonthlyPage()
-{
-}
-
-void CRecTaskMonthlyPage::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CRecTaskMonthlyPage)
-	//}}AFX_DATA_MAP
-	CDialogHelper::DDX_Text(pDX, IDC_MONTHS, m_nNumMonths);
-	CDialogHelper::DDX_Text(pDX, IDC_MONTHDAY, m_nDay);
-}
-
-
-BEGIN_MESSAGE_MAP(CRecTaskMonthlyPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CRecTaskMonthlyPage)
-	ON_EN_CHANGE(IDC_MONTHDAY, OnChangeValues)
-	ON_EN_CHANGE(IDC_MONTHS, OnChangeValues)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-
-BOOL CRecTaskMonthlyPage::HasValidData()
-{
-	if (GetSafeHwnd())
-		UpdateData();
-
-	return (m_nNumMonths && (m_nDay > 0 && m_nDay <= 31));
-}
-
-void CRecTaskMonthlyPage::OnChangeValues() 
+void CRecurringTaskOptionDlg::OnChangeWeeklyValues()
 {
 	UpdateData();
-	GetParent()->GetParent()->SendMessage(WM_VALUECHANGE);
+
+	GetDlgItem(IDOK)->EnableWindow(m_nNumWeeks > 0/* && m_dwWeekdays != 0*/);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CRecTaskYearlyPage property page
-
-IMPLEMENT_DYNCREATE(CRecTaskYearlyPage, CPropertyPage)
-
-CRecTaskYearlyPage::CRecTaskYearlyPage() : CPropertyPage(IDD_REC_TASK_YEARLY_PAGE)
-{
-	//{{AFX_DATA_INIT(CRecTaskYearlyPage)
-	m_nMonth = 0;
-	m_nDay = 1;
-	//}}AFX_DATA_INIT
-}
-
-CRecTaskYearlyPage::~CRecTaskYearlyPage()
-{
-}
-
-void CRecTaskYearlyPage::DoDataExchange(CDataExchange* pDX)
-{
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CRecTaskYearlyPage)
-	DDX_Control(pDX, IDC_MONTHS, m_cbMonths);
-	DDX_CBIndex(pDX, IDC_MONTHS, m_nMonth);
-	DDX_Text(pDX, IDC_MONTHDAY, m_nDay);
-	//}}AFX_DATA_MAP
-}
-
-
-BEGIN_MESSAGE_MAP(CRecTaskYearlyPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CRecTaskYearlyPage)
-	ON_CBN_SELCHANGE(IDC_MONTHS, OnChangeValues)
-	ON_EN_CHANGE(IDC_MONTHDAY, OnChangeValues)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CRecTaskYearlyPage::HasValidData()
-{
-	if (GetSafeHwnd())
-		UpdateData();
-
-	return (m_nMonth >= 0 && m_nMonth < 12) && (m_nDay > 0 && m_nDay <= 31);
-}
-
-void CRecTaskYearlyPage::OnChangeValues() 
+void CRecurringTaskOptionDlg::OnChangeMonthlyValues()
 {
 	UpdateData();
-	GetParent()->GetParent()->SendMessage(WM_VALUECHANGE);
+
+	GetDlgItem(IDOK)->EnableWindow(m_nNumMonths && (m_nMonthDay > 0 && m_nMonthDay <= 31));
+}
+
+void CRecurringTaskOptionDlg::OnChangeYearlyValues()
+{
+	UpdateData();
+
+	GetDlgItem(IDOK)->EnableWindow(m_nMonth >= 0 && m_nMonth < 12) && (m_nYearMonthDay > 0 && m_nYearMonthDay <= 31);
 }
 
 /////////////////////////////////////////////////////////////////////////////

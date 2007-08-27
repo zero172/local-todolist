@@ -24,6 +24,9 @@ public:
 	BOOL SetColors(const CDWordArray& aColors); // must have 11 elements
 	void SetReverseOrder(BOOL bReverse = TRUE);
 
+	int IncrementPriority(int nAmount);
+	int GetPriority() const;
+
 protected:
 // Overrides
 	// ClassWizard generated virtual function overrides

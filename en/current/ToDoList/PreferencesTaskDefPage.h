@@ -12,6 +12,7 @@
 
 #include <afxtempl.h>
 
+#include "..\shared\preferencesbase.h"
 #include "..\shared\colorbutton.h"
 #include "..\shared\timeedit.h"
 #include "..\shared\wndPrompt.h"
@@ -37,7 +38,7 @@ enum PTP_ATTRIB
 	// add to end
 };
 
-class CPreferencesTaskDefPage : public CPropertyPage, public CDialogHelper
+class CPreferencesTaskDefPage : public CPreferencesPageBase, public CDialogHelper
 {
 	DECLARE_DYNCREATE(CPreferencesTaskDefPage)
 
@@ -97,6 +98,7 @@ protected:
 	BOOL	m_bUseCreationForDefStartDate;
 	CWndPromptManager m_mgrPrompts;
 	CGroupLineManager m_mgrGroupLines;
+	CStringArray m_aDefCats, m_aDefStatus, m_aDefAllocTo, m_aDefAllocBy;
 
 	struct ATTRIBPREF
 	{
@@ -131,9 +133,8 @@ protected:
 	afx_msg void OnAttribUseChange();
 	DECLARE_MESSAGE_MAP()
 
-	void SaveComboList(const CAutoComboBox& combo, LPCTSTR szRegKey) const;
-	void RestoreComboList(CAutoComboBox& combo, LPCTSTR szRegKey);
-	int GetComboListItems(LPCTSTR szRegKey, CStringArray& aItems) const;
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

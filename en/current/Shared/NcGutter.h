@@ -35,6 +35,13 @@ const UINT WM_NCG_WANTRECALC = ::RegisterWindowMessage("WM_NCG_WANTRECALC");
 
 const int NCG_COLPADDING = 3;
 
+enum 
+{
+	NCGS_RIGHTCOLUMNS		= 0x01,
+	NCGS_DOUBLEBUFFERCLIENT = 0x02,
+	NCGS_SHOWHEADER			= 0x04,
+};
+
 struct NCGDRAWITEM
 {
 	NCGDRAWITEM() { pDC = NULL; dwItem = dwParentItem = 0; nColID = 0; rItem = NULL; nLevel = 0; 
@@ -109,7 +116,7 @@ class CThemed;
 class CNcGutter : protected CSubclassWnd  
 {
 public:
-	CNcGutter();
+	CNcGutter(DWORD dwStyles);
 	virtual ~CNcGutter();
 
 	BOOL Initialize(HWND hwnd);
@@ -127,8 +134,10 @@ public:
 	BOOL RecalcColumn(UINT nColID); // TRUE if the gutter changed width
 	int GetGutterWidth() const;
 
+	void EnableStyle(DWORD dwStyle, BOOL bEnable = TRUE);
+	BOOL HasStyle(DWORD dwStyle) const { return ((m_dwStyles & dwStyle) == dwStyle); }
+	
 	int AddColumn(UINT nColID, LPCTSTR szTitle = NULL, UINT nWidth = 0, UINT nTextAlign = DT_LEFT); // returns the index of the added column
-	void ShowHeader(BOOL bShow = TRUE);
 	void PressHeader(UINT nColID, BOOL bPress = TRUE);
 	void SetHeaderTitle(UINT nColID, LPCTSTR szTitle, LPCTSTR szFont = NULL, BOOL bSymbolFont = TRUE);
 	void EnableHeaderClicking(UINT nColID, BOOL bEnable = TRUE);
@@ -136,17 +145,18 @@ public:
 	int GetColumnCount() const { return m_aColumns.GetSize() - 1; } // don't count the client column
 
 	BOOL PtInHeader(CPoint ptScreen) const;
+	void GetWindowClientRect(CRect& rClient, BOOL bScreen) const;
 
 protected:
 	CMap<DWORD, DWORD, char, char> m_mapRecalcMessages;
 	CMap<DWORD, DWORD, char, char> m_mapRedrawMessages;
 	BOOL m_bSetRedraw;
-	BOOL m_bShowHeader;
 	CBitmap m_bmClient, m_bmNonClient;
 	BOOL m_bFirstRecalc;
 	CHotTracker m_hotTrack;
 	int m_nHeaderColDown;
 	DWORD m_dwButtonDownItem;
+	DWORD m_dwStyles;
 
 	struct COLUMNDESC
 	{
@@ -191,25 +201,27 @@ protected:
 	BOOL WantsRedraw(UINT nMsg, WPARAM wp, LPARAM lp, LRESULT& lr);
 
 	void NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, int nLevel, int nPos, 
-					const CRect& rWindow, const CRect& rClient, CRect& rItem, BOOL bDrawChildren);
+					const CRect& rGutter, CRect& rItem, BOOL bDrawChildren);
 	void PostNcDraw(CDC* pDC, const CRect& rWindow);
 	void PostNcDrawItem(CDC* pDC, DWORD dwItem, const CRect& rItem, int nLevel, BOOL bParent);
 	
 	DWORD GetFirstVisibleTopLevelItem(int& nItem) const; // return 0 if no items
 	DWORD GetNextItem(DWORD dwItem) const; // return 0 at end
-	CRect GetItemRect(DWORD dwItem) const;
+	CRect GetWindowItemRect(DWORD dwItem) const;
 	DWORD GetFirstChildItem(DWORD dwItem) const;
 	BOOL IsItemSelected(DWORD dwItem) const;
 	int GetSelectedCount() const;
 	DWORD GetParentItem(DWORD dwItem) const;
 
-	enum NCG_HITTEST { NCGHT_HEADER, NCGHT_ITEM, NCGHT_NOWHERE };
+	enum NCG_HITTEST { NCGHT_HEADER, NCGHT_ITEM, NCGHT_NOWHERE }; // private
+
 	NCG_HITTEST HitTest(CPoint ptScreen, DWORD& dwItem, int& nColumn) const;
 	NCG_HITTEST HitTest(CPoint ptScreen) const;
 	DWORD ItemHitTest(CPoint ptClient) const;
 	int ColumnHitTest(CPoint ptScreen) const;
 
-	enum HCHDRPART { NONCLIENT, CLIENT };
+	enum HCHDRPART { NONCLIENT, CLIENT }; // private
+
 	void NcDrawHeader(CDC* pDC, const CRect& rHeader, HCHDRPART nPart, const LPPOINT pCursor);
 	void NcDrawHeaderColumn(CDC* pDC, int nColumn, CRect rColumn, CThemed* pTheme, const LPPOINT pCursor);
 	void UpdateHeaderHotRects();
@@ -221,6 +233,13 @@ protected:
 
 	BOOL PrepareBitmap(CDC* pDC, CBitmap* pBitmap, const CRect& rect, BOOL bClient);
 	CFont* PrepareFont(CDC* pDC, BOOL bHeader, HFONT hFont = NULL); // returns 'old' font
+
+	enum GHR_WHAT { GHR_NONCLIENT, GHR_CLIENT, GHR_ALL }; // private
+
+	void GetHeaderRect(CRect& rHeader, GHR_WHAT nWhat, BOOL bScreen) const;
+	void GetWindowRectEx(CRect& rWindow, BOOL bScreen) const;
+	void GetGutterRect(CRect& rGutter, BOOL bScreen) const;
+	void GetCursorPos(CPoint& ptCursor, BOOL bScreen) const;
 };
 
 #endif // !defined(AFX_NCGUTTER_H__A356B1B6_1B4D_4013_8F39_8D9D2442E149__INCLUDED_)

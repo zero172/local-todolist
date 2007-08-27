@@ -91,24 +91,22 @@ UINT CDragDropMgr::ProcessMessage(const MSG* pMsg, BOOL bAllowNcDrag)
 
 	if (IsSourceWnd(msg.hwnd)) 
     {
-		if (msg.message == WM_LBUTTONDOWN || (bAllowNcDrag && msg.message == WM_NCLBUTTONDOWN)) 
-			return OnLButtonDown(msg);
+		if (msg.message == WM_LBUTTONDOWN || (bAllowNcDrag && msg.message == WM_NCLBUTTONDOWN) ||
+			msg.message == WM_RBUTTONDOWN || (bAllowNcDrag && msg.message == WM_NCRBUTTONDOWN)) 
+			return OnButtonDown(msg);
 
         else if (msg.message == WM_MOUSEMOVE) 
 			return OnMouseMove(msg);
 
-        else if (msg.message == WM_LBUTTONUP) 
-			return OnLButtonUp(msg);
+        else if (msg.message == WM_LBUTTONUP || msg.message == WM_RBUTTONUP) 
+			return OnButtonUp(msg);
 
-        else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE) 
+        else if (msg.message == WM_KEYDOWN && msg.wParam == VK_ESCAPE && m_iState) 
         {
-			if (m_iState) 
-            {
-				SendDragMessage(WM_DD_DRAGABORT);
-				SetState(NONE);
+			SendDragMessage(WM_DD_DRAGABORT);
+			SetState(NONE);
 
-				return TRUE;
-			}
+			return TRUE;
 		}
 	}
 	return FALSE;
@@ -117,12 +115,12 @@ UINT CDragDropMgr::ProcessMessage(const MSG* pMsg, BOOL bAllowNcDrag)
 //////////////////
 // Handle button-down message: enter CAPTURED state.
 //
-BOOL CDragDropMgr::OnLButtonDown(const MSG& msg)
+BOOL CDragDropMgr::OnButtonDown(const MSG& msg)
 {
 	ASSERT (IsSourceWnd(msg.hwnd));
 	
 	// convert m_ptOrg to client coords
-	if (msg.message == WM_NCLBUTTONDOWN)
+	if (msg.message == WM_NCLBUTTONDOWN || msg.message == WM_NCRBUTTONDOWN)
 	{
 		// check we're not on a scrollbar
 		UINT nHitTest = SendMessage(msg.hwnd, WM_NCHITTEST, 0, msg.lParam);
@@ -159,10 +157,12 @@ BOOL CDragDropMgr::OnMouseMove(const MSG& msg)
 	if (!IsCaptured())
 		return FALSE;
 
+	BOOL bLButtonDown = (GetKeyState(VK_LBUTTON) & 0x8000);
+	BOOL bRButtonDown = (GetKeyState(VK_RBUTTON) & 0x8000);
+
 	// check mouse button is still down
-	if (!(GetKeyState(VK_LBUTTON) & 0x8000))
+	if (!bLButtonDown && !bRButtonDown)
 	{
-//		TRACE("CDragDropMgr::OnMouseMove(bad mouse state)\n");
 		SetState(NONE); 
 		return FALSE;
 	}
@@ -244,13 +244,14 @@ BOOL CDragDropMgr::OnMouseMove(const MSG& msg)
 			m_ddi.pt = m_ptOrg;	// start from ORIGINAL point, not where now
 			m_ddi.hwndTarget = m_hwndTracking;
 			m_ddi.pData = NULL;
+			m_ddi.bLeftDrag = bLButtonDown;
 
 			// Send main window a message: enter drag mode. 
 			BOOL bDrag = SendDragMessage(WM_DD_DRAGENTER);
 
 			if (bDrag && m_ddi.pData) 
             {
-				SetState(DRAGGING);			 // I am now dragging
+				SetState(bLButtonDown ? LDRAGGING : RDRAGGING);	// I am now dragging
 				OnMouseMove(msg);
 
 				CRect rc;
@@ -298,13 +299,10 @@ void CDragDropMgr::DragShowNolock(BOOL bShow)
 //////////////////
 // Handle button-up: drop the data and return to home state (NONE).
 //
-BOOL CDragDropMgr::OnLButtonUp(const MSG& msg)
+BOOL CDragDropMgr::OnButtonUp(const MSG& msg)
 {
-//	TRACE ("CDragDropMgr::OnLButtonUp()\n");
-
 	if (!IsDragging()) 
     {
-//		TRACE ("CDragDropMgr::OnLButtonUp(not dragging)\n");
 		SetState(NONE); 
 		return FALSE;
 	}
@@ -324,7 +322,6 @@ BOOL CDragDropMgr::OnLButtonUp(const MSG& msg)
 	} 
     else 
     {
-//		TRACE ("CDragDropMgr::OnLButtonUp(not target wnd)\n");
 		SendDragMessage(WM_DD_DRAGABORT);
 	}
 
@@ -348,7 +345,8 @@ void CDragDropMgr::SetState(UINT iState)
 			::SetCapture(m_hwndTracking);	 // capture mouse input
 			break;
 			
-        case DRAGGING:
+        case LDRAGGING:
+        case RDRAGGING:
 			m_hCursorSave = GetCursor();	 // save current cursor
 			break;
 			
@@ -367,9 +365,12 @@ void CDragDropMgr::SetState(UINT iState)
 				m_pDragImage=NULL;			 // ..image list
 			}
 
-			InvalidateRect(m_hwndTracking, NULL, FALSE);
-			UpdateWindow(m_hwndTracking);
-			
+			if (m_hwndTracking)
+				InvalidateRect(m_hwndTracking, NULL, FALSE);
+
+			if (m_ddi.hwndTarget)
+				InvalidateRect(m_ddi.hwndTarget, NULL, FALSE);
+
 			delete m_ddi.pData;
 			m_ddi.pData = NULL;
 			m_hwndTracking = NULL;

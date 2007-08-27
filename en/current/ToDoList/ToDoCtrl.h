@@ -29,7 +29,10 @@
 #include "..\shared\wndPrompt.h"
 #include "..\shared\contentmgr.h"
 #include "..\shared\encheckcombobox.h"
+#include "..\shared\contenttypecombobox.h"
 //#include "..\shared\endatetimectrl.h"
+
+#include "..\3rdparty\colourpicker.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CToDoCtrl dialog
@@ -47,15 +50,19 @@ class CToDoCtrl : public CRuntimeDlg, protected CDialogHelper
 {
 // Construction
 public:
-	CToDoCtrl(CContentMgr& mgr, int nDefaultContent = 0);
+	CToDoCtrl(CContentMgr& mgr, const CONTENTFORMAT& cfDefault);
 	virtual ~CToDoCtrl();
 
 	BOOL Create(const RECT& rect, CWnd* pParentWnd, UINT nID, BOOL bVisible = TRUE);
 
 	TDC_FILE Save(LPCTSTR szFilePath = NULL, BOOL bCheckforLaterChanges = TRUE);
 	TDC_FILE Save(CTaskFile& tasks/*out*/, LPCTSTR szFilePath = NULL, BOOL bCheckforLaterChanges = TRUE);
+
 	TDC_FILE Load(LPCTSTR szFilePath, LPCTSTR szArchivePath = NULL, 
 					TDC_ARCHIVE nRemove = TDC_REMOVEALL, BOOL bRemoveFlagged = TRUE);
+	TDC_FILE Load(CTaskFile& tasks/*out*/, LPCTSTR szFilePath, LPCTSTR szArchivePath = NULL, 
+					TDC_ARCHIVE nRemove = TDC_REMOVEALL, BOOL bRemoveFlagged = TRUE);
+	
 	BOOL DelayLoad(LPCTSTR szFilePath, COleDateTime& dtEarliestDue);
 
 	BOOL Import(LPCTSTR szFilePath, BOOL bAppend);
@@ -152,11 +159,10 @@ public:
 
 	COLORREF GetSelectedTaskColor() const; // -1 on no item selected
 	CString GetSelectedTaskComments() const;
-	CString GetSelectedTaskCustomComments() const;
+	CString GetSelectedTaskCustomComments(CString& sCommentsTypeID) const;
 	CString GetSelectedTaskTitle() const;
 	double GetSelectedTaskTimeEstimate(int& nUnits) const;
 	double GetSelectedTaskTimeSpent(int& nUnits) const;
-//	CString GetSelectedTaskAllocTo() const;
 	int GetSelectedTaskAllocTo(CStringArray& aAllocTo) const;
 	CString GetSelectedTaskAllocBy() const;
 	CString GetSelectedTaskStatus() const;
@@ -171,7 +177,6 @@ public:
 	BOOL IsSelectedTaskFlagged() const;
 	BOOL GetSelectedTaskRecurrence(TDIRECURRENCE& tr) const;
 	CString GetSelectedTaskVersion() const;
-	BOOL GetCustomCommentsType(GUID& idType) const;
 
 	double CalcSelectedTaskTimeEstimate(int nUnits = TDITU_HOURS) const;
 	double CalcSelectedTaskTimeSpent(int nUnits = TDITU_HOURS) const;
@@ -181,10 +186,11 @@ public:
 	BOOL ClearSelectedTaskColor() { return SetSelectedTaskColor((COLORREF)-1); }
 	BOOL SetSelectedTaskTitle(LPCTSTR szTitle);
 	BOOL SetSelectedTaskPercentDone(int nPercent);
-	BOOL SetSelectedTaskTimeEstimate(const double& dHours, int nUnits = TDITU_HOURS);
-	BOOL SetSelectedTaskTimeSpent(const double& dHours, int nUnits = TDITU_HOURS);
+	BOOL SetSelectedTaskTimeEstimate(double dTime, int nUnits = TDITU_HOURS);
+	BOOL SetSelectedTaskTimeSpent(double dTime, int nUnits = TDITU_HOURS);
+	BOOL SetSelectedTaskTimeEstimateUnits(int nUnits, BOOL bRecalcTime = FALSE);
+	BOOL SetSelectedTaskTimeSpentUnits(int nUnits, BOOL bRecalcTime = FALSE);
 	BOOL SetSelectedTaskAllocTo(const CStringArray& aAllocTo);
-//	BOOL SetSelectedTaskAllocTo(LPCTSTR szAllocTo);
 	BOOL SetSelectedTaskAllocBy(LPCTSTR szAllocBy);
 	BOOL SetSelectedTaskStatus(LPCTSTR szStatus);
 	BOOL SetSelectedTaskCategories(const CStringArray& aCats);
@@ -194,7 +200,7 @@ public:
 	BOOL SetSelectedTaskDependency(LPCTSTR szDepends);
 	BOOL SetSelectedTaskExtID(LPCTSTR szID);
 	BOOL SetSelectedTaskFlag(BOOL bFlagged);
-	BOOL SetSelectedTaskCost(const double& dCost);
+	BOOL SetSelectedTaskCost(double dCost);
 	BOOL SetSelectedTaskRecurrence(const TDIRECURRENCE& tr);
 	BOOL SetSelectedTaskVersion(LPCTSTR szVersion);
 	BOOL SetSelectedTaskComments(LPCTSTR szComments, const CString& sCustomComments);
@@ -215,15 +221,16 @@ public:
 	BOOL IsActivelyTimeTracking() const; // this instant
 	CString GetSelectedTaskTimeLogPath() const;
 	void EndTimeTracking();
+	void ResetTimeTracking() { m_dwTickLast = GetTickCount(); }
 
 	BOOL SetSelectedTaskAttributeAsParent(TDC_ATTRIBUTE nAttrib);
 
 	void SetDefaultTaskAttributes(LPCTSTR szTitle, LPCTSTR szComments, COLORREF color,
-									const double& dTimeEst, int nTimeEstUnits, 
-									const CStringArray& aAllocTo/*LPCTSTR szAllocTo*/,
-									LPCTSTR szAllocBy, LPCTSTR szStatus, const CStringArray& aCats,
+									double dTimeEst, int nTimeEstUnits, 
+									const CStringArray& aAllocTo, LPCTSTR szAllocBy, 
+									LPCTSTR szStatus, const CStringArray& aCats,
 									int nPriority, int nRisk, BOOL bAutoStartDate, 
-									LPCTSTR szCreatedBy, double dCost);
+									LPCTSTR szCreatedBy, double dCost, const CONTENTFORMAT& cf);
 
 	void Sort(TDC_SORTBY nBy); // calling twice with the same param will toggle ascending attrib
 	TDC_SORTBY GetSortBy() const { return m_nSortBy; }
@@ -233,8 +240,10 @@ public:
 	BOOL MoveSelectedTask(TDDH_MOVE nDirection);
 	BOOL CanMoveSelectedTask(TDDH_MOVE nDirection) const;
 
-	void GotoTopLevelTask(TDC_GOTO nDirection); 
-	BOOL CanGotoTopLevelTask(TDC_GOTO nDirection) const;
+	void GotoNextTask(TDC_GOTO nDirection); 
+	BOOL CanGotoNextTask(TDC_GOTO nDirection) const;
+	void GotoNextTopLevelTask(TDC_GOTO nDirection); 
+	BOOL CanGotoNextTopLevelTask(TDC_GOTO nDirection) const;
 
 	BOOL CanExpandSelectedTask(BOOL bExpand) const;
 	void ExpandSelectedTask(BOOL bExpand = TRUE);
@@ -297,6 +306,7 @@ public:
 
 	static void ParseTaskLink(LPCTSTR szLink, DWORD& dwTaskID, CString& sFile);
 	static BOOL IsReservedShortcut(DWORD dwShortcut);
+	static void EnableExtendedSelection(BOOL bCtrl, BOOL bShift);
 
 protected:
 	CDateTimeCtrl m_dateStart, m_dateDue, m_dateDone;
@@ -314,6 +324,8 @@ protected:
 	COrderedTreeCtrl m_tree;
 	CRecurringTaskEdit m_eRecurrence;
 	CAutoComboBox m_cbVersion;
+	CContentTypeComboBox m_cbCommentsType;
+	CColourPicker m_cpColour;
 
 	HFONT m_fontTree, m_fontDone, m_fontComments, m_fontBold;
 	HIMAGELIST m_hilDone;
@@ -342,7 +354,6 @@ protected:
 	CWndPromptManager m_mgrPrompts;
 	COleDateTime m_tLastTaskMod;
 	CContentMgr& m_mgrContent;
-	int m_nDefaultContent;
 
 	CString m_sFileRefPath;
 	CString m_sTextComments, m_CustomComments;
@@ -358,9 +369,10 @@ protected:
 	int m_nRisk;
 	int m_nPercentDone;
 	int m_nTimeEstUnits, m_nTimeSpentUnits;
-	GUID m_idCommentsType;
+	CONTENTFORMAT m_cfComments, m_cfDefault;
 	TDIRECURRENCE m_tRecurrence;
 	CString m_sVersion;
+	COLORREF m_crColour;
 
 	DWORD m_dwNextUniqueID;
 	DWORD m_nFileVersion;
@@ -381,6 +393,7 @@ protected:
 	static TDLCLIPBOARD s_clipboard;
 	static int s_nCommentsSize; // TDCS_SHAREDCOMMENTSHEIGHT
 	static TODOITEM s_tdDefault;
+	static short s_nExtendedSelection;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -428,15 +441,10 @@ protected:
 	afx_msg void OnChangePercent();
 	afx_msg void OnChangeTimeEstimate();
 	afx_msg void OnChangeTimeSpent();
-//	afx_msg void OnEditChangeAllocTo();
 	afx_msg void OnSelChangeAllocTo();
-//	afx_msg void OnEditChangeAllocBy();
 	afx_msg void OnSelChangeAllocBy();
-//	afx_msg void OnEditChangeStatus();
 	afx_msg void OnSelChangeStatus();
-//	afx_msg void OnEditChangeVersion();
 	afx_msg void OnSelChangeVersion();
-//	afx_msg void OnEditChangeCategory();
 	afx_msg void OnSelChangeCategory();
 	afx_msg void OnChangeRisk();
 	afx_msg void OnChangeProjectName();
@@ -445,7 +453,6 @@ protected:
 	afx_msg void OnChangeExternalID();
 	afx_msg void OnChangeFileRefPath();
 	afx_msg void OnChangeRecurrence();
-	afx_msg LRESULT OnAutoComboSelChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGutterWantRedraw(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGutterDrawItem(WPARAM wParam, LPARAM lParam); 
 	afx_msg LRESULT OnGutterPostDrawItem(WPARAM wParam, LPARAM lParam);
@@ -467,10 +474,13 @@ protected:
 	afx_msg LRESULT OnTDCHasClipboard(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnTDCGetClipboard(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnTDCDoTaskLink(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnAutoComboChange(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnAutoComboAddDelete(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGetFont(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnCommentsWantSpellCheck(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnSelChangeCommentsType();
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	afx_msg LRESULT OnRefreshPercentSpinVisibility(WPARAM wp, LPARAM lp);
+	afx_msg LRESULT OnChangeColour(WPARAM wp, LPARAM lp);
 	DECLARE_MESSAGE_MAP()
 
 protected:
@@ -480,7 +490,7 @@ protected:
 	CString FormatInfoTip(const HTREEITEM hti, const TODOITEM* tdi) const;
 	void InvalidateSelectedItem();
 	void InvalidateItem(HTREEITEM hti);
-	void UpdateTask(TDC_ATTRIBUTE nAttrib);
+	void UpdateTask(TDC_ATTRIBUTE nAttrib, DWORD dwFlags = 0);
 	void UpdateControls(HTREEITEM hti = NULL);
 	void UpdateSelectedTaskPath();
 	CRect GetSplitterRect();

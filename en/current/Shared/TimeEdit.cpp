@@ -76,9 +76,6 @@ const TIMEUNIT& GetTimeUnit(int nUnits)
 	return TIMEUNITS[0]; // hours
 }
 
-CString CTimeEdit::s_sRecalcTimePrompt;
-CString CTimeEdit::s_sRecalcTimeTitle;
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 CTimeEdit::CTimeEdit(int nUnits, int nMaxDecPlaces) : m_nUnits(nUnits), m_nMaxDecPlaces(nMaxDecPlaces)
@@ -213,29 +210,13 @@ void CTimeEdit::OnBtnClick(UINT nID)
 			{
 				if (m_nUnits != tu.nUnits)
 				{
-					// prompt to recalc the time
-					double dTime = GetTime();
-
-					if (dTime > 0.0 && 
-						!s_sRecalcTimePrompt.IsEmpty() && !s_sRecalcTimeTitle.IsEmpty())
-					{
-						int nRet = MessageBox(s_sRecalcTimePrompt, s_sRecalcTimeTitle, 
-												MB_ICONQUESTION | MB_YESNOCANCEL);
-
-						if (nRet == IDCANCEL)
-							return;
-
-						else if (nRet == IDYES)
-						{
-							dTime = CTimeHelper::GetTime(dTime, m_nUnits, tu.nUnits);
-							SetTime(dTime);
-						}
-					}
-
 					// update the units
 					int nPrevUnits = m_nUnits;
 					SetUnits(tu.nUnits);
-					GetParent()->SendMessage(WM_TEN_UNITSCHANGE, (WPARAM)GetDlgCtrlID(), nPrevUnits);
+
+					// inform parent and check for cancel
+					if (GetParent()->SendMessage(WM_TEN_UNITSCHANGE, (WPARAM)GetDlgCtrlID(), nPrevUnits))
+						SetUnits(nPrevUnits);
 				}
 				break;
 			}
@@ -274,7 +255,7 @@ void CTimeEdit::SetUnits(int nUnits, LPCTSTR szLongUnits, LPCTSTR szAbbrevUnits)
 			if (szLongUnits && *szLongUnits)
 			{
 				//fabio_2005
-#if _MSC_VER >= 1400
+#if _MSC_VER >= 1300
 				strncpy_s(tu.szLabel, szLongUnits, LABELLEN - 1);
 #else
 				strncpy(tu.szLabel, szLongUnits, LABELLEN - 1);
@@ -290,12 +271,6 @@ void CTimeEdit::SetUnits(int nUnits, LPCTSTR szLongUnits, LPCTSTR szAbbrevUnits)
 
 	// abbrev units
 	CTimeHelper::SetUnits(nUnits, szAbbrevUnits);
-}
-
-void CTimeEdit::SetRecalcTimePrompt(LPCTSTR szTitle, LPCTSTR szPrompt)
-{
-	s_sRecalcTimePrompt = szPrompt;
-	s_sRecalcTimeTitle = szTitle;
 }
 
 void CTimeEdit::RemoveTrailingZeros(CString& sTime)

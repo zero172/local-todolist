@@ -1,4 +1,4 @@
-// ISpellCheck.h: interface for the ISpellCheck class.
+// ISpellChecker.h: interface for the ISpellChecker class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -23,10 +23,10 @@
 
 #define ISPELLCHECK_VERSION 0x0000
 
-class ISpellCheck;
+class ISpellChecker;
 
-typedef ISpellCheck* (*PFNCREATE)(const char*, const char*); // function prototype
-extern "C" DLL_DECLSPEC ISpellCheck* CreateSpellCheckInterface(const char* szAffPath, const char* szDicPath); // single exported function
+typedef ISpellChecker* (*PFNCREATE)(const char*, const char*); // function prototype
+extern "C" DLL_DECLSPEC ISpellChecker* CreateSpellCheckerInterface(const char* szAffPath, const char* szDicPath); // single exported function
 
 typedef int (*PFNGETVERSION)(); // function prototype
 extern "C" DLL_DECLSPEC int GetInterfaceVersion();
@@ -34,14 +34,14 @@ extern "C" DLL_DECLSPEC int GetInterfaceVersion();
 #pragma warning(disable:4505)
 
 // helper method
-static ISpellCheck* CreateSpellCheckInterface(const char* szDllPath, const char* szAffPath, const char* szDicPath)
+static ISpellChecker* CreateSpellCheckerInterface(const char* szDllPath, const char* szAffPath, const char* szDicPath)
 {
-    ISpellCheck* pInterface = NULL;
+    ISpellChecker* pInterface = NULL;
     HMODULE hDll = LoadLibrary(szDllPath);
 	
     if (hDll)
     {
-        PFNCREATE pCreate = (PFNCREATE)GetProcAddress(hDll, "CreateSpellCheckInterface");
+        PFNCREATE pCreate = (PFNCREATE)GetProcAddress(hDll, "CreateSpellCheckerInterface");
 		
         if (pCreate)
 		{
@@ -62,7 +62,7 @@ static BOOL IsSpellCheckDll(const char* szDllPath)
 	
     if (hDll)
     {
-        PFNCREATE pCreate = (PFNCREATE)GetProcAddress(hDll, "CreateSpellCheckInterface");
+        PFNCREATE pCreate = (PFNCREATE)GetProcAddress(hDll, "CreateSpellCheckerInterface");
 		FreeLibrary(hDll);
 
 		return (NULL != pCreate);
@@ -71,7 +71,7 @@ static BOOL IsSpellCheckDll(const char* szDllPath)
 	return FALSE;
 }
 
-class ISpellCheck
+class ISpellChecker
 {
 public:
     virtual void Release() = 0; // releases the interface
@@ -85,7 +85,7 @@ public:
 	
 };
 
-static void ReleaseSpellCheckInterface(ISpellCheck*& pInterface)
+static void ReleaseSpellCheckerInterface(ISpellChecker*& pInterface)
 {
     if (pInterface)
     {
@@ -93,5 +93,18 @@ static void ReleaseSpellCheckInterface(ISpellCheck*& pInterface)
         pInterface = NULL;
     }
 }
+
+class ISpellCheck
+{
+public:
+	virtual const char* GetFirstWord() const = 0;
+	virtual const char* GetNextWord() const = 0;
+	virtual const char* GetCurrentWord() const = 0;
+
+	virtual void SelectCurrentWord() = 0;
+	virtual void ReplaceCurrentWord(const char* szWord) = 0;
+
+	virtual void ClearSelection() = 0;
+};
 
 #endif // !defined(AFX_ISpellCheck_H__7741547B_BA15_4851_A41B_2B4EC1DC12D5__INCLUDED_)

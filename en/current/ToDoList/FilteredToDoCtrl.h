@@ -15,7 +15,7 @@
 class CFilteredToDoCtrl : public CToDoCtrl  
 {
 public:
-	CFilteredToDoCtrl(CContentMgr& mgr, int nDefaultContent = 0);
+	CFilteredToDoCtrl(CContentMgr& mgr, const CONTENTFORMAT& cfDefault);
 	virtual ~CFilteredToDoCtrl();
 
 	void SetFilter(const FTDCFILTER& filter);

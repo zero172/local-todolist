@@ -10,6 +10,15 @@
 #endif // _MSC_VER > 1000
 
 class IContentControl;
+class ISpellCheck;
+
+class CONTENTFORMAT : public CString
+{
+public:
+	CONTENTFORMAT(LPCTSTR szID = NULL) : CString(szID) {}
+	CONTENTFORMAT(const CString& sID) : CString(sID) {}
+	BOOL FormatIsText() const;
+};
 
 class CContentCtrl  
 {
@@ -28,9 +37,9 @@ public:
 	BOOL SetTextContent(const char* szContent);
 	BOOL SettingContent() { return m_bSettingContent; }
 
-	BOOL HasTypeID() const;
-	BOOL GetTypeID(GUID& id) const;
-	BOOL IsType(const GUID& id) const;
+	LPCTSTR GetTypeID() const;
+	BOOL IsFormat(const CONTENTFORMAT& cf) const;
+	CONTENTFORMAT GetContentFormat() const;
 
 	BOOL SetReadOnly(BOOL bReadOnly);
 	
@@ -46,6 +55,8 @@ public:
 	BOOL PostMessage(UINT message, WPARAM wParam = 0, LPARAM lParam = 0);
 
 	BOOL PreTranslateMessage(MSG* pMsg);
+
+	ISpellCheck* GetSpellCheckInterface();
 
 protected:
 	IContentControl* m_pContentCtrl;

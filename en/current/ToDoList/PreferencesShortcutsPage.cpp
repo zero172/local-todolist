@@ -22,7 +22,7 @@ static char THIS_FILE[] = __FILE__;
 // CPreferencesShortcutsPage property page
 
 CPreferencesShortcutsPage::CPreferencesShortcutsPage(CShortcutManager* pMgr, UINT nMenuID, BOOL bIgnoreGrayedItems) 
-	: CPropertyPage(CPreferencesShortcutsPage::IDD), 
+	: CPreferencesPageBase(CPreferencesShortcutsPage::IDD), 
 	m_nMenuID(nMenuID), m_pShortcutMgr(pMgr), m_bIgnoreGrayedItems(bIgnoreGrayedItems)
 {
 	//{{AFX_DATA_INIT(CPreferencesShortcutsPage)
@@ -36,7 +36,7 @@ CPreferencesShortcutsPage::~CPreferencesShortcutsPage()
 
 void CPreferencesShortcutsPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesShortcutsPage)
 	DDX_Control(pDX, IDC_CURHOTKEY, m_hkCur);
 	DDX_Control(pDX, IDC_COMMANDS, m_tcCommands);
@@ -45,7 +45,7 @@ void CPreferencesShortcutsPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-BEGIN_MESSAGE_MAP(CPreferencesShortcutsPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesShortcutsPage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesShortcutsPage)
 	ON_BN_CLICKED(IDC_ASSIGNSHORTCUT, OnAssignshortcut)
 	//}}AFX_MSG_MAP
@@ -61,7 +61,7 @@ END_MESSAGE_MAP()
 
 BOOL CPreferencesShortcutsPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	CPreferencesPageBase::OnInitDialog();
 
 	m_tcCommands.AddGutterColumn(PSP_SHORTCUTCOLUMNID, CEnString(IDS_PSP_SHORTCUT));
 
@@ -70,6 +70,7 @@ BOOL CPreferencesShortcutsPage::OnInitDialog()
 	m_tcCommands.SetGridlineColor(OTC_GRIDCOLOR);
 	m_tcCommands.EnableGutterColumnHeaderClicking(PSP_SHORTCUTCOLUMNID, FALSE);
 	m_tcCommands.EnableGutterColumnHeaderClicking(NCG_CLIENTCOLUMNID, FALSE);
+//	m_tcCommands.ShowColumnsOnRight(TRUE);
 	
 	if (m_nMenuID && m_pShortcutMgr)
 	{
@@ -585,5 +586,14 @@ BOOL CPreferencesShortcutsPage::PreTranslateMessage(MSG* pMsg)
 		break;
 	}
 	
-	return CPropertyPage::PreTranslateMessage(pMsg);
+	return CPreferencesPageBase::PreTranslateMessage(pMsg);
+}
+
+void CPreferencesShortcutsPage::LoadPreferences(const CPreferencesStorage& /*prefs*/)
+{
+}
+
+void CPreferencesShortcutsPage::SavePreferences(CPreferencesStorage& /*prefs*/)
+{
+
 }

@@ -19,12 +19,17 @@ public:
 	virtual ~CMenuIconMgr();
 	
 	BOOL Initialize(CWnd* pWnd);
+
+	BOOL AddImage(UINT nCmdID, HICON hIcon); // hIcon will be copied
+	BOOL SetImage(UINT nCmdID, HICON hIcon); // hIcon will be cleaned up
+
+	BOOL AddImage(UINT nCmdID, const CImageList& il, int nImage);
 	int AddImages(const CToolBar& toolbar);
-	BOOL SetImage(UINT nCmdID, HICON hIcon);
 	int AddImages(const CUIntArray& aCmdIDs, const CImageList& il);
 	int AddImages(const CUIntArray& aCmdIDs, UINT nIDBitmap, int nCx, COLORREF crMask);
 	
 	BOOL ChangeImageID(UINT nCmdID, UINT nNewCmdID);
+	void DeleteImage(UINT nCmdID);
 	
 	void ClearImages() { m_mapID2Icon.RemoveAll(); }
 	

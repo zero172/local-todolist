@@ -71,6 +71,21 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name RTFLOC
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "RTFLOC"=..\RTFContentCtrl\RTFLOC\RTFLOC.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
 }}}
 
 ###############################################################################
@@ -115,6 +130,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name MLOImport
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ToDoLOC
     End Project Dependency
 }}}
 

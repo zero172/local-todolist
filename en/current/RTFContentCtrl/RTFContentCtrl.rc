@@ -161,9 +161,9 @@ IDR_POPUP MENU DISCARDABLE
 BEGIN
     POPUP "edit"
     BEGIN
-        MENUITEM "&Bold",                       BUTTON_BOLD
-        MENUITEM "&Italic",                     BUTTON_ITALIC
-        MENUITEM "&Underline",                  BUTTON_UNDERLINE
+        MENUITEM "&Bold\tCtrl+B",               BUTTON_BOLD
+        MENUITEM "&Italic\tCtrl+I",             BUTTON_ITALIC
+        MENUITEM "&Underline\tCtrl+U",          BUTTON_UNDERLINE
         MENUITEM "Stri&kethrough",              BUTTON_STRIKETHRU
         MENUITEM SEPARATOR
         MENUITEM "Superscript",                 ID_EDIT_SUPERSCRIPT
@@ -172,16 +172,20 @@ BEGIN
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM "Paste Simple (No formatting)", ID_EDIT_PASTESIMPLE
+        MENUITEM "Paste Simple (No formatting)\tCtrl+Shift+V", 
+                                                ID_EDIT_PASTESIMPLE
         MENUITEM "Past&e Tasks as References",  ID_EDIT_PASTEASREF
         MENUITEM "Delete\tDel",                 ID_EDIT_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
         MENUITEM SEPARATOR
+        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
+        MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_FINDREPLACE
+        MENUITEM SEPARATOR
         MENUITEM "&Open Url",                   ID_EDIT_OPENURL
         MENUITEM "Insert &File Link...",        ID_EDIT_FILEBROWSE
         MENUITEM SEPARATOR
-        MENUITEM "Insert &Datestamp",           ID_EDIT_INSERTDATESTAMP
+        MENUITEM "C&heck Spelling",             ID_EDIT_SPELLCHECK
         MENUITEM SEPARATOR
         MENUITEM "Show &Formatting Toolbar",    ID_EDIT_SHOWTOOLBAR
         MENUITEM "Show &Ruler",                 ID_EDIT_SHOWRULER
@@ -207,6 +211,8 @@ BEGIN
     STRING_COLOR            "abc"
     STRING_DEFAULT          "Automatic"
     STRING_CUSTOM           "More Colours..."
+    IDS_FIND_TITLE          "Find In Comments"
+    IDS_REPLACE_TITLE       "Replace In Comments"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -228,6 +234,11 @@ STRINGTABLE DISCARDABLE
 BEGIN
     BUTTON_TEXTCOLOR        "Text Colour"
     BUTTON_BACKCOLOR        "Background Colour"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COMMENTSGOTOERRMSG  "The selected file could not be opened.\n\nPlease check that the file exists and that there is an application \nregistered for opening the selected file type."
 END
 
 #endif    // English (Australia) resources

@@ -11,6 +11,7 @@
 #include "..\todolist\tdcmsg.h"
 #include "..\shared\richedithelper.h"
 #include "..\todolist\tdlschemadef.h"
+#include "..\shared\misc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -21,7 +22,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CRTFContentControl
 
-CRTFContentControl::CRTFContentControl() : m_bAllowNotify(TRUE)
+CRTFContentControl::CRTFContentControl() : m_bAllowNotify(TRUE), m_reSpellCheck(m_rtf)
 {
 	// add custom protocol to comments field for linking to task IDs
 	GetRichEditCtrl().AddProtocol(TDL_PROTOCOL, TRUE);
@@ -134,27 +135,31 @@ bool CRTFContentControl::SetTextContent(const char* szContent)
 
 HWND CRTFContentControl::GetHwnd() const
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	
 	return GetSafeHwnd();
 }
 
-bool CRTFContentControl::HasTypeID() const
+const char* CRTFContentControl::GetTypeID() const
 {
-	return true;
-}
+	static CString sID;
 
-bool CRTFContentControl::GetTypeID(GUID& id) const
-{
-	id = RTF_TYPEID;
-	return true;
+	Misc::GuidToString(RTF_TYPEID, sID);
+
+	return sID;
 }
 
 void CRTFContentControl::SetReadOnly(bool bReadOnly)
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	CRulerRichEditCtrl::SetReadOnly((BOOL)bReadOnly);
 }
 
 void CRTFContentControl::Release()
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	DestroyWindow();
 	delete this;
 }
@@ -238,6 +243,10 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 
 				EnableMenuItem(pPopup, ID_EDIT_FILEBROWSE, bCanEdit);
 				EnableMenuItem(pPopup, ID_EDIT_INSERTDATESTAMP, bCanEdit);
+				EnableMenuItem(pPopup, ID_EDIT_SPELLCHECK, bCanEdit && bHasText);
+
+				EnableMenuItem(pPopup, ID_EDIT_FIND, bHasText);
+				EnableMenuItem(pPopup, ID_EDIT_FINDREPLACE, bCanEdit && bHasText);
 
 				CheckMenuItem(pPopup, ID_EDIT_SHOWTOOLBAR, IsToolbarVisible());
 				CheckMenuItem(pPopup, ID_EDIT_SHOWRULER, IsRulerVisible());
@@ -278,12 +287,20 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 					re.SendMessage(EM_REDO);
 					break;
 
+				case ID_EDIT_COPY:
+					re.Copy();
+					break;
+
 				case ID_EDIT_CUT:
 					re.Cut();
 					break;
 
-				case ID_EDIT_COPY:
-					re.Copy();
+				case ID_EDIT_FIND:
+					re.DoEditFind(IDS_FIND_TITLE);
+					break;
+
+				case ID_EDIT_FINDREPLACE:
+					re.DoEditReplace(IDS_REPLACE_TITLE);
 					break;
 
 				case ID_EDIT_PASTE:
@@ -374,6 +391,10 @@ void CRTFContentControl::OnContextMenu(CWnd* pWnd, CPoint point)
 						re.ReplaceSel(date.Format(), TRUE);
 					}
 					break;
+	
+				case ID_EDIT_SPELLCHECK:
+					GetParent()->PostMessage(WM_ICC_WANTSPELLCHECK);
+					break;
 
 				case ID_EDIT_SHOWTOOLBAR:
 					ShowToolbar(!IsToolbarVisible());
@@ -416,7 +437,8 @@ BOOL CRTFContentControl::CanPaste()
 		CF_BITMAP,
 		CF_TEXT,
 		CF_DIB,
-		CF_UNICODETEXT
+		CF_UNICODETEXT,
+		CF_HDROP
 	};
 	const long formats_count = sizeof(formats) / sizeof(CLIPFORMAT);
 	
@@ -452,7 +474,7 @@ int CRTFContentControl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	GetRichEditCtrl().LimitText(1024 * 1024 * 1024); // one gigabyte
 	
 	m_tbHelper.Initialize(&m_toolbar, this);
-	
+
 	return 0;
 }
 
@@ -518,6 +540,16 @@ bool CRTFContentControl::ProcessMessage(MSG* pMsg)
 				case 'r':
 				case 'R':
 					DoRightAlign();
+					return TRUE;
+
+				case 'f':
+				case 'F':
+					GetRichEditCtrl().DoEditFind();
+					return TRUE;
+
+				case 'h':
+				case 'H':
+					GetRichEditCtrl().DoEditReplace();
 					return TRUE;
 
 				case '\t':

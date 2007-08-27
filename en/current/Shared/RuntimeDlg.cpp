@@ -288,9 +288,15 @@ void CRuntimeDlg::AutoFit()
 	GetWindowRect(rWindow);
 	CalcWindowRect(rClient);
 	
-	// match centerpoints of old and new
 	rClient = CRect(rWindow.TopLeft(), rClient.Size());
-	rClient.OffsetRect(rWindow.CenterPoint() - rClient.CenterPoint());
+
+	CPoint ptTopLeft = GetInitialPos();
+
+	if (ptTopLeft.x != -1 || ptTopLeft.y != -1)
+		rClient.OffsetRect(ptTopLeft - rClient.TopLeft());
+
+	else // match centerpoints of old and new
+		rClient.OffsetRect(rWindow.CenterPoint() - rClient.CenterPoint());
 	
 	MoveWindow(rClient);
 }
@@ -751,28 +757,17 @@ BOOL CRuntimeDlg::PreTranslateMessage(MSG* pMsg)
    return (bChild && !bTab) ? CWnd::PreTranslateMessage(pMsg) : CDialog::PreTranslateMessage(pMsg);
 }
 
-void CRuntimeDlg::EnableControls(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bEnable)
+void CRuntimeDlg::SetControlState(CWnd* pParent, UINT nCtrlID, RT_CTRLSTATE nState)
 {
-	for (UINT nID = nCtrlIDFrom; nID <= nCtrlIDTo; nID++)
-		::EnableWindow(::GetDlgItem(*pParent, nID), bEnable);
+	SetControlState(::GetDlgItem(*pParent, nCtrlID), nState);
 }
 
-void CRuntimeDlg::SetControlsReadOnly(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bReadOnly)
+void CRuntimeDlg::SetControlsState(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, RT_CTRLSTATE nState)
 {
 	ASSERT (pParent);
 	
 	for (UINT nID = nCtrlIDFrom; nID <= nCtrlIDTo; nID++)
-		SetControlReadOnly(::GetDlgItem(*pParent, nID), bReadOnly);
-}
-
-void CRuntimeDlg::SetControlReadOnly(HWND hCtrl, BOOL bReadOnly)
-{
-	SetControlState(hCtrl, bReadOnly ? RTCS_READONLY : RTCS_ENABLED);
-}
-
-void CRuntimeDlg::SetControlState(CWnd* pParent, UINT nCtrlID, RT_CTRLSTATE nState)
-{
-	SetControlState(::GetDlgItem(*pParent, nCtrlID), nState);
+		SetControlState(::GetDlgItem(*pParent, nID), nState);
 }
 
 void CRuntimeDlg::SetControlState(HWND hCtrl, RT_CTRLSTATE nState)
@@ -854,11 +849,6 @@ void CRuntimeDlg::ExcludeControls(CWnd* pParent, CDC* pDC, UINT nCtrlIDFrom, UIN
 		if (::IsWindowVisible(::GetDlgItem(*pParent, nID)))
 			pDC->ExcludeClipRect(OffsetCtrl(pParent, nID));
 	}
-}
-
-void CRuntimeDlg::EnableControls(UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bEnable)
-{
-	EnableControls(this, nCtrlIDFrom, nCtrlIDTo, bEnable);
 }
 
 void CRuntimeDlg::ShowControls(UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bShow)

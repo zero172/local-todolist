@@ -37,18 +37,7 @@ bool CGPExporter::Export(const ITaskList* pSrcTaskFile, const char* szDestFilePa
 	ExportTask(pSrcTaskFile, pSrcTaskFile->GetFirstTask(), fileDest.Root());
 
 	// save result
-	CString sOutputPath(szDestFilePath);
-	sOutputPath.MakeLower();
-
-	// inset .gp before the xml extension unless
-	// we are replacing an existing file
-	if (sOutputPath.Find(".gp.xml") == -1)
-	{
-		if (!sOutputPath.Replace(".xml", ".gp.xml"))
-			sOutputPath += ".gp.xml";
-	}
-	
-	VERIFY (fileDest.Save(sOutputPath));
+	VERIFY (fileDest.Save(szDestFilePath));
 
 	return true;
 }
@@ -88,7 +77,15 @@ void CGPExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, CXm
 	else
 	{
 		pXIDestItem->AddItem("complete", pSrcTaskFile->GetTaskPercentDone(hTask, TRUE));
-		pXIDestItem->AddItem("priority", pSrcTaskFile->GetTaskPriority(hTask, TRUE));
+
+		int nPriority = pSrcTaskFile->GetTaskPriority(hTask, TRUE);
+		
+		if (nPriority <= 3)
+			pXIDestItem->AddItem("priority", 0); // low
+		else if (nPriority <= 6)
+			pXIDestItem->AddItem("priority", 1); // medium
+		else
+			pXIDestItem->AddItem("priority", 2); // high
 	}
 	
 	// dependency
@@ -107,6 +104,27 @@ void CGPExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, CXm
 		}
 	}
 
+	// file/weblink
+	CString sFileRef = pSrcTaskFile->GetTaskFileReferencePath(hTask);
+	sFileRef.TrimLeft();
+
+	if (!sFileRef.IsEmpty())
+	{
+		// web or file link?
+		if (sFileRef.Find(":\\") == 1 || sFileRef.Find("\\\\") == 0)
+			sFileRef = "file://" + sFileRef;
+
+		sFileRef.Replace(" ", "%20");
+
+		pXIDestItem->AddItem("webLink", sFileRef);
+	}
+
+	// comments
+	const char* szComments = pSrcTaskFile->GetTaskComments(hTask);
+
+	if (szComments && *szComments)
+		pXIDestItem->AddItem("notes", szComments, TRUE);
+	
 	// copy across first child
 	ExportTask(pSrcTaskFile, pSrcTaskFile->GetFirstTask(hTask), pXIDestItem);
 

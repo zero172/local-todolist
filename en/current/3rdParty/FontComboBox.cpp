@@ -197,6 +197,11 @@ BOOL CFontComboBox::SelectFontName( const CString& font )
 
    ============================================================*/
 {
-	return (SelectString(-1, font) != -1);
+	int nFind = FindStringExact(-1, font);
+
+	if (nFind != GetCurSel())
+		SetCurSel(nFind);
+
+	return (nFind != -1);
 }
 

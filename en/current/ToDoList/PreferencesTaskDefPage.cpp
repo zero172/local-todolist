@@ -18,44 +18,18 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesTaskDefPage property page
 
-IMPLEMENT_DYNCREATE(CPreferencesTaskDefPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CPreferencesTaskDefPage, CPreferencesPageBase)
 
 CPreferencesTaskDefPage::CPreferencesTaskDefPage() : 
-	CPropertyPage(CPreferencesTaskDefPage::IDD),
+	CPreferencesPageBase(CPreferencesTaskDefPage::IDD),
 	m_cbAllocByList(TRUE),
 	m_cbAllocToList(TRUE),
 	m_cbCategoryList(TRUE),
 	m_cbStatusList(TRUE)
 {
 	//{{AFX_DATA_INIT(CPreferencesTaskDefPage)
-	m_sDefCreatedBy = _T("");
-	m_dDefCost = 0.0;
 	//}}AFX_DATA_INIT
 	m_nSelAttribUse = -1;
-
-	// load settings
-	m_nDefPriority = AfxGetApp()->GetProfileInt("Preferences", "DefaultPriority", FT_NOPRIORITY); 
-	m_nDefRisk = AfxGetApp()->GetProfileInt("Preferences", "DefaultRisk", FT_NORISK); 
-	m_sDefAllocTo = AfxGetApp()->GetProfileString("Preferences", "DefaultAllocTo");
-	m_sDefAllocBy = AfxGetApp()->GetProfileString("Preferences", "DefaultAllocBy");
-	m_sDefStatus = AfxGetApp()->GetProfileString("Preferences", "DefaultStatus");
-	m_sDefCategory = AfxGetApp()->GetProfileString("Preferences", "DefaultCategory");
-	m_sDefCreatedBy = AfxGetApp()->GetProfileString("Preferences", "DefaultCreatedBy");
-	m_crDef = AfxGetApp()->GetProfileInt("Preferences", "DefaultColor", 0);
-	m_bUseParentAttributes = AfxGetApp()->GetProfileInt("Preferences", "UseParentAttributes", TRUE);
-	m_bUseCreationForDefStartDate = AfxGetApp()->GetProfileInt("Preferences", "UseCreationForDefStartDate", TRUE);
-
-	// backwards compatibility
-	int nTimeEst = AfxGetApp()->GetProfileInt("Preferences", "DefaultTimeEstimate", -1);
-
-	if (nTimeEst != -1) // key exists
-		m_dDefTimeEst = (double)nTimeEst;
-	else
-		m_dDefTimeEst = Misc::Atof(AfxGetApp()->GetProfileString("Preferences", "DefaultTimeEstimate", "0"));
-	
-	m_eTimeEst.SetUnits(AfxGetApp()->GetProfileInt("Preferences", "DefaultTimeEstUnits", THU_HOURS));
-
-	m_dDefCost = Misc::Atof(AfxGetApp()->GetProfileString("Preferences", "DefaultCost", "0"));
 
 	// attrib use
 	m_aAttribPrefs.Add(ATTRIBPREF(IDS_TDLBC_PRIORITY, PTPA_PRIORITY, -1)); 
@@ -68,16 +42,6 @@ CPreferencesTaskDefPage::CPreferencesTaskDefPage() :
 	m_aAttribPrefs.Add(ATTRIBPREF(IDS_PTDP_COLOR, PTPA_COLOR, -1)); 
 	m_aAttribPrefs.Add(ATTRIBPREF(IDS_PTDP_DUEDATE, PTPA_DUEDATE, -1)); 
 
-	int nIndex = m_aAttribPrefs.GetSize();
-	
-	while (nIndex--)
-	{
-		CString sKey;
-		sKey.Format("Attrib%d", m_aAttribPrefs[nIndex].nAttrib);
-		
-		m_aAttribPrefs[nIndex].bUse = AfxGetApp()->GetProfileInt("Preferences\\AttribUse", sKey, FALSE);
-	}
-
 	m_eCost.SetMask(".0123456789", ME_LOCALIZEDECIMAL);
 }
 
@@ -87,7 +51,7 @@ CPreferencesTaskDefPage::~CPreferencesTaskDefPage()
 
 void CPreferencesTaskDefPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesTaskDefPage)
 	DDX_Control(pDX, IDC_DEFAULTRISK, m_cbDefRisk);
 	DDX_Control(pDX, IDC_DEFAULTPRIORITY, m_cbDefPriority);
@@ -101,12 +65,12 @@ void CPreferencesTaskDefPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_DEFAULTCOST, m_eCost);
 	DDX_Control(pDX, IDC_SETDEFAULTCOLOR, m_btDefColor);
-	DDX_Control(pDX, IDC_DEFAULTATTRIBUTES, m_lbAttribUse);
+	DDX_Control(pDX, IDC_INHERITATTRIBUTES, m_lbAttribUse);
 	DDX_CBPriority(pDX, IDC_DEFAULTPRIORITY, m_nDefPriority);
 	DDX_CBRisk(pDX, IDC_DEFAULTRISK, m_nDefRisk);
 	DDX_Text(pDX, IDC_DEFAULTTIMEEST, m_dDefTimeEst);
 	DDX_Text(pDX, IDC_DEFAULTALLOCTO, m_sDefAllocTo);
-	DDX_LBIndex(pDX, IDC_DEFAULTATTRIBUTES, m_nSelAttribUse);
+	DDX_LBIndex(pDX, IDC_INHERITATTRIBUTES, m_nSelAttribUse);
 	DDX_Text(pDX, IDC_DEFAULTALLOCBY, m_sDefAllocBy);
 	DDX_Text(pDX, IDC_DEFAULTSTATUS, m_sDefStatus);
 	DDX_Text(pDX, IDC_DEFAULTCATEGORY, m_sDefCategory);
@@ -115,13 +79,13 @@ void CPreferencesTaskDefPage::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CPreferencesTaskDefPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesTaskDefPage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesTaskDefPage)
 	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_SETDEFAULTCOLOR, OnSetdefaultcolor)
 	ON_BN_CLICKED(IDC_USEPARENTATTRIB, OnUseparentattrib)
-	ON_CLBN_CHKCHANGE(IDC_DEFAULTATTRIBUTES, OnAttribUseChange)
+	ON_CLBN_CHKCHANGE(IDC_INHERITATTRIBUTES, OnAttribUseChange)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,10 +93,12 @@ END_MESSAGE_MAP()
 
 BOOL CPreferencesTaskDefPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	CPreferencesPageBase::OnInitDialog();
 	
 	m_mgrGroupLines.AddGroupLine(IDC_DEFGROUP, *this);
-	GetDlgItem(IDC_DEFAULTATTRIBUTES)->EnableWindow(m_bUseParentAttributes);
+	m_mgrGroupLines.AddGroupLine(IDC_INHERITGROUP, *this);
+
+	GetDlgItem(IDC_INHERITATTRIBUTES)->EnableWindow(m_bUseParentAttributes);
 	
 	m_btDefColor.SetColor(m_crDef);
 
@@ -156,10 +122,10 @@ BOOL CPreferencesTaskDefPage::OnInitDialog()
 	m_mgrPrompts.SetComboEditPrompt(IDC_CATEGORYLIST, *this, CEnString(IDS_PTDP_CATEGORYPROMPT));
 
 	// default string lists
-	RestoreComboList(m_cbCategoryList, "Preferences\\CategoryList");
-	RestoreComboList(m_cbStatusList, "Preferences\\StatusList");
-	RestoreComboList(m_cbAllocToList, "Preferences\\AllocToList");
-	RestoreComboList(m_cbAllocByList, "Preferences\\AllocByList");
+	m_cbCategoryList.AddUniqueItems(m_aDefCats);
+	m_cbStatusList.AddUniqueItems(m_aDefStatus);
+	m_cbAllocToList.AddUniqueItems(m_aDefAllocTo);
+	m_cbAllocByList.AddUniqueItems(m_aDefAllocBy);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -172,45 +138,13 @@ void CPreferencesTaskDefPage::SetPriorityColors(const CDWordArray& aColors)
 
 void CPreferencesTaskDefPage::OnOK() 
 {
-	CPropertyPage::OnOK();
-
-	// save settings
-	AfxGetApp()->WriteProfileInt("Preferences", "DefaultPriority", m_nDefPriority);
-	AfxGetApp()->WriteProfileInt("Preferences", "DefaultRisk", m_nDefRisk);
-	AfxGetApp()->WriteProfileString("Preferences", "DefaultAllocTo", m_sDefAllocTo);
-	AfxGetApp()->WriteProfileString("Preferences", "DefaultAllocBy", m_sDefAllocBy);
-	AfxGetApp()->WriteProfileString("Preferences", "DefaultStatus", m_sDefStatus);
-	AfxGetApp()->WriteProfileString("Preferences", "DefaultCategory", m_sDefCategory);
-	AfxGetApp()->WriteProfileString("Preferences", "DefaultCreatedBy", m_sDefCreatedBy);
-	AfxGetApp()->WriteProfileInt("Preferences", "DefaultColor", m_crDef);
-	AfxGetApp()->WriteProfileInt("Preferences", "UseParentAttributes", m_bUseParentAttributes);
-	AfxGetApp()->WriteProfileInt("Preferences", "UseCreationForDefStartDate", m_bUseCreationForDefStartDate);
-
-	CString sTimeEst;
-	sTimeEst.Format("%f", m_dDefTimeEst);
-	AfxGetApp()->WriteProfileString("Preferences", "DefaultTimeEstimate", sTimeEst);
-	AfxGetApp()->WriteProfileInt("Preferences", "DefaultTimeEstUnits", m_eTimeEst.GetUnits());
-
-	CString sCost;
-	sCost.Format("%f", m_dDefCost);
-	AfxGetApp()->WriteProfileString("Preferences", "DefaultCost", sCost);
-	
-	// attribute usage
-	int nIndex = m_aAttribPrefs.GetSize();
-
-	while (nIndex--)
-	{
-		CString sKey;
-		sKey.Format("Attrib%d", m_aAttribPrefs[nIndex].nAttrib);
-
-		AfxGetApp()->WriteProfileInt("Preferences\\AttribUse", sKey, m_aAttribPrefs[nIndex].bUse);
-	}
+	CPreferencesPageBase::OnOK();
 
 	// default string lists
-	SaveComboList(m_cbCategoryList, "Preferences\\CategoryList");
-	SaveComboList(m_cbStatusList, "Preferences\\StatusList");
-	SaveComboList(m_cbAllocToList, "Preferences\\AllocToList");
-	SaveComboList(m_cbAllocByList, "Preferences\\AllocByList");
+	m_cbCategoryList.GetItems(m_aDefCats);
+	m_cbStatusList.GetItems(m_aDefStatus);
+	m_cbAllocToList.GetItems(m_aDefAllocTo);
+	m_cbAllocByList.GetItems(m_aDefAllocBy);
 }
 
 void CPreferencesTaskDefPage::OnSetdefaultcolor() 
@@ -222,7 +156,7 @@ void CPreferencesTaskDefPage::OnUseparentattrib()
 {
 	UpdateData();
 
-	GetDlgItem(IDC_DEFAULTATTRIBUTES)->EnableWindow(m_bUseParentAttributes);
+	GetDlgItem(IDC_INHERITATTRIBUTES)->EnableWindow(m_bUseParentAttributes);
 }
 
 void CPreferencesTaskDefPage::OnAttribUseChange()
@@ -269,76 +203,114 @@ double CPreferencesTaskDefPage::GetDefaultTimeEst(int& nUnits) const
 	return m_dDefTimeEst; 
 }
 
-void CPreferencesTaskDefPage::SaveComboList(const CAutoComboBox& combo, LPCTSTR szRegKey) const
-{
-	CStringArray aItems;
-	int nCount = combo.GetItems(aItems);
-
-	// items
-	for (int nItem = 0; nItem < nCount; nItem++)
-	{
-		CString sItemKey;
-		sItemKey.Format("Item%d", nItem);
-		AfxGetApp()->WriteProfileString(szRegKey, sItemKey, aItems[nItem]);
-	}
-
-	// item count
-	AfxGetApp()->WriteProfileInt(szRegKey, "ItemCount", nCount);
-}
-
-void CPreferencesTaskDefPage::RestoreComboList(CAutoComboBox& combo, LPCTSTR szRegKey)
-{
-	CStringArray aItems;
-
-	if (GetComboListItems(szRegKey, aItems))
-		combo.AddUniqueItems(aItems);
-}
-
 int CPreferencesTaskDefPage::GetCategoryList(CStringArray& aItems) const
 {
-	return GetComboListItems("Preferences\\CategoryList", aItems);
+	aItems.Copy(m_aDefCats);
+	return aItems.GetSize();
 }
 
 int CPreferencesTaskDefPage::GetStatusList(CStringArray& aItems) const
 {
-	return GetComboListItems("Preferences\\StatusList", aItems);
+	aItems.Copy(m_aDefStatus);
+	return aItems.GetSize();
 }
 
 int CPreferencesTaskDefPage::GetAllocToList(CStringArray& aItems) const
 {
-	return GetComboListItems("Preferences\\AllocToList", aItems);
+	aItems.Copy(m_aDefAllocTo);
+	return aItems.GetSize();
 }
 
 int CPreferencesTaskDefPage::GetAllocByList(CStringArray& aItems) const
 {
-	return GetComboListItems("Preferences\\AllocByList", aItems);
-}
-
-int CPreferencesTaskDefPage::GetComboListItems(LPCTSTR szRegKey, CStringArray& aItems) const
-{
-	aItems.RemoveAll();
-	int nCount = AfxGetApp()->GetProfileInt(szRegKey, "ItemCount", 0);
-
-	// items
-	for (int nItem = 0; nItem < nCount; nItem++)
-	{
-		CString sItemKey, sItem;
-		sItemKey.Format("Item%d", nItem);
-		sItem = AfxGetApp()->GetProfileString(szRegKey, sItemKey);
-
-		if (!sItem.IsEmpty())
-			aItems.Add(sItem);
-	}
-
+	aItems.Copy(m_aDefAllocBy);
 	return aItems.GetSize();
 }
 
 HBRUSH CPreferencesTaskDefPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
-	HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
+	HBRUSH hbr = CPreferencesPageBase::OnCtlColor(pDC, pWnd, nCtlColor);
 	
 	if (pWnd->GetDlgCtrlID() == IDC_DEFLISTLABEL)
 		pDC->SetTextColor(GetSysColor(COLOR_3DDKSHADOW));
 	
 	return hbr;
+}
+
+void CPreferencesTaskDefPage::LoadPreferences(const CPreferencesStorage& prefs)
+{
+	// load settings
+	m_nDefPriority = prefs.GetProfileInt("Preferences", "DefaultPriority", 5); 
+	m_nDefRisk = prefs.GetProfileInt("Preferences", "DefaultRisk", 0); 
+	m_sDefAllocTo = prefs.GetProfileString("Preferences", "DefaultAllocTo");
+	m_sDefAllocBy = prefs.GetProfileString("Preferences", "DefaultAllocBy");
+	m_sDefStatus = prefs.GetProfileString("Preferences", "DefaultStatus");
+	m_sDefCategory = prefs.GetProfileString("Preferences", "DefaultCategory");
+	m_sDefCreatedBy = prefs.GetProfileString("Preferences", "DefaultCreatedBy");
+	m_crDef = prefs.GetProfileInt("Preferences", "DefaultColor", 0);
+	m_bUseParentAttributes = prefs.GetProfileInt("Preferences", "UseParentAttributes", TRUE);
+	m_bUseCreationForDefStartDate = prefs.GetProfileInt("Preferences", "UseCreationForDefStartDate", TRUE);
+
+	// backwards compatibility
+	int nTimeEst = prefs.GetProfileInt("Preferences", "DefaultTimeEstimate", -1);
+
+	if (nTimeEst != -1) // key exists
+		m_dDefTimeEst = (double)nTimeEst;
+	else
+		m_dDefTimeEst = prefs.GetProfileDouble("Preferences", "DefaultTimeEstimate", 0);
+
+   m_eTimeEst.SetUnits(prefs.GetProfileInt("Preferences", "DefaultTimeEstUnits", THU_HOURS));
+
+   m_dDefCost = Misc::Atof(prefs.GetProfileString("Preferences", "DefaultCost", "0"));
+
+   // attribute use
+	int nIndex = m_aAttribPrefs.GetSize();
+	
+	while (nIndex--)
+	{
+		CString sKey;
+		sKey.Format("Attrib%d", m_aAttribPrefs[nIndex].nAttrib);
+		
+		m_aAttribPrefs[nIndex].bUse = prefs.GetProfileInt("Preferences\\AttribUse", sKey, FALSE);
+	}
+
+	// combo lists
+	prefs.GetArrayItems("Preferences\\CategoryList", m_aDefCats);
+	prefs.GetArrayItems("Preferences\\StatusList", m_aDefStatus);
+	prefs.GetArrayItems("Preferences\\AllocToList", m_aDefAllocTo);
+	prefs.GetArrayItems("Preferences\\AllocByList", m_aDefAllocBy);
+}
+
+void CPreferencesTaskDefPage::SavePreferences(CPreferencesStorage& prefs)
+{
+	// save settings
+	prefs.WriteProfileInt("Preferences", "DefaultPriority", m_nDefPriority);
+	prefs.WriteProfileInt("Preferences", "DefaultRisk", m_nDefRisk);
+	prefs.WriteProfileString("Preferences", "DefaultAllocTo", m_sDefAllocTo);
+	prefs.WriteProfileString("Preferences", "DefaultAllocBy", m_sDefAllocBy);
+	prefs.WriteProfileString("Preferences", "DefaultStatus", m_sDefStatus);
+	prefs.WriteProfileString("Preferences", "DefaultCategory", m_sDefCategory);
+	prefs.WriteProfileString("Preferences", "DefaultCreatedBy", m_sDefCreatedBy);
+	prefs.WriteProfileInt("Preferences", "DefaultColor", m_crDef);
+	prefs.WriteProfileInt("Preferences", "UseParentAttributes", m_bUseParentAttributes);
+	prefs.WriteProfileInt("Preferences", "UseCreationForDefStartDate", m_bUseCreationForDefStartDate);
+	prefs.WriteProfileDouble("Preferences", "DefaultCost", m_dDefCost);
+	prefs.WriteProfileDouble("Preferences", "DefaultTimeEstimate", m_dDefTimeEst);
+	prefs.WriteProfileInt("Preferences", "DefaultTimeEstUnits", m_eTimeEst.GetUnits());
+	
+	// attribute usage
+	int nIndex = m_aAttribPrefs.GetSize();
+
+	while (nIndex--)
+	{
+		CString sKey;
+		sKey.Format("Attrib%d", m_aAttribPrefs[nIndex].nAttrib);
+
+		prefs.WriteProfileInt("Preferences\\AttribUse", sKey, m_aAttribPrefs[nIndex].bUse);
+	}
+
+	prefs.WriteArrayItems(m_aDefCats, "Preferences\\CategoryList");
+	prefs.WriteArrayItems(m_aDefStatus, "Preferences\\StatusList");
+	prefs.WriteArrayItems(m_aDefAllocTo, "Preferences\\AllocToList");
+	prefs.WriteArrayItems(m_aDefAllocBy, "Preferences\\AllocByList");
 }

@@ -18,10 +18,10 @@ static char THIS_FILE[] = __FILE__;
 // CFilterDlg dialog
 
 
-CFilterDlg::CFilterDlg(BOOL bMultiCategorySel, CWnd* pParent /*=NULL*/)
+CFilterDlg::CFilterDlg(DWORD dwFlags, CWnd* pParent /*=NULL*/)
 	: CDialog(CFilterDlg::IDD, pParent), 
-	  m_cbCategoryFilter(bMultiCategorySel, IDS_NOCATEGORY, IDS_TDC_ANY),
-	  m_cbAllocToFilter(TRUE, IDS_NOALLOCTO, IDS_TDC_ANYONE),
+	  m_cbCategoryFilter(dwFlags & FB_MULTISELCAT, IDS_NOCATEGORY, IDS_TDC_ANY),
+	  m_cbAllocToFilter(dwFlags & FB_MULTISELALLOCTO, IDS_NOALLOCTO, IDS_TDC_ANYONE),
 	  m_cbAllocByFilter(FALSE, 0, IDS_TDC_ANYONE),
 	  m_cbStatusFilter(FALSE, 0, IDS_TDC_ANY)
 {
@@ -43,7 +43,6 @@ void CFilterDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILTERCOMBO, m_cbTaskFilter);
 	//}}AFX_DATA_MAP
 	DDX_CBIndex(pDX, IDC_FILTERCOMBO, (int&)m_filter.nFilter);
-//	DDX_CBString(pDX, IDC_ALLOCTOFILTERCOMBO, m_filter.sAllocTo);
 	DDX_CBString(pDX, IDC_ALLOCBYFILTERCOMBO, m_filter.sAllocBy);
 	DDX_CBString(pDX, IDC_STATUSFILTERCOMBO, m_filter.sStatus);
 	

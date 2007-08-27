@@ -287,14 +287,15 @@ typedef CArray<SEARCHRESULT, SEARCHRESULT&> CResultArray;
 
 struct FTDCFILTER
 {
-	FTDCFILTER() : nFilter(FT_ALL), nPriority(FT_ANYPRIORITY), nRisk(FT_ANYRISK), dwFlags(0) {}
+	FTDCFILTER() : nFilter(FT_ALL), nPriority(FT_ANYPRIORITY), nRisk(FT_ANYRISK), dwFlags(FT_ANYALLOCTO | FT_ANYCATEGORY) 
+	{
+	}
 
 	void operator=(const FTDCFILTER& filter)
 	{
 		nFilter = filter.nFilter;
 		nPriority = filter.nPriority;
 		nRisk = filter.nRisk;
-//		sAllocTo = filter.sAllocTo;
 		aAllocTo.Copy(filter.aAllocTo);
 		sStatus = filter.sStatus;
 		sAllocBy = filter.sAllocBy;
@@ -307,7 +308,6 @@ struct FTDCFILTER
 		return (filter.nFilter == nFilter && 
 				filter.nPriority == nPriority &&
 				filter.nRisk == nRisk && 
-//				filter.sAllocTo == sAllocTo &&
 				filter.sStatus == sStatus && 
 				filter.sAllocBy == sAllocBy &&
 				Misc::ArraysMatch(aCategories, filter.aCategories) &&
@@ -323,7 +323,7 @@ struct FTDCFILTER
 	BOOL IsSet() const
 	{
 		return (nFilter != FT_ALL || nPriority != FT_ANYPRIORITY || nRisk != FT_ANYRISK ||
-				aCategories.GetSize() || aAllocTo.GetSize() || /*!sAllocTo.IsEmpty() ||*/
+				aCategories.GetSize() || aAllocTo.GetSize() || 
 				!sStatus.IsEmpty() || !sAllocBy.IsEmpty()) ? 1 : 0;
 	}
 
@@ -348,43 +348,6 @@ struct FTDCFILTER
 	BOOL MatchCategories(const CStringArray& aCats) const
 	{
 		return MatchItems(aCategories, aCats, HasFlag(FT_ANYCATEGORY));
-/*
-		if (HasFlag(FT_ANYCATEGORY))
-		{
-			// special case: if aCats is empty, test for empty
-			// string in aCategories
-			if (aCats.GetSize() == 0)
-				return (Misc::Find(aCategories, "") != -1);
-			else
-				return Misc::MatchAny(aCategories, aCats);
-		}
-
-		// else exact match required
-		// since we cannot filter against both having a category
-		// and not having a category at the same time
-		// we ignore the empty string unless that's all there is
-		if (aCategories.GetSize() == 1 && aCategories[0].IsEmpty())
-			return (aCats.GetSize() == 0);
-
-		int nBlank = Misc::Find(aCategories, "");
-		
-		if (nBlank != -1)
-		{
-			CStringArray aCopyCats; // ;)
-			aCopyCats.Copy(aCategories);
-			
-			while (nBlank != -1)
-			{
-				aCopyCats.RemoveAt(nBlank);
-				nBlank = Misc::Find(aCopyCats, "");
-			}
-			
-			// compare what's left
-			return Misc::ArraysMatch(aCopyCats, aCats);
-		}
-		else // simple compare
-			return Misc::ArraysMatch(aCategories, aCats);
-*/
 	}
 
 	void Reset()
@@ -395,8 +358,7 @@ struct FTDCFILTER
 	FILTER_TYPE nFilter;
 	int nPriority, nRisk;
 	CStringArray aCategories, aAllocTo;
-	CString sStatus;
-	CString /*sAllocTo, */sAllocBy;
+	CString sStatus, sAllocBy;
 	DWORD dwFlags;
 
 	protected:

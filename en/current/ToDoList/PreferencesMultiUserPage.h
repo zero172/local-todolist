@@ -7,6 +7,8 @@
 // PreferencesMultiUserPage.h : header file
 //
 
+#include "..\shared\preferencesbase.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesMultiUserPage dialog
 
@@ -22,9 +24,10 @@ enum // reload
 	RO_NO,
 	RO_ASK,
 	RO_AUTO,
+	RO_NOTIFY,
 };
 
-class CPreferencesMultiUserPage : public CPropertyPage
+class CPreferencesMultiUserPage : public CPreferencesPageBase
 {
 	DECLARE_DYNCREATE(CPreferencesMultiUserPage)
 
@@ -68,8 +71,6 @@ protected:
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPreferencesMultiUserPage)
-	public:
-	virtual void OnOK();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -85,6 +86,9 @@ protected:
 	afx_msg void OnPromptreloadonwritable();
 	afx_msg void OnPromptreloadontimestamp();
 	DECLARE_MESSAGE_MAP()
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

@@ -48,6 +48,7 @@
 #include "resource.h"
 #include "..\3rdparty\TextFile.h"
 #include "..\shared\misc.h"
+#include "..\shared\enstring.h"
 
 #include "ids.h"
 #include <afxpriv.h>
@@ -76,90 +77,45 @@ UINT urm_SETCURRENTFONTCOLOR = ::RegisterWindowMessage(_T("_RULERRICHEDITCTRL_SE
 
 static DWORD CALLBACK StreamOut(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
 {
-	// Setting up temp buffer
-	char*	buff;
-	buff = new char[ cb + 1 ];
-	buff[ cb ] = (char) 0;
-	strncpy(buff, (LPCSTR) pbBuff, cb);
-	int max = strlen(buff);
+	CMemFile* pFile = (CMemFile*)dwCookie;
 
-	CString* str = (CString*) dwCookie;
-
-#ifdef _UNICODE
-
-	// We want to convert the buff to wide chars
-	int length = ::MultiByteToWideChar(CP_UTF8, 0, buff, max, NULL, 0);
-	if (length)
-	{
-		TCHAR* wBuff = new TCHAR[ length ];
-		::MultiByteToWideChar(CP_UTF8, 0, buff, max, wBuff, length);
-
-		*str += wBuff;
-		delete[] wBuff;
-	}
-
-#else
-
-	*str += buff;
-
-#endif
-
-	delete[] buff;
-	*pcb = max;
+	pFile->Write(pbBuff, cb);
+	*pcb = cb;
 	
 	return 0;
-
 }
 
-static DWORD CALLBACK StreamOutLen(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+static DWORD CALLBACK StreamOutLen(DWORD dwCookie, LPBYTE /*pbBuff*/, LONG cb, LONG *pcb)
 {
 	int* pLen = (int*)dwCookie;
 
-#ifdef _UNICODE
-	// We want to convert the buff to wide chars
-	*pLen += ::MultiByteToWideChar(CP_UTF8, 0, pbBuff, cb, NULL, 0);
-#else
-	UNREFERENCED_PARAMETER(pbBuff);
 	*pLen += cb;
-#endif
-
 	*pcb = cb;
 	
 	return 0;
 
 }
 
+struct STREAMINCOOKIE
+{
+	STREAMINCOOKIE(const CString& sContent) : sRTF(sContent), nStreamPos(0) {}
+
+	int GetLength() const { return sRTF.GetLength(); }
+	LPCTSTR CopyFrom() const { return ((LPCTSTR)sRTF) + nStreamPos; }
+
+	const CString& sRTF;
+	int nStreamPos;
+};
+
 static DWORD CALLBACK StreamIn(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
 {
+	STREAMINCOOKIE* pCookie = (STREAMINCOOKIE*)dwCookie;
+	int max = min(cb, pCookie->GetLength());
 
-	CString* str = ((CString*) dwCookie);
-
-#ifdef _UNICODE
-
-	// Unicode is only supported for SF_TEXT, so we need
-	// to convert
-	LPCTSTR ptr = str->GetBuffer((*str).GetLength());
-	int length = ::WideCharToMultiByte(CP_UTF8, 0, ptr, -1, NULL, 0, NULL, NULL);
-	int max = min(cb, length);
-	if (length)
-	{
-		char* buff = new char[ length ];
-		::WideCharToMultiByte(CP_UTF8, 0, ptr, -1, buff, length + 1, NULL, NULL);
-		strncpy((LPSTR) pbBuff, buff, max);
-		delete[] buff;
-	}
-	str->ReleaseBuffer();
-
-#else
-
-	int max = min(cb, (*str).GetLength());
-	strncpy((LPSTR) pbBuff, (*str) , max );
-
-#endif
-
-	(*str) = (*str).Right((*str).GetLength() - max);
+	strncpy((LPSTR)pbBuff, pCookie->CopyFrom(), max);
 
 	*pcb = max;
+	pCookie->nStreamPos += max;
 
 	return 0;
 
@@ -235,6 +191,8 @@ CRulerRichEditCtrl::CRulerRichEditCtrl() : m_pen(PS_DOT, 0, RGB(0, 0, 0))
 	m_cfDefault.yHeight = 200;
 	m_cfDefault.dwEffects = CFE_AUTOBACKCOLOR | CFE_AUTOCOLOR;
 	lstrcpy(m_cfDefault.szFaceName, _T("Times New Roman"));
+
+	CUrlRichEditCtrl::SetGotoErrorMsg(CEnString(IDS_COMMENTSGOTOERRMSG));
 }
 
 CRulerRichEditCtrl::~CRulerRichEditCtrl()
@@ -862,7 +820,6 @@ LRESULT CRulerRichEditCtrl::OnGetTextLength(WPARAM /*wParam*/, LPARAM /*lParam*/
 /////////////////////////////////////////////////////////////////////////////
 // CRulerRichEditCtrl public implementation
 
-CString CRulerRichEditCtrl::GetRTF()
 /* ============================================================
 	Function :		CRulerRichEditCtrl::GetRTF
 	Description :	Returns the contents of the control as RTF.
@@ -876,19 +833,26 @@ CString CRulerRichEditCtrl::GetRTF()
 					control.
 
    ============================================================*/
+CString CRulerRichEditCtrl::GetRTF()
 {
+	// stream to mem file in big chunks
+	CMemFile file(100 * 1024);
 
-	CString* str = new CString;
-	EDITSTREAM	es;
-	es.dwCookie = (DWORD) str;
-	es.pfnCallback = StreamOut;
+	EDITSTREAM es = { (DWORD)&file, 0, StreamOut };
 	m_rtf.StreamOut(SF_RTF, es);
 
-	CString output(*str);
-	delete str;
+	// then copy to string
+	CString sRTF;
+	int nLen = (int)file.GetLength();
 
-	return output;
+	LPTSTR szRTF = sRTF.GetBuffer(nLen);
 
+	file.SeekToBegin();
+	file.Read((void*)szRTF, nLen);
+	
+	sRTF.ReleaseBuffer(nLen);
+
+	return sRTF;
 }
 
 int CRulerRichEditCtrl::GetRTFLength()
@@ -902,7 +866,6 @@ int CRulerRichEditCtrl::GetRTFLength()
 	return nLen;
 }
 
-void CRulerRichEditCtrl::SetRTF(const CString& rtf)
 /* ============================================================
 	Function :		CRulerRichEditCtrl::SetRTF
 	Description :	Set the contents of the embedded RTF-
@@ -917,12 +880,13 @@ void CRulerRichEditCtrl::SetRTF(const CString& rtf)
 					of the control.
 
    ============================================================*/
+void CRulerRichEditCtrl::SetRTF(const CString& rtf)
 {
 	BOOL bEmptyRtf = rtf.IsEmpty();
 
-	EDITSTREAM	es;
-	es.dwCookie = (DWORD)&rtf;
-	es.pfnCallback = StreamIn;
+	STREAMINCOOKIE cookie(rtf);
+	EDITSTREAM es = { (DWORD)&cookie, 0, StreamIn };
+
 	m_rtf.StreamIn(SF_RTF, es);
 
 	// reset the formatting if the new content is empty else
@@ -1390,7 +1354,7 @@ void CRulerRichEditCtrl::UpdateToolbarButtons()
 		m_toolbar.CheckButton(BUTTON_BACKCOLOR, 0); // just to refresh state
 
 		if (cf.dwMask & CFM_FACE)
-			m_toolbar.SetFontName(CString(cf.szFaceName));
+			m_toolbar.SetFontName(cf.szFaceName);
 
 		if (cf.dwMask & CFM_SIZE)
 			m_toolbar.SetFontSize(cf.yHeight / 20);

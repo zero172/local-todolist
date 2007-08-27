@@ -89,7 +89,12 @@ BOOL CSizeComboBox::SelectSize( int size )
 	CString sz;
 	sz.Format( _T( "%d" ), size );
 
-	return (SelectString(-1, sz) != -1);
+	int nFind = FindStringExact(-1, sz);
+
+	if (nFind != GetCurSel())
+		SetCurSel(nFind);
+
+	return (nFind != -1);
 }
 
 void CSizeComboBox::FillCombo()

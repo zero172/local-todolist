@@ -11,6 +11,9 @@
 
 #include <afxtempl.h>
 
+enum { MFS_BOLD = 0x01, MFS_ITALIC = 0x02, MFS_UNDERLINED = 0x04, MFS_STRIKETHRU = 0x08, MFS_SYMBOL = 0x10};
+enum { MKS_CTRL = 0x01, MKS_SHIFT = 0x02, MKS_ALT = 0x04 };
+
 namespace Misc  
 {
 	void CopyTexttoClipboard(const CString& sText, HWND hwnd); 
@@ -19,6 +22,7 @@ namespace Misc
 	CString WideToMultiByte(wchar_t nChar, UINT nCodePage = CP_ACP);
 	
 	BOOL GuidFromString(LPCTSTR szGuid, GUID& guid);
+	BOOL IsGuid(LPCTSTR szGuid);
 	BOOL GuidToString(const GUID& guid, CString& sGuid);
 	BOOL GuidIsNull(const GUID& guid);
 	void NullGuid(GUID& guid);
@@ -42,8 +46,6 @@ namespace Misc
 
 	int CompareVersions(LPCTSTR szVersion1, LPCTSTR szVersion2);
 	int Split(const CString& sText, char cDelim, CStringArray& aValues);
-
-	enum { BOLD = 0x01, ITALIC = 0x02, UNDERLINED = 0x04, STRIKETHRU = 0x08, SYMBOL = 0x10};
 
 	HFONT CreateFont(HFONT hFont, DWORD dwFlags = 0);
 	HFONT CreateFont(LPCTSTR szFaceName, int nPoint = -1, DWORD dwFlags = 0);
@@ -71,7 +73,11 @@ namespace Misc
 
 	int ParseSearchString(LPCTSTR szLookFor, CStringArray& aWords);
 	BOOL FindWord(LPCTSTR szWord, LPCTSTR szText, BOOL bMatchCase, BOOL bMatchWholeWord);
-	
+
+	BOOL ModKeysArePressed(DWORD dwKeys); 
+	BOOL KeyIsPressed(DWORD dwVirtKey);
+
+	BOOL HasFlag(DWORD dwFlags, DWORD dwFlag);
 };
 
 #endif // !defined(AFX_MISC_H__4B2FDA3E_63C5_4F52_A139_9512105C3AD4__INCLUDED_)

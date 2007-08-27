@@ -7,7 +7,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////
 
-#define ITASKLISTBASE ITaskList5 // latest interface
+#define ITASKLISTBASE ITaskList7 // latest interface
 
 // extended interface IDs
 static const GUID IID_TASKLIST2 = { 0x41d9fd9e, 0xaa1f, 0x4ee0, { 0x86, 0x5, 0xeb, 0x3f, 0x64, 0x7e, 0x70, 0xf6 } };
@@ -15,8 +15,31 @@ static const GUID IID_TASKLIST3 = { 0xb75b2120, 0x267d, 0x4a82, { 0xab, 0x58, 0x
 static const GUID IID_TASKLIST4 = { 0xd063e3de, 0x83d1, 0x40d7, { 0xbc, 0x2d, 0xfa, 0x24, 0x4, 0x85, 0x57, 0xed } };
 static const GUID IID_TASKLIST5 = { 0x5a1ac54b, 0x84f, 0x4299, { 0xb5, 0xaa, 0x2b, 0x93, 0x22, 0xf1, 0x3d, 0xc0 } };
 static const GUID IID_TASKLIST6 = { 0xb782136e, 0x546f, 0x4184, { 0xab, 0xaf, 0xe9, 0x7, 0xdd, 0xf6, 0x91, 0x81 } };
+static const GUID IID_TASKLIST7 = { 0x65781a9b, 0xced2, 0x490a, { 0xa9, 0x39, 0x71, 0x6d, 0xd9, 0x18, 0x53, 0x33 } };
 
 typedef void* HTASKITEM;
+class ITaskList;
+
+// handy template functions for extracting interfaces
+template <class TLInterface> 
+const TLInterface* GetITLInterface(const ITaskList* pTasks, const GUID& IID)
+{
+	TLInterface* pInterface = 0;
+	ITaskList* pNCTasks = const_cast<ITaskList*>(pTasks);
+
+	pNCTasks->QueryInterface(IID, reinterpret_cast<void**>(&pInterface));
+
+	return reinterpret_cast<TLInterface*>(pInterface);
+}
+
+template <class TLInterface> 
+TLInterface* GetITLInterface(ITaskList* pTasks, const GUID& IID)
+{
+	TLInterface* pInterface = 0;
+	pTasks->QueryInterface(IID, reinterpret_cast<void**>(&pInterface));
+
+	return reinterpret_cast<TLInterface*>(pInterface);
+}
 
 class ITaskList : public IUnknown 
 {
@@ -172,6 +195,19 @@ public:
 
 	virtual bool SetTaskVersion(HTASKITEM hTask, const char* szVersion) = 0;
 	virtual const char* GetTaskVersion(HTASKITEM hTask) const = 0;
+};
+
+class ITaskList7 : public ITaskList6
+{
+	// new methods
+public:
+	virtual unsigned char GetTaskDependencyCount(HTASKITEM hTask) const = 0;
+	virtual bool AddTaskDependency(HTASKITEM hTask, const char* szDepends) = 0;
+	virtual const char* GetTaskDependency(HTASKITEM hTask, int nIndex) const = 0;
+
+	virtual unsigned char GetTaskAllocatedToCount(HTASKITEM hTask) const = 0;
+	virtual bool AddTaskAllocatedTo(HTASKITEM hTask, const char* szAllocTo) = 0;
+	virtual const char* GetTaskAllocatedTo(HTASKITEM hTask, int nIndex) const = 0;
 };
 
 #endif // _ITASKLIST_H__5951FDE6_508A_4A9D_A55D_D16EB026AEF7__INCLUDED_

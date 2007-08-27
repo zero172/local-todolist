@@ -100,7 +100,7 @@ int CMenuIconMgr::AddImages(const CUIntArray& aCmdIDs, UINT nIDBitmap, int nCx,
 	{
 		il.Add(&bm, crMask);
 
-		return AddImages(aCmdIDs, il);;
+		return AddImages(aCmdIDs, il);
 	}
 	
 	return 0;
@@ -130,6 +130,32 @@ HICON CMenuIconMgr::LoadItemImage(UINT nCmdID)
 	m_mapID2Icon.Lookup(nCmdID, hIcon);
 	
 	return hIcon;
+}
+
+BOOL CMenuIconMgr::AddImage(UINT nCmdID, HICON hIcon)
+{
+	// we copy the icon's small image
+	CImageList il;
+	
+	if (il.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 1))
+	{
+		il.Add(hIcon);
+		return SetImage(nCmdID, il.ExtractIcon(0));
+	}
+	
+	return FALSE;
+}
+
+BOOL CMenuIconMgr::AddImage(UINT nCmdID, const CImageList& il, int nImage)
+{
+	CImageList* pIL = const_cast<CImageList*>(&il);
+
+	return SetImage(nCmdID, pIL->ExtractIcon(nImage));
+}
+
+void CMenuIconMgr::DeleteImage(UINT nCmdID)
+{
+	SetImage(nCmdID, NULL);
 }
 
 BOOL CMenuIconMgr::SetImage(UINT nCmdID, HICON hIcon)

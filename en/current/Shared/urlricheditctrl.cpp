@@ -7,6 +7,7 @@
 #include "richedithelper.h"
 #include "winclasses.h"
 #include "wclassdefines.h"
+#include "filemisc.h"
 
 #include "afxole.h"
 
@@ -38,12 +39,15 @@ enum
 };
 
 const UINT PAUSE = 1000; // 1 second
+CString CUrlRichEditCtrl::s_sGotoErrMsg;
 
 /////////////////////////////////////////////////////////////////////////////
 // CUrlRichEditCtrl
 
 CUrlRichEditCtrl::CUrlRichEditCtrl() : m_nContextUrl(-1)
 {
+	EnableToolTips();
+
 	AddProtocol("www.", FALSE);
 	AddProtocol("http://", FALSE);
 	AddProtocol("https://", FALSE);
@@ -52,7 +56,6 @@ CUrlRichEditCtrl::CUrlRichEditCtrl() : m_nContextUrl(-1)
 	AddProtocol("Outlook:", FALSE);
 	AddProtocol("mailto:", FALSE);
 	AddProtocol("Notes://", FALSE);
-	
 	AddProtocol(FILEPREFIX, FALSE);
 }
 
@@ -60,7 +63,7 @@ CUrlRichEditCtrl::~CUrlRichEditCtrl()
 {
 }
 
-BEGIN_MESSAGE_MAP(CUrlRichEditCtrl, COleRichEditCtrl)
+BEGIN_MESSAGE_MAP(CUrlRichEditCtrl, CRichEditBaseCtrl)
 //{{AFX_MSG_MAP(CUrlRichEditCtrl)
 	ON_CONTROL_REFLECT_EX(EN_CHANGE, OnChangeText)
 	ON_WM_CHAR()
@@ -77,6 +80,7 @@ BEGIN_MESSAGE_MAP(CUrlRichEditCtrl, COleRichEditCtrl)
 	ON_MESSAGE(WM_SETFONT, OnSetFont)
 	ON_MESSAGE(WM_DROPFILES, OnDropFiles)
 	ON_NOTIFY_REFLECT_EX(EN_LINK, OnNotifyLink)
+	ON_NOTIFY_RANGE(TTN_NEEDTEXT, 0, 0xffff, OnNeedTooltip)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -121,6 +125,8 @@ BOOL CUrlRichEditCtrl::OnChangeText()
 
 LRESULT CUrlRichEditCtrl::OnDropFiles(WPARAM wp, LPARAM /*lp*/) 
 {
+	CHARRANGE crSelOrg;
+	GetSel(crSelOrg); // save this off
 	BOOL bEnable = !(GetStyle() & ES_READONLY) && IsWindowEnabled();
 	
 	if (!bEnable)
@@ -138,6 +144,7 @@ LRESULT CUrlRichEditCtrl::OnDropFiles(WPARAM wp, LPARAM /*lp*/)
 	for (UINT i=0; i < nFileCount; i++)
 	{
 		::DragQueryFile((HDROP)wp, i, szFileName, _MAX_PATH);
+		::GetLongPathName(szFileName, szFileName, _MAX_PATH);
 		
 		sFile.Format("%s%s", FILEPREFIX, szFileName);
 		sFile.Replace(" ", "%20");
@@ -146,6 +153,9 @@ LRESULT CUrlRichEditCtrl::OnDropFiles(WPARAM wp, LPARAM /*lp*/)
 		sText += sFile;
 	}
 	::DragFinish((HDROP)wp);
+
+	// set selection to that which we saved during the drag
+	SetSel(m_crDropSel);
 	
 	if (!sText.IsEmpty())
 		PathReplaceSel(sText, FALSE);
@@ -196,7 +206,7 @@ void CUrlRichEditCtrl::PreSubclassWindow()
 	m_ncBorder.Initialize(GetSafeHwnd());
 //	CRichEditThemed::Attach(*this);
 
-	COleRichEditCtrl::PreSubclassWindow();
+	CRichEditBaseCtrl::PreSubclassWindow();
 }
 
 LRESULT CUrlRichEditCtrl::OnSetText(WPARAM /*wp*/, LPARAM lp)
@@ -516,14 +526,22 @@ BOOL CUrlRichEditCtrl::GoToUrl(int nUrl) const
 	
 	const URLITEM& urli = m_aUrls[nUrl];
 		
-	if (urli.bWantNotify)
-		SendNotifyCustomUrl(urli.sUrl);
-	else
+	if (!urli.bWantNotify)
 	{
 		CString sUrl = GetUrl(nUrl, TRUE);
-		ShellExecute(*this, NULL, sUrl, NULL, NULL, SW_SHOWNORMAL);
-	}
 		
+		if (FileMisc::Run(*this, sUrl) > 32)
+			return TRUE;
+
+		// else
+		if (!s_sGotoErrMsg.IsEmpty())
+			AfxMessageBox(s_sGotoErrMsg, MB_OK | MB_ICONEXCLAMATION);
+
+		return FALSE;
+	}
+
+	// else
+	SendNotifyCustomUrl(urli.sUrl);
 	return TRUE;
 }
 
@@ -542,8 +560,12 @@ BOOL CUrlRichEditCtrl::GoToUrl(const CString& sUrl) const
 	// didn't match then it might be a file
 	if (GetFileAttributes(sUrl) != 0xffffffff)
 	{
-		ShellExecute(*this, NULL, sUrl, NULL, NULL, SW_SHOWNORMAL);
-		return TRUE;
+		if (FileMisc::Run(*this, sUrl) > 32)
+			return TRUE;
+
+		// else
+		if (!s_sGotoErrMsg.IsEmpty())
+			AfxMessageBox(s_sGotoErrMsg, MB_OK | MB_ICONEXCLAMATION);
 	}
 	
 	return FALSE;
@@ -597,28 +619,60 @@ CLIPFORMAT CUrlRichEditCtrl::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIP
 	return CF_TEXT; 
 }
 
-HRESULT CUrlRichEditCtrl::GetDragDropEffect(BOOL fDrag, DWORD /*grfKeyState*/, LPDWORD pdwEffect)
+HRESULT CUrlRichEditCtrl::GetDragDropEffect(BOOL fDrag, DWORD grfKeyState, LPDWORD pdwEffect)
 {
 	if (!fDrag) // allowable dest effects
 	{
-      BOOL bEnable = !(GetStyle() & ES_READONLY) && IsWindowEnabled();
+		BOOL bEnable = !(GetStyle() & ES_READONLY) && IsWindowEnabled();
 		
 		if (!bEnable)
 			*pdwEffect = DROPEFFECT_NONE;
 		else
 		{
-			DWORD dwEffect;
+			DWORD dwEffect = DROPEFFECT_NONE;
+			BOOL bFileDrop = ((*pdwEffect & DROPEFFECT_LINK) == DROPEFFECT_LINK);
+
+			// we can deduce (I think) that what's being dragged is a file
+			// by whether pdwEffect include the LINK effect.
 			
-//			if ((grfKeyState & MK_CONTROL) == MK_CONTROL)
-//				dwEffect = DROPEFFECT_COPY;
-//			else
+			// if so save off the current selection pos (for now) because it gets reset
+			// when the files are dropped
+			if (bFileDrop)
+			{
 				dwEffect = DROPEFFECT_MOVE;
+
+				// keep track of cursor
+				TrackDragCursor();
+			}
+			else // it's text
+			{
+				if ((grfKeyState & MK_CONTROL) == MK_CONTROL)
+					dwEffect = DROPEFFECT_COPY;
+				
+				else // if ((grfKeyState & MK_SHIFT) == MK_SHIFT)
+					dwEffect = DROPEFFECT_MOVE;
+			}
 			
 			if (dwEffect & *pdwEffect) // make sure allowed type
 				*pdwEffect = dwEffect;
 		}
 	}
+
 	return S_OK;
+}
+
+void CUrlRichEditCtrl::TrackDragCursor()
+{
+	// also track the cursor for the drop position
+	CPoint ptCursor(::GetMessagePos());
+				
+	ScreenToClient(&ptCursor);
+	int nChar = CharFromPoint(ptCursor);
+	m_crDropSel.cpMin = m_crDropSel.cpMax = nChar;
+
+	SetFocus();
+	SetSel(m_crDropSel);
+	ShowCaret();
 }
 
 HRESULT CUrlRichEditCtrl::GetContextMenu(WORD /*seltype*/, LPOLEOBJECT /*lpoleobj*/, 
@@ -636,7 +690,7 @@ HRESULT CUrlRichEditCtrl::GetContextMenu(WORD /*seltype*/, LPOLEOBJECT /*lpoleob
 
 void CUrlRichEditCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
-	COleRichEditCtrl::OnChar(nChar, nRepCnt, nFlags);
+	CRichEditBaseCtrl::OnChar(nChar, nRepCnt, nFlags);
 }
 
 CString CUrlRichEditCtrl::GetUrl(int nURL, BOOL bAsFile) const
@@ -715,7 +769,7 @@ void CUrlRichEditCtrl::OnRButtonUp(UINT nHitTest, CPoint point)
 	m_ptContextMenu = point;
 	ClientToScreen(&m_ptContextMenu);
 	
-	COleRichEditCtrl::OnRButtonUp(nHitTest, point);
+	CRichEditBaseCtrl::OnRButtonUp(nHitTest, point);
 }
 
 void CUrlRichEditCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags) 
@@ -731,7 +785,7 @@ void CUrlRichEditCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 		ClientToScreen(&m_ptContextMenu);
 	}
 	
-	COleRichEditCtrl::OnKeyUp(nChar, nRepCnt, nFlags);
+	CRichEditBaseCtrl::OnKeyUp(nChar, nRepCnt, nFlags);
 }
 
 void CUrlRichEditCtrl::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
@@ -749,7 +803,7 @@ void CUrlRichEditCtrl::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       // eat message else we'll get a WM_KEYUP with VK_APPS
 	}
 	
-	COleRichEditCtrl::OnSysKeyDown(nChar, nRepCnt, nFlags);
+	CRichEditBaseCtrl::OnSysKeyDown(nChar, nRepCnt, nFlags);
 }
 
 void CUrlRichEditCtrl::OnRButtonDown(UINT nFlags, CPoint point) 
@@ -770,12 +824,12 @@ void CUrlRichEditCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 			SetSel(nChar, nChar);
 	}
 	
-	COleRichEditCtrl::OnRButtonDown(nFlags, point);
+	CRichEditBaseCtrl::OnRButtonDown(nFlags, point);
 }
 
 void CUrlRichEditCtrl::OnShowWindow(BOOL bShow, UINT nStatus) 
 {
-	COleRichEditCtrl::OnShowWindow(bShow, nStatus);
+	CRichEditBaseCtrl::OnShowWindow(bShow, nStatus);
 	
 	// TODO: Add your message handler code here
 	
@@ -783,7 +837,7 @@ void CUrlRichEditCtrl::OnShowWindow(BOOL bShow, UINT nStatus)
 
 int CUrlRichEditCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (COleRichEditCtrl::OnCreate(lpCreateStruct) == -1)
+	if (CRichEditBaseCtrl::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
 	SetEventMask(GetEventMask() | ENM_CHANGE | ENM_DROPFILES | ENM_DRAGDROPDONE | ENM_LINK);
@@ -793,7 +847,6 @@ int CUrlRichEditCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	SendMessage(EM_SETTEXTMODE, TM_MULTILEVELUNDO);
 
 	m_ncBorder.Initialize(GetSafeHwnd());
-//	CRichEditThemed::Attach(*this);
 
 	return 0;
 }
@@ -879,7 +932,30 @@ int CUrlRichEditCtrl::FindUrl(const CPoint& point)
 	{
 		const URLITEM& urli = m_aUrls[nUrl];
 		
-		if (urli.cr.cpMax >= nPos && urli.cr.cpMin <= nPos)
+		if (urli.cr.cpMax >= nPos && urli.cr.cpMin < nPos)
+			return nUrl;
+	}
+
+	// not found
+	return -1;
+}
+
+int CUrlRichEditCtrl::FindUrlEx(const CPoint& point)
+{
+	int nUrl = m_aUrls.GetSize();
+	
+	while (nUrl--)
+	{
+		const URLITEM& urli = m_aUrls[nUrl];
+
+		CRect rUrl(GetCharPos(urli.cr.cpMin), GetCharPos(urli.cr.cpMax));
+
+		rUrl.bottom += GetLineHeight();
+		
+//		if (urli.cr.cpMax >= nPos && urli.cr.cpMin < nPos)
+//			return nUrl;
+
+		if (rUrl.PtInRect(point))
 			return nUrl;
 	}
 
@@ -903,5 +979,30 @@ void CUrlRichEditCtrl::OnTimer(UINT nIDEvent)
 		ParseAndFormatText();
 	}
 	
-	COleRichEditCtrl::OnTimer(nIDEvent);
+	CRichEditBaseCtrl::OnTimer(nIDEvent);
 }
+
+int CUrlRichEditCtrl::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	int nHit = MAKELONG(point.x, point.y);
+	pTI->hwnd = m_hWnd;
+	pTI->uId  = nHit;
+	pTI->rect = CRect(CPoint(point.x-1,point.y-1),CSize(2,2));
+	pTI->uFlags |= TTF_NOTBUTTON | TTF_ALWAYSTIP;
+	pTI->lpszText = LPSTR_TEXTCALLBACK;
+	
+	return nHit;
+}
+
+void CUrlRichEditCtrl::OnNeedTooltip(UINT /*id*/, NMHDR* pNMHDR, LRESULT* pResult)
+{
+	*pResult = 0;
+	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
+	
+	CPoint point(GetMessagePos());
+	ScreenToClient(&point);
+	
+	if (FindUrlEx(point) != -1)
+		strcpy(pTTT->szText, "Ctrl+Click to open url");
+}
+

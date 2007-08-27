@@ -18,45 +18,14 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesTaskPage property page
 
-IMPLEMENT_DYNCREATE(CPreferencesTaskPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CPreferencesTaskPage, CPreferencesPageBase)
 
-CPreferencesTaskPage::CPreferencesTaskPage() : CPropertyPage(CPreferencesTaskPage::IDD)
+CPreferencesTaskPage::CPreferencesTaskPage() : 
+   CPreferencesPageBase(CPreferencesTaskPage::IDD)
 {
 	//{{AFX_DATA_INIT(CPreferencesTaskPage)
-	m_bAllowParentTimeTracking = FALSE;
-	m_bAutoAdjustDependents = FALSE;
-	m_bWeightPercentCompletionByNumSubtasks = FALSE;
 	//}}AFX_DATA_INIT
 
-	// load settings
-	m_bTreatSubCompletedAsDone = AfxGetApp()->GetProfileInt("Preferences", "TreatSubCompletedAsDone", TRUE);
-	m_bAveragePercentSubCompletion = AfxGetApp()->GetProfileInt("Preferences", "AveragePercentSubCompletion", TRUE);
-	m_bIncludeDoneInAverageCalc = AfxGetApp()->GetProfileInt("Preferences", "IncludeDoneInAverageCalc", TRUE);
-	m_bUseEarliestDueDate = AfxGetApp()->GetProfileInt("Preferences", "UseEarliestDueDate", FALSE);
-	m_bUsePercentDoneInTimeEst = AfxGetApp()->GetProfileInt("Preferences", "UsePercentDoneInTimeEst", TRUE);
-	m_bUseHighestPriority = AfxGetApp()->GetProfileInt("Preferences", "UseHighestPriority", FALSE);
-	m_bAutoCalcTimeEst = AfxGetApp()->GetProfileInt("Preferences", "AutoCalcTimeEst", FALSE);
-	m_bIncludeDoneInPriorityCalc = AfxGetApp()->GetProfileInt("Preferences", "IncludeDoneInPriorityCalc", FALSE);
-	m_bWeightPercentCompletionByTimeEst = AfxGetApp()->GetProfileInt("Preferences", "WeightPercentCompletionByTimeEst", FALSE);
-	m_bWeightPercentCompletionByPriority = AfxGetApp()->GetProfileInt("Preferences", "WeightPercentCompletionByPriority", FALSE);
-	m_bWeightPercentCompletionByNumSubtasks = AfxGetApp()->GetProfileInt("Preferences", "WeightPercentCompletionByNumSubtasks", TRUE);
-	m_bAutoCalcPercentDone = AfxGetApp()->GetProfileInt("Preferences", "AutoCalcPercentDone", FALSE);
-	m_bTrackActiveTasklistOnly = AfxGetApp()->GetProfileInt("Preferences", "TrackActiveTasklistOnly", TRUE);
-	m_bTrackSelectedTaskOnly = AfxGetApp()->GetProfileInt("Preferences", "TrackSelectedTaskOnly", TRUE);
-	m_bNoTrackOnScreenSaver = AfxGetApp()->GetProfileInt("Preferences", "PauseTimeTrackingOnScrnSaver", TRUE);
-	m_sDaysInWeek = AfxGetApp()->GetProfileString("Preferences", "DaysInWeek", "5");
-	m_sHoursInDay = AfxGetApp()->GetProfileString("Preferences", "HoursInDay", "8");
-	m_bLogTime = AfxGetApp()->GetProfileInt("Preferences", "LogTime", FALSE);
-	m_bLogTasksSeparately = AfxGetApp()->GetProfileInt("Preferences", "LogTasksSeparately", FALSE);
-	m_bExclusiveTimeTracking = AfxGetApp()->GetProfileInt("Preferences", "ExclusiveTimeTracking", FALSE);
-	m_bAllowParentTimeTracking = AfxGetApp()->GetProfileInt("Preferences", "AllowParentTimeTracking", TRUE);
-	m_bAutoAdjustDependents = AfxGetApp()->GetProfileInt("Preferences", "AutoAdjustDependents", FALSE);
-
-	// fix up m_bAveragePercentSubCompletion because it's overridden by m_bAutoCalcPercentDone
-	if (m_bAutoCalcPercentDone)
-		m_bAveragePercentSubCompletion = FALSE;
-
-//	m_b = AfxGetApp()->GetProfileInt("Preferences", "", FALSE);
 }
 
 CPreferencesTaskPage::~CPreferencesTaskPage()
@@ -65,7 +34,7 @@ CPreferencesTaskPage::~CPreferencesTaskPage()
 
 void CPreferencesTaskPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesTaskPage)
 	DDX_Check(pDX, IDC_TREATSUBCOMPLETEDASDONE, m_bTreatSubCompletedAsDone);
 	DDX_Check(pDX, IDC_USEHIGHESTPRIORITY, m_bUseHighestPriority);
@@ -74,9 +43,10 @@ void CPreferencesTaskPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_WEIGHTPERCENTCALCBYTIMEEST, m_bWeightPercentCompletionByTimeEst);
 	DDX_Check(pDX, IDC_WEIGHTPERCENTCALCBYPRIORITY, m_bWeightPercentCompletionByPriority);
 	DDX_Check(pDX, IDC_AUTOCALCPERCENTDONE, m_bAutoCalcPercentDone);
-	DDX_Check(pDX, IDC_TRACKSELECTEDTASKONLY, m_bTrackSelectedTaskOnly);
-	DDX_Check(pDX, IDC_TRACKNOSCRNSAVER, m_bNoTrackOnScreenSaver);
-	DDX_Check(pDX, IDC_TRACKACTIVETASKLISTONLY, m_bTrackActiveTasklistOnly);
+	DDX_Check(pDX, IDC_TRACKNONSELECTEDTASKS, m_bTrackNonSelectedTasks);
+	DDX_Check(pDX, IDC_TRACKSCREENSAVER, m_bTrackOnScreenSaver);
+	DDX_Check(pDX, IDC_TRACKNONACTIVETASKLISTS, m_bTrackNonActiveTasklists);
+	DDX_Check(pDX, IDC_TRACKHIBERNATED, m_bTrackHibernated);
 	DDX_CBString(pDX, IDC_DAYSINONEWEEK, m_sDaysInWeek);
 	DDX_CBString(pDX, IDC_HOURSINONEDAY, m_sHoursInDay);
 	DDX_Check(pDX, IDC_LOGTIME, m_bLogTime);
@@ -93,7 +63,7 @@ void CPreferencesTaskPage::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CPreferencesTaskPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesTaskPage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesTaskPage)
 	ON_BN_CLICKED(IDC_USEHIGHESTPRIORITY, OnUsehighestpriority)
 	ON_BN_CLICKED(IDC_LOGTIME, OnLogtime)
@@ -107,7 +77,7 @@ END_MESSAGE_MAP()
 
 BOOL CPreferencesTaskPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	CPreferencesPageBase::OnInitDialog();
 
 	m_mgrGroupLines.AddGroupLine(IDC_TRACKGROUP, *this); 
 	m_mgrGroupLines.AddGroupLine(IDC_TIMEGROUP, *this); 
@@ -121,41 +91,6 @@ BOOL CPreferencesTaskPage::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CPreferencesTaskPage::OnOK() 
-{
-	CPropertyPage::OnOK();
-	
-	// save settings
-	AfxGetApp()->WriteProfileInt("Preferences", "TreatSubCompletedAsDone", m_bTreatSubCompletedAsDone);
-	AfxGetApp()->WriteProfileInt("Preferences", "AveragePercentSubCompletion", m_bAveragePercentSubCompletion);
-	AfxGetApp()->WriteProfileInt("Preferences", "IncludeDoneInAverageCalc", m_bIncludeDoneInAverageCalc);
-	AfxGetApp()->WriteProfileInt("Preferences", "UseEarliestDueDate", m_bUseEarliestDueDate);
-	AfxGetApp()->WriteProfileInt("Preferences", "UsePercentDoneInTimeEst", m_bUsePercentDoneInTimeEst);
-	AfxGetApp()->WriteProfileInt("Preferences", "UseHighestPriority", m_bUseHighestPriority);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoCalcTimeEst", m_bAutoCalcTimeEst);
-	AfxGetApp()->WriteProfileInt("Preferences", "IncludeDoneInPriorityCalc", m_bIncludeDoneInPriorityCalc);
-	AfxGetApp()->WriteProfileInt("Preferences", "WeightPercentCompletionByTimeEst", m_bWeightPercentCompletionByTimeEst);
-	AfxGetApp()->WriteProfileInt("Preferences", "WeightPercentCompletionByPriority", m_bWeightPercentCompletionByPriority);
-	AfxGetApp()->WriteProfileInt("Preferences", "WeightPercentCompletionByNumSubtasks", m_bWeightPercentCompletionByNumSubtasks);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoCalcPercentDone", m_bAutoCalcPercentDone);
-	AfxGetApp()->WriteProfileInt("Preferences", "TrackSelectedTaskOnly", m_bTrackSelectedTaskOnly);
-	AfxGetApp()->WriteProfileInt("Preferences", "TrackActiveTasklistOnly", m_bTrackActiveTasklistOnly);
-	AfxGetApp()->WriteProfileInt("Preferences", "PauseTimeTrackingOnScrnSaver", m_bNoTrackOnScreenSaver);
-	AfxGetApp()->WriteProfileInt("Preferences", "LogTime", m_bLogTime);
-	AfxGetApp()->WriteProfileInt("Preferences", "LogTasksSeparately", m_bLogTasksSeparately);
-	AfxGetApp()->WriteProfileInt("Preferences", "ExclusiveTimeTracking", m_bExclusiveTimeTracking);
-	AfxGetApp()->WriteProfileInt("Preferences", "AllowParentTimeTracking", m_bAllowParentTimeTracking);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoAdjustDependents", m_bAutoAdjustDependents);
-
-	// validate time periods before writing
-	m_sHoursInDay.Format("%.2f", GetHoursInOneDay());
-	m_sDaysInWeek.Format("%.2f", GetDaysInOneWeek());
-	AfxGetApp()->WriteProfileString("Preferences", "DaysInWeek", m_sDaysInWeek);
-	AfxGetApp()->WriteProfileString("Preferences", "HoursInDay", m_sHoursInDay);
-
-//	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
 }
 
 void CPreferencesTaskPage::OnAveragepercentChange() 
@@ -186,15 +121,6 @@ void CPreferencesTaskPage::OnUsehighestpriority()
 double CPreferencesTaskPage::GetHoursInOneDay() const
 {
 	double dHours = Misc::Atof(m_sHoursInDay);
-/*
-	// handle locale specific decimal separator
-	setlocale(LC_NUMERIC, "");
-
-	double dHours = atof(m_sHoursInDay);
-
-	// restore decimal separator to '.'
-	setlocale(LC_NUMERIC, "English");
-*/
 
 	if (dHours <= 0 || dHours > 24)
 		dHours = 8;
@@ -205,16 +131,6 @@ double CPreferencesTaskPage::GetHoursInOneDay() const
 double CPreferencesTaskPage::GetDaysInOneWeek() const
 {
 	double dDays = Misc::Atof(m_sDaysInWeek);
-
-/*
-	// handle locale specific decimal separator
-	setlocale(LC_NUMERIC, "");
-
-	double dDays = atof(m_sDaysInWeek);
-
-	// restore decimal separator to '.'
-	setlocale(LC_NUMERIC, "English");
-*/
 
 	if (dDays <= 0 || dDays > 7)
 		dDays = 5;
@@ -242,3 +158,86 @@ void CPreferencesTaskPage::OnAutocalcpercentdone()
 		OnAveragepercentChange();
 	}
 }
+
+void CPreferencesTaskPage::LoadPreferences(const CPreferencesStorage& prefs)
+{
+	// load settings
+	m_bTreatSubCompletedAsDone = prefs.GetProfileInt("Preferences", "TreatSubCompletedAsDone", TRUE);
+	m_bAveragePercentSubCompletion = prefs.GetProfileInt("Preferences", "AveragePercentSubCompletion", TRUE);
+	m_bIncludeDoneInAverageCalc = prefs.GetProfileInt("Preferences", "IncludeDoneInAverageCalc", TRUE);
+	m_bUseEarliestDueDate = prefs.GetProfileInt("Preferences", "UseEarliestDueDate", FALSE);
+	m_bUsePercentDoneInTimeEst = prefs.GetProfileInt("Preferences", "UsePercentDoneInTimeEst", TRUE);
+	m_bUseHighestPriority = prefs.GetProfileInt("Preferences", "UseHighestPriority", FALSE);
+	m_bAutoCalcTimeEst = prefs.GetProfileInt("Preferences", "AutoCalcTimeEst", FALSE);
+	m_bIncludeDoneInPriorityCalc = prefs.GetProfileInt("Preferences", "IncludeDoneInPriorityCalc", FALSE);
+	m_bWeightPercentCompletionByTimeEst = prefs.GetProfileInt("Preferences", "WeightPercentCompletionByTimeEst", FALSE);
+	m_bWeightPercentCompletionByPriority = prefs.GetProfileInt("Preferences", "WeightPercentCompletionByPriority", FALSE);
+	m_bWeightPercentCompletionByNumSubtasks = prefs.GetProfileInt("Preferences", "WeightPercentCompletionByNumSubtasks", TRUE);
+	m_bAutoCalcPercentDone = prefs.GetProfileInt("Preferences", "AutoCalcPercentDone", FALSE);
+	m_sDaysInWeek = prefs.GetProfileString("Preferences", "DaysInWeek", "5");
+	m_sHoursInDay = prefs.GetProfileString("Preferences", "HoursInDay", "8");
+	m_bLogTime = prefs.GetProfileInt("Preferences", "LogTime", FALSE);
+	m_bLogTasksSeparately = prefs.GetProfileInt("Preferences", "LogTasksSeparately", FALSE);
+	m_bExclusiveTimeTracking = prefs.GetProfileInt("Preferences", "ExclusiveTimeTracking", FALSE);
+	m_bAllowParentTimeTracking = prefs.GetProfileInt("Preferences", "AllowParentTimeTracking", TRUE);
+	m_bAutoAdjustDependents = prefs.GetProfileInt("Preferences", "AutoAdjustDependents", FALSE);
+
+	// messy but I decided to change the logic to clarify the user interface
+	m_bTrackNonActiveTasklists = prefs.GetProfileInt("Preferences", "TrackNonActiveTasklists", -1);
+
+	if (m_bTrackNonActiveTasklists == -1) // first time
+		m_bTrackNonActiveTasklists = !(prefs.GetProfileInt("Preferences", "TrackActiveTasklistOnly", TRUE));
+
+	m_bTrackNonSelectedTasks = prefs.GetProfileInt("Preferences", "TrackNonSelectedTasks", -1);
+
+	if (m_bTrackNonSelectedTasks == -1) // first time
+		m_bTrackNonSelectedTasks = !(prefs.GetProfileInt("Preferences", "TrackSelectedTaskOnly", TRUE));
+
+	m_bTrackOnScreenSaver = prefs.GetProfileInt("Preferences", "TrackOnScreenSaver", -1);
+
+	if (m_bTrackOnScreenSaver == -1) // first time
+		m_bTrackOnScreenSaver = !(prefs.GetProfileInt("Preferences", "PauseTimeTrackingOnScrnSaver", TRUE));
+
+	m_bTrackHibernated = prefs.GetProfileInt("Preferences", "AllowTrackingWhenHibernated", FALSE);
+
+	// fix up m_bAveragePercentSubCompletion because it's overridden by m_bAutoCalcPercentDone
+	if (m_bAutoCalcPercentDone)
+		m_bAveragePercentSubCompletion = FALSE;
+
+//	m_b = prefs.GetProfileInt("Preferences", "", FALSE);
+}
+
+void CPreferencesTaskPage::SavePreferences(CPreferencesStorage& prefs)
+{
+	// save settings
+	prefs.WriteProfileInt("Preferences", "TreatSubCompletedAsDone", m_bTreatSubCompletedAsDone);
+	prefs.WriteProfileInt("Preferences", "AveragePercentSubCompletion", m_bAveragePercentSubCompletion);
+	prefs.WriteProfileInt("Preferences", "IncludeDoneInAverageCalc", m_bIncludeDoneInAverageCalc);
+	prefs.WriteProfileInt("Preferences", "UseEarliestDueDate", m_bUseEarliestDueDate);
+	prefs.WriteProfileInt("Preferences", "UsePercentDoneInTimeEst", m_bUsePercentDoneInTimeEst);
+	prefs.WriteProfileInt("Preferences", "UseHighestPriority", m_bUseHighestPriority);
+	prefs.WriteProfileInt("Preferences", "AutoCalcTimeEst", m_bAutoCalcTimeEst);
+	prefs.WriteProfileInt("Preferences", "IncludeDoneInPriorityCalc", m_bIncludeDoneInPriorityCalc);
+	prefs.WriteProfileInt("Preferences", "WeightPercentCompletionByTimeEst", m_bWeightPercentCompletionByTimeEst);
+	prefs.WriteProfileInt("Preferences", "WeightPercentCompletionByPriority", m_bWeightPercentCompletionByPriority);
+	prefs.WriteProfileInt("Preferences", "WeightPercentCompletionByNumSubtasks", m_bWeightPercentCompletionByNumSubtasks);
+	prefs.WriteProfileInt("Preferences", "AutoCalcPercentDone", m_bAutoCalcPercentDone);
+	prefs.WriteProfileInt("Preferences", "TrackNonSelectedTasks", m_bTrackNonSelectedTasks);
+	prefs.WriteProfileInt("Preferences", "TrackNonActiveTasklists", m_bTrackNonActiveTasklists);
+	prefs.WriteProfileInt("Preferences", "TrackOnScreenSaver", m_bTrackOnScreenSaver);
+	prefs.WriteProfileInt("Preferences", "AllowTrackingWhenHibernated", m_bTrackHibernated);
+	prefs.WriteProfileInt("Preferences", "LogTime", m_bLogTime);
+	prefs.WriteProfileInt("Preferences", "LogTasksSeparately", m_bLogTasksSeparately);
+	prefs.WriteProfileInt("Preferences", "ExclusiveTimeTracking", m_bExclusiveTimeTracking);
+	prefs.WriteProfileInt("Preferences", "AllowParentTimeTracking", m_bAllowParentTimeTracking);
+	prefs.WriteProfileInt("Preferences", "AutoAdjustDependents", m_bAutoAdjustDependents);
+
+	// validate time periods before writing
+	m_sHoursInDay.Format("%.2f", GetHoursInOneDay());
+	m_sDaysInWeek.Format("%.2f", GetDaysInOneWeek());
+	prefs.WriteProfileString("Preferences", "DaysInWeek", m_sDaysInWeek);
+	prefs.WriteProfileString("Preferences", "HoursInDay", m_sHoursInDay);
+
+//	prefs.WriteProfileInt("Preferences", "", m_b);
+}
+

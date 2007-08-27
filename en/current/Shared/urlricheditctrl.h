@@ -7,7 +7,7 @@
 // urlricheditctrl.h : header file
 //
 
-#include "olericheditctrl.h"
+#include "richeditbasectrl.h"
 #include "richeditncborder.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ struct PROTOCOL
 typedef CArray<URLITEM, URLITEM&> CUrlArray;
 typedef CArray<PROTOCOL, PROTOCOL&> CProtocolArray;
 
-class CUrlRichEditCtrl : public COleRichEditCtrl
+class CUrlRichEditCtrl : public CRichEditBaseCtrl//COleRichEditCtrl
 {
 	// Construction
 public:
@@ -51,6 +51,8 @@ public:
 	BOOL AddProtocol(LPCTSTR szProtocol, BOOL bWantNotify = TRUE);
 	void ParseAndFormatText(BOOL bForceReformat = FALSE);
 	int GetContextUrl() { return m_nContextUrl; }
+
+	static SetGotoErrorMsg(LPCTSTR szErrMsg) { s_sGotoErrMsg = szErrMsg; }
 	
 	// Attributes
 protected:
@@ -60,6 +62,8 @@ protected:
 
 	CPoint m_ptContextMenu;
 	int m_nContextUrl;
+	static CString s_sGotoErrMsg;
+	CHARRANGE m_crDropSel;
 	
 	// Operations
 public:
@@ -70,6 +74,8 @@ public:
 protected:
 	virtual void PreSubclassWindow();
 	//}}AFX_VIRTUAL
+	virtual int OnToolHitTest(CPoint pt, TOOLINFO* pTI) const;
+	virtual LRESULT SendNotifyCustomUrl(LPCTSTR szUrl) const;
 	
 	// Implementation
 public:
@@ -93,10 +99,8 @@ protected:
 	afx_msg LRESULT OnSetText(WPARAM wp, LPARAM lp);
 	afx_msg LRESULT OnDropFiles(WPARAM wp, LPARAM lp);
 	afx_msg BOOL OnNotifyLink(NMHDR* pNMHDR, LRESULT* pResult);
-	
+	afx_msg void OnNeedTooltip(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
-		
-	virtual LRESULT SendNotifyCustomUrl(LPCTSTR szUrl) const;
 	
 protected:
 	virtual HRESULT QueryAcceptData(LPDATAOBJECT lpdataobj, CLIPFORMAT FAR *lpcfFormat,
@@ -113,7 +117,9 @@ protected:
 	CPoint GetCaretPos();
 	int FindUrl(const CHARRANGE& cr);
 	int FindUrl(const CPoint& point);
+	int FindUrlEx(const CPoint& point);
 	BOOL UrlsMatch(const CUrlArray& aUrls); 
+	void TrackDragCursor();
 
     int MatchProtocol(LPCTSTR szText) const;
 	static BOOL IsDelim(LPCTSTR szText);

@@ -30,11 +30,18 @@ enum // control IDs
 	IDC_URL,
 };
 
+CSpellCheckDlg::CSpellCheckDlg(LPCTSTR szDictionaryPath, ISpellCheck* pSpellCheck, LPCTSTR szText, CWnd* /*pParent*/) : 
+	m_pSpellChecker(NULL), 
+	m_reSpellCheck(m_reText),
+    m_sSelDictionary(szDictionaryPath), 
+	m_stURL("http://wiki.services.openoffice.org/wiki/Dictionaries"),
+	m_bMadeChanges(FALSE),
+	m_ptTopLeft(-1, -1)
+{
+	InitDialog(pSpellCheck, szText);
+}
 
-CSpellCheckDlg::CSpellCheckDlg(LPCTSTR szDictionaryPath, LPCTSTR szText, CWnd* /*pParent*/)
-	: m_pSpellChecker(NULL), 
-     m_sSelDictionary(szDictionaryPath), 
-     m_stURL("http://wiki.services.openoffice.org/wiki/Dictionaries") 
+void CSpellCheckDlg::InitDialog(ISpellCheck* pSpellCheck, LPCTSTR szText)
 {
 	AfxEnableControlContainer();
 	AfxInitRichEdit();
@@ -44,7 +51,7 @@ CSpellCheckDlg::CSpellCheckDlg(LPCTSTR szDictionaryPath, LPCTSTR szText, CWnd* /
 	AddRCControl("PUSHBUTTON", "", SPELLCHECK_BROWSE,WS_TABSTOP, 0,256,7,50,14,IDC_BROWSE);
 	AddRCControl("LTEXT", "", SPELLCHECK_DOWNLOADMORE, WS_TABSTOP,0, 66,21,90,8,IDC_URL);
 	AddRCControl("LTEXT", "", SPELLCHECK_CHECKING, 0,0, 7,30,49,8, (UINT)IDC_STATIC);
-	AddRCControl("CONTROL", "RICHEDIT", "",ES_MULTILINE | ES_AUTOVSCROLL | /*ES_NOHIDESEL |WS_BORDER | */ ES_READONLY | WS_VSCROLL | WS_TABSTOP,0, 7,40,242,68,IDC_TEXT);
+	AddRCControl("CONTROL", "RICHEDIT", "",ES_MULTILINE | ES_AUTOVSCROLL | ES_NOHIDESEL |/*WS_BORDER | */ ES_READONLY | WS_VSCROLL | WS_TABSTOP | WS_DISABLED,0, 7,40,242,68,IDC_TEXT);
 	AddRCControl("PUSHBUTTON", "", SPELLCHECK_RESTART,WS_TABSTOP, 0,256,40,50,14,IDC_RESTART);
 	AddRCControl("LTEXT", "", SPELLCHECK_REPLACE,0, 0,7,112,30,8, (UINT)IDC_STATIC);
 	AddRCControl("LTEXT", "", "Static",0, 0,44,112,205,8,IDC_MISSPELTWORD);
@@ -53,15 +60,20 @@ CSpellCheckDlg::CSpellCheckDlg(LPCTSTR szDictionaryPath, LPCTSTR szText, CWnd* /
 	AddRCControl("PUSHBUTTON", "", SPELLCHECK_BTN_REPLACE,WS_TABSTOP, 0,256,124,50,14,IDC_REPLACE);
 	AddRCControl("PUSHBUTTON", "", SPELLCHECK_NEXTWORD,WS_TABSTOP, 0,256,144,50,14,IDC_CONTINUE);
 	AddRCControl("CONTROL", "static", "",SS_ETCHEDHORZ,0,7,182,299,1, (UINT)IDC_STATIC);
-	AddRCControl("DEFPUSHBUTTON", "", BTN_OK, WS_TABSTOP, 0, 199,190,50,14,IDOK);
-	AddRCControl("PUSHBUTTON", "", BTN_CANCEL, WS_TABSTOP, 0,256,190,50,14,IDCANCEL);
 
-	//{{AFX_DATA_INIT(CSpellCheckDlg)
-	m_sText = szText;
-	m_sMisspeltWord = _T("");
-	m_sSuggestion = _T("");
-	//}}AFX_DATA_INIT
-	m_crMisspeltWord.cpMin = m_crMisspeltWord.cpMax = 0;
+	if (!pSpellCheck)
+	{
+		AddRCControl("DEFPUSHBUTTON", "", BTN_OK, WS_TABSTOP, 0, 199,190,50,14,IDOK);
+		AddRCControl("PUSHBUTTON", "", BTN_CANCEL, WS_TABSTOP, 0,256,190,50,14,IDCANCEL);
+
+		SetText(szText);
+	}
+	else
+	{
+		AddRCControl("PUSHBUTTON", "", BTN_CLOSE, WS_TABSTOP, 0,256,190,50,14,IDCANCEL);
+
+		SetSpellCheck(pSpellCheck);
+	}
 
 	// init spell checker dll path
 #ifndef _DEBUG
@@ -83,21 +95,22 @@ CSpellCheckDlg::CSpellCheckDlg(LPCTSTR szDictionaryPath, LPCTSTR szText, CWnd* /
 
 CSpellCheckDlg::~CSpellCheckDlg()
 {
-	ReleaseSpellCheckInterface(m_pSpellChecker);
+	ReleaseSpellCheckerInterface(m_pSpellChecker);
 }
 
 void CSpellCheckDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CRuntimeDlg::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSpellCheckDlg)
-	DDX_Control(pDX, IDC_TEXT, m_reText);
 	DDX_Control(pDX, IDC_SUGGESTIONS, m_lbSuggestions);
-	DDX_Text(pDX, IDC_TEXT, m_sText);
 	DDX_Text(pDX, IDC_MISSPELTWORD, m_sMisspeltWord);
 	DDX_LBString(pDX, IDC_SUGGESTIONS, m_sSuggestion);
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_URL, m_stURL);
 	DDX_Control(pDX, IDC_DICTIONARIES, m_cbDictionaries);
+
+	DDX_Text(pDX, IDC_TEXT, m_sText);
+	DDX_Control(pDX, IDC_TEXT, m_reText);
 
 	if (pDX->m_bSaveAndValidate)
 	{
@@ -124,7 +137,6 @@ void CSpellCheckDlg::DoDataExchange(CDataExchange* pDX)
 	}
 }
 
-
 BEGIN_MESSAGE_MAP(CSpellCheckDlg, CRuntimeDlg)
 	//{{AFX_MSG_MAP(CSpellCheckDlg)
 	ON_BN_CLICKED(IDC_REPLACE, OnReplace)
@@ -145,7 +157,13 @@ int CSpellCheckDlg::DoModal(BOOL bEndOnNoErrors)
 { 
 	m_bEndOnNoErrors = bEndOnNoErrors;
 
-	return CRuntimeDlg::DoModal(SPELLCHECK_TITLE); 
+	// turn off centering if we saved the last position
+	DWORD dwFlags = RTD_DEFSTYLE;
+
+	if (m_ptTopLeft.x != -1 || m_ptTopLeft.y != -1)
+		dwFlags &= ~DS_CENTER;
+
+	return CRuntimeDlg::DoModal(SPELLCHECK_TITLE, dwFlags); 
 }
 
 BOOL CSpellCheckDlg::InitDictionary(LPCTSTR szDicPath)
@@ -154,11 +172,11 @@ BOOL CSpellCheckDlg::InitDictionary(LPCTSTR szDicPath)
 	sAffixPath.MakeLower();
 	sAffixPath.Replace(".dic", ".aff");
 
-	ISpellCheck* pTemp = CreateSpellCheckInterface(m_sEnginePath, sAffixPath, szDicPath);
+	ISpellChecker* pTemp = CreateSpellCheckerInterface(m_sEnginePath, sAffixPath, szDicPath);
 
 	if (pTemp) // alls well
 	{
-		ReleaseSpellCheckInterface(m_pSpellChecker);
+		ReleaseSpellCheckerInterface(m_pSpellChecker);
 		m_pSpellChecker = pTemp;
 		pTemp = NULL;
 
@@ -166,8 +184,7 @@ BOOL CSpellCheckDlg::InitDictionary(LPCTSTR szDicPath)
 		UpdateData(FALSE);
 
 		// clear the current word and reset 
-		HighlightWord(m_crMisspeltWord, FALSE);
-		m_crMisspeltWord.cpMax = m_crMisspeltWord.cpMin;
+		HighlightWord(FALSE);
 	}
 
 	return (NULL != m_pSpellChecker);
@@ -176,14 +193,34 @@ BOOL CSpellCheckDlg::InitDictionary(LPCTSTR szDicPath)
 void CSpellCheckDlg::SetText(LPCTSTR szText) 
 { 
 	m_sText = szText; 
+	m_pSpellCheck = &m_reSpellCheck;
 
 	m_sMisspeltWord.Empty();
 	m_sSuggestion.Empty();
-	m_crMisspeltWord.cpMin = m_crMisspeltWord.cpMax = 0;
 
 	if (GetSafeHwnd())
 	{
+		m_reText.SetBackgroundColor(TRUE, 0);
 		m_lbSuggestions.ResetContent();
+
+		UpdateData(FALSE);
+		StartChecking();
+	}
+}
+
+void CSpellCheckDlg::SetSpellCheck(ISpellCheck* pSpellCheck) 
+{ 
+	m_sText.Empty(); 
+	m_pSpellCheck = pSpellCheck;
+
+	m_sMisspeltWord.Empty();
+	m_sSuggestion.Empty();
+
+	if (GetSafeHwnd())
+	{
+		m_reText.SetBackgroundColor(FALSE, GetSysColor(COLOR_3DFACE));
+		m_lbSuggestions.ResetContent();
+
 		UpdateData(FALSE);
 		StartChecking();
 	}
@@ -194,7 +231,7 @@ void CSpellCheckDlg::OnChangeDictionary()
 	UpdateData();
 
 	if (InitDictionary(m_sSelDictionary))
-		StartChecking(m_crMisspeltWord.cpMin);
+		StartChecking(CH_CURRENT);
 }
 
 void CSpellCheckDlg::OnBrowse()
@@ -207,7 +244,7 @@ void CSpellCheckDlg::OnBrowse()
 	if (dialog.DoModal() == IDOK)
 	{
 		if (InitDictionary(dialog.GetPathName()))
-			StartChecking(m_crMisspeltWord.cpMin);
+			StartChecking(CH_CURRENT);
 	}
 }
 
@@ -218,11 +255,13 @@ void CSpellCheckDlg::OnReplace()
 
 	UpdateData();
 	ASSERT (!m_sSuggestion.IsEmpty());
-	
-	m_sText = m_sText.Left(m_crMisspeltWord.cpMin) + m_sSuggestion + m_sText.Mid(m_crMisspeltWord.cpMax);
-	m_crMisspeltWord.cpMax = m_crMisspeltWord.cpMin + m_sSuggestion.GetLength();
-	UpdateData(FALSE);
 
+	m_pSpellCheck->ReplaceCurrentWord(m_sSuggestion);
+	m_pSpellCheck->ClearSelection();
+	m_bMadeChanges = TRUE;
+
+	UpdateData();
+	
 	OnContinue();
 }
 
@@ -231,53 +270,41 @@ void CSpellCheckDlg::OnContinue()
 	if (!m_pSpellChecker)
 		return;
 
-	StartChecking(m_crMisspeltWord.cpMax + 1);
+	StartChecking(CH_NEXT);
 }
 
-BOOL CSpellCheckDlg::FindNextWord(int nFrom, CHARRANGE& range, CString& sWord)
+BOOL CSpellCheckDlg::FindNextWord(CString& sWord, CHECKFROM nFrom)
 {
-	const CString DELIMS = " .,<>;:-'\"!?()\t\r\n~@#$%^&*+=|\\{}[]/1234567890";
-	int nTextLen = m_sText.GetLength();
+	switch (nFrom)
+	{
+	case CH_START:
+		sWord = m_pSpellCheck->GetFirstWord();
+		break;
 
-	// walk along m_sText until we find the start of the word (next non-delimeter)
-	while (nFrom < nTextLen - 1 && DELIMS.Find(m_sText[nFrom]) != -1)
-		nFrom++;
+	case CH_CURRENT:
+		sWord = m_pSpellCheck->GetCurrentWord();
+		break;
 
-	// now look ahead for end of the word
-	int nTo = nFrom;
+	case CH_NEXT:
+		sWord = m_pSpellCheck->GetNextWord();
+		break;
+	}
 
-	while (nTo < nTextLen && DELIMS.Find(m_sText[nTo]) == -1)
-		nTo++;
-
-	if (nFrom == nTo)
-		return FALSE;
-
-	range.cpMin = nFrom;
-	range.cpMax = nTo;
-	sWord = m_sText.Mid(nFrom, nTo - nFrom);
-
-	return TRUE;
+	return (!sWord.IsEmpty());
 }
 
-BOOL CSpellCheckDlg::FindNextMisspeltWord(int nFrom, CHARRANGE& range, CString& sWord)
+BOOL CSpellCheckDlg::FindNextMisspeltWord(CString& sWord, CHECKFROM nFrom)
 {
 	while (TRUE)
 	{
-		CHARRANGE crWord;
-		
-		if (!FindNextWord(nFrom, crWord, sWord))
-		{
-			range.cpMin = range.cpMax = nFrom;
+		if (!FindNextWord(sWord, nFrom))
 			return FALSE;
-		}
-		else if (IsWordMisspelt(sWord))
-		{
-			range = crWord;
-			return TRUE;
-		}
 
-		// else
-		nFrom = crWord.cpMax + 1;
+		else if (IsWordMisspelt(sWord))
+			return TRUE;
+
+		// else continue
+		nFrom = CH_NEXT;
 	}
 
 	// cant get here
@@ -290,6 +317,7 @@ BOOL CSpellCheckDlg::OnInitDialog()
 	CRuntimeDlg::OnInitDialog();
 
 	m_ncBorder.Initialize(m_reText);
+	m_bMadeChanges = FALSE;
 
 	// reload dictionary list
 	int nDicCount = AfxGetApp()->GetProfileInt("SpellChecker", "DictionaryCount", 0);
@@ -338,11 +366,13 @@ BOOL CSpellCheckDlg::OnInitDialog()
 		return FALSE;
 	}
 
+	// make the rich edit appear disabled if not using text
+	if (m_pSpellCheck != &m_reSpellCheck)
+		m_reText.SetBackgroundColor(FALSE, GetSysColor(COLOR_3DFACE));
+
 	if (IsInitialized() || InitDictionary(m_sSelDictionary))
 	{
-		StartChecking();
-
-		if (m_bEndOnNoErrors && m_crMisspeltWord.cpMin == m_crMisspeltWord.cpMax)
+		if (!StartChecking() && m_bEndOnNoErrors)
 		{
 			EndDialog(IDNOERRORS);
 			return FALSE;
@@ -353,37 +383,39 @@ BOOL CSpellCheckDlg::OnInitDialog()
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CSpellCheckDlg::StartChecking(int nFrom)
+BOOL CSpellCheckDlg::StartChecking(CHECKFROM nFrom)
 {
 	CString sWord; 
-	CHARRANGE crPrev = m_crMisspeltWord, crTemp;
 
-	if (FindNextMisspeltWord(nFrom, m_crMisspeltWord, sWord))
-		ProcessMisspeltWord(sWord, m_crMisspeltWord, crPrev);
+	BOOL bMisspelt = FindNextMisspeltWord(sWord, nFrom);
 
-	// reached the end so start again
-	else
+	// if starting from the beginning and no misspelt words are found
+	// then e return FALSE to indicate no further checking required
+	if (nFrom == CH_START && !bMisspelt)
+		return FALSE;
+
+	else if (bMisspelt)
 	{
-		m_crMisspeltWord.cpMin = m_crMisspeltWord.cpMax = 0;
-		ProcessMisspeltWord("", m_crMisspeltWord, crPrev);
-
-		if (FindNextMisspeltWord(0, crTemp, sWord))
-			StartChecking();
+		ProcessMisspeltWord(sWord);
+		return TRUE;
 	}
+
+	// else reached the end so start again
+	ProcessMisspeltWord("");
+
+	return StartChecking(CH_START);
 }
 
-void CSpellCheckDlg::ProcessMisspeltWord(LPCTSTR szWord, CHARRANGE crWord, CHARRANGE crPrev)
+void CSpellCheckDlg::ProcessMisspeltWord(LPCTSTR szWord)
 {
-	if (crPrev.cpMin == crWord.cpMin && crPrev.cpMax == crWord.cpMax)
-		return;
-
-	// always remove previous selection
-	HighlightWord(crPrev, FALSE);
-	
-	if (crWord.cpMin == crWord.cpMax) // no misspelling
+	if (!szWord || !*szWord) // no misspelling
 	{
 		m_lbSuggestions.ResetContent();
 		GetDlgItem(IDC_REPLACE)->EnableWindow(FALSE);
+
+		m_sMisspeltWord.Empty();
+		UpdateData(FALSE);
+
 		return;
 	}
 
@@ -392,7 +424,7 @@ void CSpellCheckDlg::ProcessMisspeltWord(LPCTSTR szWord, CHARRANGE crWord, CHARR
 	UpdateData(FALSE);
 
 	// set new selection
-	HighlightWord(crWord);
+	HighlightWord(TRUE);
 
 	// add suggestions
 	m_lbSuggestions.ResetContent();
@@ -419,56 +451,12 @@ void CSpellCheckDlg::ProcessMisspeltWord(LPCTSTR szWord, CHARRANGE crWord, CHARR
 	GetDlgItem(IDC_REPLACE)->EnableWindow(m_lbSuggestions.GetCount());
 }
 
-void CSpellCheckDlg::HighlightWord(CHARRANGE& crWord, BOOL bHighlight)
+void CSpellCheckDlg::HighlightWord(BOOL bHighlight)
 {
-	if (crWord.cpMin == crWord.cpMax)
-		return;
-
-	CHARFORMAT cf = 
-	{ 
-		sizeof(cf), 
-		CFM_COLOR | CFM_BOLD, 
-		bHighlight ? CFE_BOLD : 0, 
-		0, 
-		0, 
-		bHighlight ? 255 : 0, 
-		0, 
-		0, 
-		0 
-	};
-
-	m_reText.SetSel(crWord);
-	m_reText.SetWordCharFormat(cf); 
-	m_reText.SetSel(crWord.cpMax, crWord.cpMax);
-
-	// need to make sure line is visible
-	CPoint ptSel = m_reText.GetCharPos(crWord.cpMax);
-
-	CRect rClient;
-	m_reText.GetClientRect(rClient);
-
-	if (ptSel.y >= rClient.bottom)
-	{
-		while (ptSel.y >= rClient.bottom)
-		{
-			m_reText.LineScroll(1);
-			ptSel = m_reText.GetCharPos(crWord.cpMax);
-		}
-
-		// one more for good measure
-		m_reText.LineScroll(1);
-	}
-	else if (ptSel.y <= rClient.top)
-	{
-		while (ptSel.y <= rClient.top)
-		{
-			m_reText.LineScroll(-1);
-			ptSel = m_reText.GetCharPos(crWord.cpMax);
-		}
-
-		// one more for good measure
-		m_reText.LineScroll(-1);
-	}
+	if (bHighlight)
+		m_pSpellCheck->SelectCurrentWord();
+	else
+		m_pSpellCheck->ClearSelection();
 }
 
 BOOL CSpellCheckDlg::IsWordMisspelt(LPCTSTR szWord)
@@ -489,11 +477,27 @@ void CSpellCheckDlg::OnSelchangeSuggestions()
 void CSpellCheckDlg::OnRestart() 
 {
 	if (m_pSpellChecker)
+	{
+		if (m_pSpellCheck == &m_reSpellCheck)
+			m_bMadeChanges = FALSE;
+
 		StartChecking();	
+	}
 }
 
 void CSpellCheckDlg::OnDestroy() 
 {
+	m_pSpellCheck->ClearSelection();
+
+	// save position
+	if (m_ptTopLeft.x == -1 && m_ptTopLeft.y == -1)
+	{
+		CRect rWindow;
+		GetWindowRect(rWindow);
+
+		m_ptTopLeft = rWindow.TopLeft();
+	}
+	
 	CRuntimeDlg::OnDestroy();
 	
 	AfxGetApp()->WriteProfileString("SpellChecker", "EnginePath", m_sEnginePath);
@@ -523,3 +527,11 @@ void CSpellCheckDlg::OnDblClkSuggestions()
 		OnReplace();
 }
 
+CPoint CSpellCheckDlg::GetInitialPos() const 
+{ 
+	CPoint ptTemp(m_ptTopLeft);
+
+	m_ptTopLeft.x = m_ptTopLeft.y = -1;  // reset
+
+	return ptTemp;
+}

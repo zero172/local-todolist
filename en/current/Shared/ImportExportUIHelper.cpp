@@ -40,7 +40,7 @@ void CImportExportUIHelper::UpdateExportMenu(CCmdUI* pCmdUI, int nMaxCount, BOOL
 		for (nTool = 0; nTool < nMaxCount; nTool++)
 		{
 			pCmdUI->m_pMenu->DeleteMenu(nStartID + nTool, MF_BYCOMMAND);
-			m_mgrIcon.SetImage(nStartID + nTool, NULL);
+			m_mgrIcon.DeleteImage(nStartID + nTool);
 		}
 		
 		// if we have any tools to add we do it here
@@ -99,7 +99,7 @@ void CImportExportUIHelper::UpdateImportMenu(CCmdUI* pCmdUI, int nMaxCount, BOOL
 		for (int nTool = 0; nTool < nMaxCount; nTool++)
 		{
 			pCmdUI->m_pMenu->DeleteMenu(nStartID + nTool, MF_BYCOMMAND);
-			m_mgrIcon.SetImage(nStartID + nTool, NULL);
+			m_mgrIcon.DeleteImage(nStartID + nTool);
 		}
 		
 		// if we have any tools to add we do it here

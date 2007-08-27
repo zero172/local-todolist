@@ -8,6 +8,7 @@
 //
 
 #include "..\shared\hotkeyctrlex.h"
+#include "..\shared\preferencesbase.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesGenPage dialog
@@ -22,7 +23,7 @@ enum // tray options
 	STO_ONMINCLOSE,
 };
 
-class CPreferencesGenPage : public CPropertyPage
+class CPreferencesGenPage : public CPreferencesPageBase
 {
 	DECLARE_DYNCREATE(CPreferencesGenPage)
 
@@ -34,7 +35,6 @@ public:
 	BOOL GetAlwaysOnTop() const { return m_bAlwaysOnTop; }
 	BOOL GetUseSysTray() const { return m_bUseSysTray; }
 	int GetSysTrayOption() const { return !m_bUseSysTray ? STO_NONE : m_nSysTrayOption; }
-	BOOL GetAutoSaveOnSysTray() const { return m_bUseSysTray && m_bAutoSaveOnSysTray; }
 	BOOL GetConfirmDelete() const { return m_bConfirmDelete; }
 	BOOL GetConfirmSaveOnExit() const { return !m_bUseSysTray && m_bConfirmSaveOnExit; }
 	BOOL GetShowOnStartup() const { return m_bShowOnStartup; }
@@ -43,7 +43,6 @@ public:
 	BOOL GetGlobalHotkey() const { return m_bSpecifyGlobalHotkey ? m_dwGlobalHotkey : 0; }
 	BOOL GetAddFilesToMRU() const { return m_bAddFilesToMRU; }
 	BOOL GetEnableTDLExtension() const { return m_bEnableTDLExtension; }
-	BOOL GetAutoSaveUnsavedOnMinimize() const { return !m_bDontAutoSaveUnsaved; }
 	BOOL GetAutoCheckForUpdates() const { return m_bAutoCheckForUpdates; }
 	BOOL GetEscapeMinimizes() const { return m_bEscapeMinimizes; }
 	BOOL GetEnableTDLProtocol() const { return m_bEnableTDLProtocol; }
@@ -56,7 +55,6 @@ public:
 	CHotKeyCtrlEx	m_hkGlobal;
 	BOOL	m_bAlwaysOnTop;
 	BOOL	m_bUseSysTray;
-	BOOL	m_bAutoSaveOnSysTray;
 	BOOL	m_bConfirmDelete;
 	BOOL	m_bConfirmSaveOnExit;
 	BOOL	m_bMultiInstance;
@@ -66,7 +64,6 @@ public:
 	BOOL	m_bSpecifyGlobalHotkey;
 	BOOL	m_bAddFilesToMRU;
 	BOOL	m_bEnableTDLExtension;
-	BOOL	m_bDontAutoSaveUnsaved;
 	BOOL	m_bAutoCheckForUpdates;
 	BOOL	m_bEscapeMinimizes;
 	BOOL	m_bEnableTDLProtocol;
@@ -77,8 +74,6 @@ public:
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPreferencesGenPage)
-	public:
-	virtual void OnOK();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -92,10 +87,11 @@ protected:
 	afx_msg void OnSpecifyglobalhotkey();
 	afx_msg void OnMultiinstance();
 	afx_msg void OnClearMRU();
-	afx_msg void OnAutosaveonsystray();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -9,11 +9,13 @@
 
 #include "..\shared\toolbarhelper.h"
 #include "..\shared\enfiledialog.h"
-#include "..\shared\spellcheckdlg.h"
 #include "..\shared\ITaskList.h"
 #include "..\shared\wclassdefines.h"
 #include "..\shared\autoflag.h"
 #include "..\shared\richedithelper.h"
+#include "..\shared\richeditspellcheck.h"
+#include "..\shared\misc.h"
+#include "..\shared\enstring.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -24,7 +26,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CToDoCommentsCtrl
 
-CToDoCommentsCtrl::CToDoCommentsCtrl() : m_bAllowNotify(TRUE), m_bWordWrap(FALSE)
+CToDoCommentsCtrl::CToDoCommentsCtrl() : m_bAllowNotify(TRUE), m_bWordWrap(FALSE), 
+#pragma warning (disable: 4355)
+	m_reSpellCheck(*this)
+#pragma warning (default: 4355)
 {
 	// add custom protocol to comments field for linking to task IDs
 	AddProtocol(TDL_PROTOCOL, TRUE);
@@ -32,6 +37,7 @@ CToDoCommentsCtrl::CToDoCommentsCtrl() : m_bAllowNotify(TRUE), m_bWordWrap(FALSE
 
 CToDoCommentsCtrl::~CToDoCommentsCtrl()
 {
+	CUrlRichEditCtrl::SetGotoErrorMsg(CEnString(IDS_COMMENTSGOTOERRMSG));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,9 +72,8 @@ BEGIN_MESSAGE_MAP(CToDoCommentsCtrl, CUrlRichEditCtrl)
 	ON_WM_DESTROY()
 	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
-	ON_COMMAND_RANGE(ID_COMMENTS_CUT, ID_COMMENTS_REDO, OnCommentsMenuCmd)
-	ON_UPDATE_COMMAND_UI_RANGE(ID_COMMENTS_CUT, ID_COMMENTS_REDO, OnUpdateCommentsMenuCmd)
-	ON_NOTIFY_RANGE(TTN_NEEDTEXT, 0, 0xffff, OnNeedTooltip)
+	ON_COMMAND_RANGE(ID_COMMENTS_CUT, ID_COMMENTS_FINDREPLACE, OnCommentsMenuCmd)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_COMMENTS_CUT, ID_COMMENTS_FINDREPLACE, OnUpdateCommentsMenuCmd)
 	ON_CONTROL_REFLECT_EX(EN_CHANGE, OnChangeText)
 	ON_MESSAGE(WM_SETFONT, OnSetFont)
 END_MESSAGE_MAP()
@@ -147,6 +152,14 @@ void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID)
 
 	case ID_COMMENTS_CUT:
 		Cut();
+		break;
+		
+	case ID_COMMENTS_FIND:
+		DoEditFind(IDS_FIND_TITLE);
+		break;
+		
+	case ID_COMMENTS_FINDREPLACE:
+		DoEditReplace(IDS_REPLACE_TITLE);
 		break;
 		
 	case ID_COMMENTS_COPY:
@@ -244,15 +257,7 @@ void CToDoCommentsCtrl::OnCommentsMenuCmd(UINT nCmdID)
 		break;
 		
 	case ID_COMMENTS_SPELLCHECK:
-		if (GetTextLength())
-		{
-			CString sComments;
-			GetWindowText(sComments);
-			CSpellCheckDlg dialog(NULL, sComments);
-			
-			if (dialog.DoModal() == IDOK)
-				SetWindowText(dialog.GetCorrectedText());
-		}
+		GetParent()->PostMessage(WM_ICC_WANTSPELLCHECK);
 		break;
 
 	case ID_COMMENTS_WORDWRAP:
@@ -309,8 +314,11 @@ void CToDoCommentsCtrl::OnUpdateCommentsMenuCmd(CCmdUI* pCmdUI)
 		break;
 		
 	case ID_COMMENTS_SELECTALL:
-	case ID_COMMENTS_SPELLCHECK:
 		pCmdUI->Enable(GetTextLength());
+		break;
+		
+	case ID_COMMENTS_SPELLCHECK:
+		pCmdUI->Enable(GetTextLength() && !bReadOnly);
 		break;
 		
 	case ID_COMMENTS_OPENURL:
@@ -391,30 +399,6 @@ void CToDoCommentsCtrl::PreSubclassWindow()
 	CUrlRichEditCtrl::PreSubclassWindow();
 }
 
-int CToDoCommentsCtrl::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
-{
-	int nHit = MAKELONG(point.x, point.y);
-	pTI->hwnd = m_hWnd;
-	pTI->uId  = nHit;
-	pTI->rect = CRect(CPoint(point.x-1,point.y-1),CSize(2,2));
-	pTI->uFlags |= TTF_NOTBUTTON | TTF_ALWAYSTIP;
-	pTI->lpszText = LPSTR_TEXTCALLBACK;
-	
-	return nHit;
-}
-
-void CToDoCommentsCtrl::OnNeedTooltip(UINT /*id*/, NMHDR* /*pNMHDR*/, LRESULT* pResult)
-{
-	*pResult = 0;
-/*	TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
-	
-	CPoint point(pNMHDR->idFrom);
-	
-	if (UrlHitTest(point) != -1)
-		strcpy(pTTT->szText, "Ctrl+Click to open url");
-*/
-}
-
 void CToDoCommentsCtrl::OnDestroy() 
 {
 	CUrlRichEditCtrl::OnDestroy();
@@ -442,40 +426,40 @@ int CToDoCommentsCtrl::OnCreate(LPCREATESTRUCT lpCreateStruct)
 bool CToDoCommentsCtrl::ProcessMessage(MSG* pMsg) 
 {
 	// process editing shortcuts
-	switch (pMsg->message)
+	if (Misc::ModKeysArePressed(MKS_CTRL) && pMsg->message == WM_KEYDOWN)
 	{
-	case WM_KEYDOWN:
+		switch (pMsg->wParam)
 		{
-			BOOL bCtrl = (GetKeyState(VK_CONTROL) & 0x8000);
-			BOOL bAlt = (GetKeyState(VK_MENU) & 0x8000);
-
-			if (bCtrl && !bAlt)
-			{
-				switch (pMsg->wParam)
-				{
-				case 'c': 
-				case 'C':
-					Copy();
-					return TRUE;
-
-				case 'v':
-				case 'V':
-					Paste();
-					return TRUE;
-
-				case 'x':
-				case 'X':
-					Cut();
-					return TRUE;
-
-				case 'a':
-				case 'A':
-					SetSel(0, -1);
-					return TRUE;
-				}
-			}
+		case 'c': 
+		case 'C':
+			Copy();
+			return TRUE;
+			
+		case 'v':
+		case 'V':
+			Paste();
+			return TRUE;
+			
+		case 'x':
+		case 'X':
+			Cut();
+			return TRUE;
+			
+		case 'a':
+		case 'A':
+			SetSel(0, -1);
+			return TRUE;
+			
+		case 'f':
+		case 'F':
+			DoEditFind(IDS_FIND_TITLE);
+			return TRUE;
+			
+		case 'h':
+		case 'H':
+			DoEditReplace(IDS_REPLACE_TITLE);
+			return TRUE;
 		}
-		break;
 	}
 
 	return false;

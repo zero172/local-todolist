@@ -20,6 +20,7 @@ static char THIS_FILE[] = __FILE__;
 // from r2h.h
 typedef int (*PFNCONVERTRTF2HTML)(const char*, const char*, unsigned long, const char*);
 
+/*
 static AFX_EXTENSION_MODULE AfxdllDLL = { NULL, NULL };
 
 extern "C" int APIENTRY
@@ -58,14 +59,21 @@ DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 	}
 	return 1;   // ok
 }
+*/
+
+static CRTFContentCtrlApp theApp;
 
 DLL_DECLSPEC IContent* CreateContentInterface()
 {
-	return new CRTFContentCtrlApp;
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	return &theApp;//new CRTFContentCtrlApp;
 }
 
 DLL_DECLSPEC int GetInterfaceVersion() 
 { 
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	return ICONTENTCTRL_VERSION; 
 }
 
@@ -73,13 +81,18 @@ CRTFContentCtrlApp::CRTFContentCtrlApp()
 {
 }
 
-bool CRTFContentCtrlApp::GetTypeID(GUID& id) 
+const char* CRTFContentCtrlApp::GetTypeID() const
 {
-	id = RTF_TYPEID;
-	return true;
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	static CString sID;
+
+	Misc::GuidToString(RTF_TYPEID, sID); 
+
+	return sID;
 }
 
-const char* CRTFContentCtrlApp::GetTypeDescription()
+const char* CRTFContentCtrlApp::GetTypeDescription() const
 {
 	return _T("Rich Text");
 }
@@ -87,6 +100,8 @@ const char* CRTFContentCtrlApp::GetTypeDescription()
 IContentControl* CRTFContentCtrlApp::CreateCtrl(unsigned short nCtrlID, unsigned long nStyle, 
 						long nLeft, long nTop, long nWidth, long nHeight, HWND hwndParent)
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	// load localized resources
 	HINSTANCE hResDll = AfxLoadLibrary("RTFContentCtrlLOC.dll");
 
@@ -111,7 +126,8 @@ IContentControl* CRTFContentCtrlApp::CreateCtrl(unsigned short nCtrlID, unsigned
 
 void CRTFContentCtrlApp::Release()
 {
-	delete this;
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+//	delete this;
 }
 
 void CRTFContentCtrlApp::SetIniLocation(bool /*bRegistry*/, const char* /*szIniPathName*/)
@@ -122,6 +138,8 @@ void CRTFContentCtrlApp::SetIniLocation(bool /*bRegistry*/, const char* /*szIniP
 int CRTFContentCtrlApp::ConvertToHtml(const unsigned char* pContent, 
 									  int nLength, char*& szHtml)
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (nLength == 0)
 		return 0; // nothing to convert
 

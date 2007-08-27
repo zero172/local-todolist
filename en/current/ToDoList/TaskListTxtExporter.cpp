@@ -131,7 +131,7 @@ CString& CTaskListTxtExporter::ExportTask(const ITaskList6* pTasks, HTASKITEM hT
 
 		// fileref
 		if (pTasks->TaskHasAttribute(hTask, TDL_TASKFILEREFPATH))
-			sFileRef.Format("%s%s(file ref: %s)", ENDL, sTabs, pTasks->GetTaskFileReferencePath(hTask));
+			sFileRef.Format("%s%s(link: %s)", ENDL, sTabs, pTasks->GetTaskFileReferencePath(hTask));
 		
 		// comments
 		if (pTasks->TaskHasAttribute(hTask, TDL_TASKCOMMENTS))

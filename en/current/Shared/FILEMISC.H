@@ -60,7 +60,7 @@ namespace FileMisc
 	CString& ValidateFilename(CString& sFilename);
 	CString& ValidateFilepath(CString& sFilepath);
 	void ReplaceExtension(CString& szFilePath, const char* szExt);
-
+	
 
 	CString GetTempFileName(LPCTSTR szPrefix, UINT uUnique = 0);
 	CString GetTempFileName(LPCTSTR szFilename, LPCTSTR szExt);

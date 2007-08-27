@@ -85,6 +85,28 @@ void CTDLPriorityComboBox::PreSubclassWindow()
 	BuildCombo();
 }
 
+int CTDLPriorityComboBox::IncrementPriority(int nAmount)
+{
+	int nPrevPriority = GetCurSel();
+	int nPriority = nPrevPriority + nAmount;
+	nPriority = max(0, min(nPriority, 10));	
+
+	if (nPriority != nPrevPriority)
+		SetCurSel(nPriority);
+
+	return GetPriority();
+}
+
+int CTDLPriorityComboBox::GetPriority() const
+{
+	int nPriority = GetCurSel() - 1; // -1 to take account of <none>
+
+	if (nPriority < 0)
+		return FT_NOPRIORITY;
+	else
+		return nPriority;
+}
+
 BOOL CTDLPriorityComboBox::SetColors(const CDWordArray& aColors)
 {
 	if (aColors.GetSize() < 11)

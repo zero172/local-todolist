@@ -57,6 +57,7 @@ void CiCalExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, C
 		return;
 
 	// header
+	//	WriteString(fileOut, "BEGIN:VTODO");
 	WriteString(fileOut, "BEGIN:VEVENT");
 	
 	// attributes
@@ -65,7 +66,7 @@ void CiCalExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, C
 	if (tDate)
 	{
 		COleDateTime date(tDate);
-		WriteString(fileOut, "DTSTART:%04d%02d%02dT000000", date.GetYear(), date.GetMonth(), date.GetDay());
+		WriteString(fileOut, "DTSTART;VALUE=DATE:%04d%02d%02d", date.GetYear(), date.GetMonth(), date.GetDay());
 	}
 	
 	tDate = pSrcTaskFile->GetTaskLastModified(hTask);
@@ -73,7 +74,7 @@ void CiCalExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, C
 	if (tDate)
 	{
 		COleDateTime date(tDate);
-		WriteString(fileOut, "DTSTAMP:%04d%02d%02d", date.GetYear(), date.GetMonth(), date.GetDay());
+		WriteString(fileOut, "DTSTAMP;VALUE=DATE:%04d%02d%02d", date.GetYear(), date.GetMonth(), date.GetDay());
 	}
 	
 	tDate = pSrcTaskFile->GetTaskDueDate(hTask);
@@ -81,7 +82,15 @@ void CiCalExporter::ExportTask(const ITaskList* pSrcTaskFile, HTASKITEM hTask, C
 	if (tDate)
 	{
 		COleDateTime date(tDate);
-		WriteString(fileOut, "DTEND:%04d%02d%02dT235959", date.GetYear(), date.GetMonth(), date.GetDay());
+		WriteString(fileOut, "DUE;VALUE=DATE:%04d%02d%02d", date.GetYear(), date.GetMonth(), date.GetDay());
+	}
+
+	tDate = pSrcTaskFile->GetTaskDoneDate(hTask);
+	
+	if (tDate)
+	{
+		COleDateTime date(tDate);
+		WriteString(fileOut, "DTEND;VALUE=DATE:%04d%02d%02d", date.GetYear(), date.GetMonth(), date.GetDay());
 	}
 	
 	WriteString(fileOut, "SUMMARY:%s", pSrcTaskFile->GetTaskTitle(hTask));

@@ -101,7 +101,7 @@ void CToolsHelper::UpdateMenu(CCmdUI* pCmdUI, const CUserToolArray& tools, CMenu
 		for (int nTool = 0; nTool < m_nSize; nTool++)
 		{
 			pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + nTool, MF_BYCOMMAND);
-			iconMgr.SetImage(m_nStartID + nTool, NULL);
+			iconMgr.DeleteImage(m_nStartID + nTool);
 		}
 		
 		// if we have any tools to add we do it here

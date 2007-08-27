@@ -22,8 +22,8 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CFilteredToDoCtrl::CFilteredToDoCtrl(CContentMgr& mgr, int nDefaultContent) :
-	CToDoCtrl(mgr, nDefaultContent), m_nHiddenCount(0)
+CFilteredToDoCtrl::CFilteredToDoCtrl(CContentMgr& mgr, const CONTENTFORMAT& cfDefault) :
+	CToDoCtrl(mgr, cfDefault), m_nHiddenCount(0)
 {
 }
 
@@ -341,8 +341,6 @@ BOOL CFilteredToDoCtrl::MatchAllocTo(const CTaskFile& tasks, HTASKITEM ht) const
 
 		return m_filter.MatchAllocTo(aAllocTo);
 	}
-//	if (!m_filter.sAllocTo.IsEmpty())
-//		return (m_filter.sAllocTo.CompareNoCase(tasks.GetTaskAllocatedTo(ht)) == 0);
 
 	// else match
 	return TRUE;
@@ -361,13 +359,15 @@ BOOL CFilteredToDoCtrl::MatchPriority(const CTaskFile& tasks, HTASKITEM ht) cons
 {
 	if (m_filter.nPriority != FT_ANYPRIORITY)
 	{
+		/*
 		if (IsTaskDone(tasks, ht))
-			return FALSE;
-		
-		else if (tasks.IsTaskDue(ht))
-			return TRUE;
-		// match exactly on 'none'
-		else if (m_filter.nPriority == FT_NOPRIORITY)
+					return FALSE;
+				
+				else if (tasks.IsTaskDue(ht))
+					return TRUE;
+				// match exactly on 'none'
+				else*/
+		 if (m_filter.nPriority == FT_NOPRIORITY)
 			return (tasks.GetTaskPriority(ht, FALSE) == FT_NOPRIORITY);
 		else
 			return (m_filter.nPriority <= tasks.GetTaskPriority(ht, FALSE));
@@ -381,11 +381,13 @@ BOOL CFilteredToDoCtrl::MatchRisk(const CTaskFile& tasks, HTASKITEM ht) const
 {
 	if (m_filter.nRisk != FT_ANYRISK)
 	{
+		/*
 		if (IsTaskDone(tasks, ht))
-			return FALSE;
-		
-		// match exactly on 'none'
-		else if (m_filter.nRisk == FT_NORISK)
+					return FALSE;
+				
+				// match exactly on 'none'
+				else*/
+		 if (m_filter.nRisk == FT_NORISK)
 			return (tasks.GetTaskRisk(ht, FALSE) == FT_NORISK);
 		else
 			return (m_filter.nRisk <= tasks.GetTaskRisk(ht, FALSE));
@@ -587,9 +589,6 @@ TODOITEM* CFilteredToDoCtrl::NewTask()
 		if (!m_filter.sAllocBy.IsEmpty() && pTDI->sAllocBy.IsEmpty())
 			pTDI->sAllocBy = m_filter.sAllocBy;
 
-// 		if (!m_filter.sAllocTo.IsEmpty() && pTDI->sAllocTo.IsEmpty())
-// 			pTDI->sAllocTo = m_filter.sAllocTo;
-
 		if (!m_filter.MatchAllocTo(pTDI->aAllocTo))
 		{
 			// if any category will match then set it to the first
@@ -659,7 +658,6 @@ BOOL CFilteredToDoCtrl::ModNeedsRefilter(TDC_ATTRIBUTE nModType)
 		case TDCA_PRIORITY:		return (m_filter.nPriority != -1);
 		case TDCA_RISK:			return (m_filter.nRisk != -1);
 			
-//		case TDCA_ALLOCTO:		return (!m_filter.sAllocTo.IsEmpty());
 		case TDCA_ALLOCBY:		return (!m_filter.sAllocBy.IsEmpty());
 		case TDCA_STATUS:		return (!m_filter.sStatus.IsEmpty());
 

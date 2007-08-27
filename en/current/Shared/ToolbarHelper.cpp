@@ -53,6 +53,8 @@ BOOL CToolbarHelper::Initialize(CToolBar* pToolbar, CWnd* pToolbarParent)
 	ASSERT_VALID(pToolbar);
 	m_pToolbar = pToolbar;
 
+	InitTooltips();
+
 	return TRUE;
 }
 
@@ -318,10 +320,77 @@ LRESULT CToolbarHelper::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp
 			HookWindow(NULL);
 			return lr;
 		}
-		break;
 	}
 
 	return CSubclassWnd::WindowProc(hRealWnd, msg, wp, lp);
+}
+
+LRESULT CToolbarHelper::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	switch (msg)
+	{
+	case WM_MOUSEMOVE:
+	case WM_MOUSELEAVE:
+		m_tt.RelayEvent(const_cast<MSG*>(GetCurrentMessage()));
+		break;
+
+	case WM_SIZE:
+		{
+			LRESULT lr = CSubclasser::ScWindowProc(hRealWnd, msg, wp, lp);
+			RefreshTooltipRects();
+			return lr;
+		}
+	}
+
+	return CSubclasser::ScDefault(hRealWnd);
+}
+
+void CToolbarHelper::InitTooltips()
+{
+	if (!m_tt.Create(GetCWnd()))
+		return;
+
+	// hook the toolbar for mouse messages
+	ScHookWindow(m_pToolbar->GetSafeHwnd());
+
+	// turn off default tooltips
+	m_pToolbar->SetBarStyle(m_pToolbar->GetBarStyle() & ~CBRS_TOOLTIPS);
+
+	// attach the tooltip ctrl to the toolbar
+	m_pToolbar->GetToolBarCtrl().SetToolTips(&m_tt);
+
+	// and activate it
+	m_tt.Activate(TRUE);
+
+	// set up tools for each of the toolar buttons
+	int nBtnCount = m_pToolbar->GetToolBarCtrl().GetButtonCount();
+
+	for (int nBtn = 0; nBtn < nBtnCount; nBtn++)
+	{
+		if (m_pToolbar->GetItemID(nBtn) != ID_SEPARATOR)
+		{
+			CRect rBtn;
+			m_pToolbar->GetItemRect(nBtn, rBtn);
+
+			m_tt.AddTool(m_pToolbar, LPSTR_TEXTCALLBACK, rBtn, m_pToolbar->GetItemID(nBtn));
+		}
+	}
+}
+
+void CToolbarHelper::RefreshTooltipRects()
+{
+	int nBtnCount = m_pToolbar->GetToolBarCtrl().GetButtonCount();
+
+	for (int nBtn = 0; nBtn < nBtnCount; nBtn++)
+	{
+		if (m_pToolbar->GetItemID(nBtn) != ID_SEPARATOR)
+		{
+			CRect rBtn;
+			m_pToolbar->GetItemRect(nBtn, rBtn);
+
+			m_tt.SetToolRect(m_pToolbar, m_pToolbar->GetItemID(nBtn), rBtn);
+		}
+	}
 }
 
 // static helper

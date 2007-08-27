@@ -12,49 +12,44 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-//
-//	Note!
-//
-//		If this DLL is dynamically linked against the MFC
-//		DLLs, any functions exported from this DLL which
-//		call into MFC must have the AFX_MANAGE_STATE macro
-//		added at the very beginning of the function.
-//
-//		For example:
-//
-//		extern "C" BOOL PASCAL EXPORT ExportedFunction()
-//		{
-//			AFX_MANAGE_STATE(AfxGetStaticModuleState());
-//			// normal function body here
-//		}
-//
-//		It is very important that this macro appear in each
-//		function, prior to any calls into MFC.  This means that
-//		it must appear as the first statement within the 
-//		function, even before any object variable declarations
-//		as their constructors may generate calls into the MFC
-//		DLL.
-//
-//		Please see MFC Technical Notes 33 and 58 for additional
-//		details.
-//
+static AFX_EXTENSION_MODULE AfxdllDLL = { NULL, NULL };
 
-/////////////////////////////////////////////////////////////////////////////
-// CPlainTextImportApp
-
-/////////////////////////////////////////////////////////////////////////////
-// CPlainTextImportApp construction
-
-CPlainTextImportApp::CPlainTextImportApp()
+extern "C" int APIENTRY
+DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+	// Remove this if you use lpReserved
+	UNREFERENCED_PARAMETER(lpReserved);
+
+	if (dwReason == DLL_PROCESS_ATTACH)
+	{
+		TRACE0("AFXDLL.DLL Initializing!\n");
+		
+		// Extension DLL one-time initialization
+		if (!AfxInitExtensionModule(AfxdllDLL, hInstance))
+			return 0;
+
+		// Insert this DLL into the resource chain
+		// NOTE: If this Extension DLL is being implicitly linked to by
+		//  an MFC Regular DLL (such as an ActiveX Control)
+		//  instead of an MFC application, then you will want to
+		//  remove this line from DllMain and put it in a separate
+		//  function exported from this Extension DLL.  The Regular DLL
+		//  that uses this Extension DLL should then explicitly call that
+		//  function to initialize this Extension DLL.  Otherwise,
+		//  the CDynLinkLibrary object will not be attached to the
+		//  Regular DLL's resource chain, and serious problems will
+		//  result.
+
+		new CDynLinkLibrary(AfxdllDLL);
+	}
+	else if (dwReason == DLL_PROCESS_DETACH)
+	{
+		TRACE0("AFXDLL.DLL Terminating!\n");
+		// Terminate the library before destructors are called
+		AfxTermExtensionModule(AfxdllDLL);
+	}
+	return 1;   // ok
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CPlainTextImportApp object
-
-CPlainTextImportApp theApp; 
 
 
 DLL_DECLSPEC IImportTasklist* CreateImportInterface()

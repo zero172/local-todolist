@@ -5,14 +5,24 @@
 #include "stdafx.h"
 #include "ContentCtrl.h"
 #include "autoflag.h"
+#include "misc.h"
 
 #include "IContentControl.h"
+#include "ISpellCheck.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+
+//////////////////////////////////////////////////////////////////////
+
+BOOL CONTENTFORMAT::FormatIsText() const
+{
+	GUID id;
+	return (Misc::GuidFromString(*this, id) == FALSE);
+}
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -46,8 +56,14 @@ BOOL CContentCtrl::PreTranslateMessage(MSG* pMsg)
 {
 	if (m_pContentCtrl)
 	{
+		// allow tooltip handling thru
+		CWnd* pWnd = CWnd::FromHandle(GetSafeHwnd());
+		pWnd->FilterToolTipMessage(pMsg);
+
 		// only process if we have the focus
-		if (::IsChild(*this, ::GetFocus()))
+		HWND hFocus = ::GetFocus();
+
+		if (hFocus == GetSafeHwnd() || ::IsChild(GetSafeHwnd(), hFocus))
 			return m_pContentCtrl->ProcessMessage(pMsg);
 	}
 
@@ -70,6 +86,15 @@ BOOL CContentCtrl::Attach(IContentControl* pContentCtrl)
 
 	// else
 	return FALSE;
+}
+
+ISpellCheck* CContentCtrl::GetSpellCheckInterface()
+{
+	if (m_pContentCtrl)
+		return m_pContentCtrl->GetSpellCheckInterface();
+
+	// else
+	return NULL;
 }
 
 BOOL CContentCtrl::ModifyStyle(DWORD dwRemove, DWORD dwAdd, UINT nFlags)
@@ -193,35 +218,21 @@ BOOL CContentCtrl::SetTextContent(const char* szContent)
 	return false;
 }
 
-BOOL CContentCtrl::HasTypeID() const
+LPCTSTR CContentCtrl::GetTypeID() const
 {
 	if (m_pContentCtrl)
-		return m_pContentCtrl->HasTypeID();
+		return m_pContentCtrl->GetTypeID();
 
 	// else
-	return false;
+	return "";
 }
 
-BOOL CContentCtrl::GetTypeID(GUID& id) const
+BOOL CContentCtrl::IsFormat(const CONTENTFORMAT& cf) const
 {
-	if (m_pContentCtrl)
-		return m_pContentCtrl->GetTypeID(id);
-
-	// else
-	ZeroMemory(&id, sizeof(GUID));
-	return false;
+	return (!cf.IsEmpty() && cf == GetContentFormat());
 }
 
-BOOL CContentCtrl::IsType(const GUID& id) const
+CONTENTFORMAT CContentCtrl::GetContentFormat() const
 {
-	if (HasTypeID())
-	{
-		GUID idType;
-
-		VERIFY(GetTypeID(idType));
-		return (memcmp(&id, &idType, sizeof(GUID)) == 0);
-	}
-
-	return FALSE;
+	return GetTypeID();
 }
-

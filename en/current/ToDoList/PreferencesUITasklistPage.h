@@ -11,11 +11,12 @@
 
 #include "..\shared\dialoghelper.h"
 #include "..\shared\groupline.h"
+#include "..\shared\preferencesbase.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesUITasklistPage dialog
 
-class CPreferencesUITasklistPage : public CPropertyPage, protected CDialogHelper
+class CPreferencesUITasklistPage : public CPreferencesPageBase, protected CDialogHelper
 {
 // Construction
 public:
@@ -24,7 +25,6 @@ public:
 
 	BOOL GetShowInfoTips() const { return m_bShowInfoTips; }
 	BOOL GetShowComments() const { return m_bShowComments; }
-//	BOOL GetShowColumn(TDLB_COLUMN nColumn) const;
 	int GetVisibleColumns(CTDCColumnArray& aColumns) const;
 	void SetVisibleColumns(const CTDCColumnArray& aColumns);
 	BOOL GetShowPathInHeader() const { return m_bShowPathInHeader; }
@@ -45,6 +45,8 @@ public:
 	BOOL GetUseHMSTimeFormat() const { return m_bUseHMSTimeFormat; }
 	BOOL GetAutoFocusTasklist() const { return m_bAutoFocusTasklist; }
 	BOOL GetShowSubtaskCompletion() const { return m_bShowSubtaskCompletion; }
+	BOOL GetShowColumnsOnRight() const { return m_bShowColumnsOnRight; }
+//	BOOL Get() const { return m_b; }
 
 protected:
 // Dialog Data
@@ -58,6 +60,7 @@ protected:
 	BOOL	m_bLimitInfoTipCommentsLength;
 	BOOL	m_bAutoFocusTasklist;
 	BOOL	m_bShowSubtaskCompletion;
+	BOOL	m_bShowColumnsOnRight;
 	//}}AFX_DATA
 	BOOL	m_bShowPathInHeader;
 	BOOL	m_bStrikethroughDone;
@@ -84,7 +87,6 @@ protected:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
-	virtual void OnOK();
 
 // Implementation
 protected:
@@ -98,7 +100,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	void SaveColumns() const;
-
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 };
 
 //{{AFX_INSERT_LOCATION}}

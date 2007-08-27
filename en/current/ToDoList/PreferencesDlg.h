@@ -7,6 +7,8 @@
 // PreferencesDlg.h : header file
 //
 
+#include "..\shared\preferencesbase.h"
+
 #include "preferencesgenpage.h"
 #include "preferencestaskpage.h"
 #include "preferencestaskdefpage.h"
@@ -19,7 +21,7 @@
 #include "preferencesexportpage.h"
 #include "preferencesmultiuserpage.h"
 
-#include "..\shared\propertypagehost.h"
+//#include "..\shared\propertypagehost.h"
 
 // matches order of pages
 enum 
@@ -40,7 +42,7 @@ enum
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesDlg dialog
 
-class CPreferencesDlg : public CDialog
+class CPreferencesDlg : public CPreferencesDlgBase
 {
 // Construction
 public:
@@ -48,11 +50,10 @@ public:
 					const CContentMgr* pContentMgr = NULL, CWnd* pParent = NULL);   // standard constructor
 	virtual ~CPreferencesDlg();
 
-	int DoModal(int nInitPage = -1);
+//	int DoModal(int nInitPage = -1);
 
 	BOOL GetAlwaysOnTop() const { return m_pageGen.GetAlwaysOnTop(); }
 	BOOL GetUseSysTray() const { return m_pageGen.GetUseSysTray(); }
-	BOOL GetAutoSaveOnSysTray() const { return m_pageGen.GetAutoSaveOnSysTray(); }
 	BOOL GetConfirmDelete() const { return m_pageGen.GetConfirmDelete(); }
 	BOOL GetConfirmSaveOnExit() const { return m_pageGen.GetConfirmSaveOnExit(); }
 	BOOL GetShowOnStartup() const { return m_pageGen.GetShowOnStartup(); }
@@ -63,7 +64,6 @@ public:
 	BOOL GetAddFilesToMRU() const { return m_pageGen.GetAddFilesToMRU(); }
 	BOOL GetEnableTDLExtension() const { return m_pageGen.GetEnableTDLExtension(); }
 	BOOL GetEnableTDLProtocol() const { return m_pageGen.GetEnableTDLProtocol(); }
-	BOOL GetAutoSaveUnsavedOnMinimize() const { return m_pageGen.GetAutoSaveUnsavedOnMinimize(); }
 	BOOL GetAutoCheckForUpdates() const { return m_pageGen.GetAutoCheckForUpdates(); }
 	BOOL GetEscapeMinimizes() const { return m_pageGen.GetEscapeMinimizes(); }
 	BOOL GetEnableDelayedLoading() const { return m_pageGen.GetEnableDelayedLoading(); }
@@ -95,10 +95,11 @@ public:
 	CString GetSaveExportStylesheet() const { return m_pageFile.GetSaveExportStylesheet(); }
 	CString GetDueTaskPerson() const { return m_pageFile.GetDueTaskPerson(); }
 	BOOL GetWarnAddDeleteArchive() const { return m_pageFile.GetWarnAddDeleteArchive(); }
-	BOOL GetAutoSaveUnsaved() const { return m_pageFile.GetAutoSaveUnsaved(); }
 	BOOL GetDontRemoveFlagged() const { return m_pageFile.GetDontRemoveFlagged(); }
 	BOOL GetExpandTasksOnLoad() const { return m_pageFile.GetExpandTasksOnLoad(); }
 	BOOL GetCheckForChangesBeforeSaving() const { return m_pageFile.GetCheckForChangesBeforeSaving(); }
+	BOOL GetAutoSaveOnSwitchTasklist() const { return m_pageFile.GetAutoSaveOnSwitchTasklist(); }
+	BOOL GetAutoSaveOnSwitchApp() const { return m_pageFile.GetAutoSaveOnSwitchApp(); }
 
 	CString GetHtmlFont() const { return m_pageExport.GetHtmlFont(); }
 	int GetHtmlFontSize() const { return m_pageExport.GetHtmlFontSize(); }
@@ -111,7 +112,6 @@ public:
 	
 	int GetDefaultPriority() const { return m_pageTaskDef.GetDefaultPriority(); }
 	int GetDefaultRisk() const { return m_pageTaskDef.GetDefaultRisk(); }
-//	CString GetDefaultAllocTo() const { return m_pageTaskDef.GetDefaultAllocTo(); }
 	int GetDefaultAllocTo(CStringArray& aAllocTo) const { return m_pageTaskDef.GetDefaultAllocTo(aAllocTo); }
 	CString GetDefaultAllocBy() const { return m_pageTaskDef.GetDefaultAllocBy(); }
 	CString GetDefaultStatus() const { return m_pageTaskDef.GetDefaultStatus(); }
@@ -140,9 +140,10 @@ public:
 	BOOL GetWeightPercentCompletionByPriority() const { return m_pageTask.GetWeightPercentCompletionByPriority(); }
 	BOOL GetWeightPercentCompletionByNumSubtasks() const { return m_pageTask.GetWeightPercentCompletionByNumSubtasks(); }
 	BOOL GetAutoCalcPercentDone() const { return m_pageTask.GetAutoCalcPercentDone(); }
-	BOOL GetTrackActiveTasklistOnly() const { return m_pageTask.GetTrackActiveTasklistOnly(); }
-	BOOL GetTrackSelectedTaskOnly() const { return m_pageTask.GetTrackSelectedTaskOnly(); }
-	BOOL GetNoTrackOnScreenSaver() const { return m_pageTask.GetNoTrackOnScreenSaver(); }
+	BOOL GetTrackNonActiveTasklists() const { return m_pageTask.GetTrackNonActiveTasklists(); }
+	BOOL GetTrackNonSelectedTasks() const { return m_pageTask.GetTrackNonSelectedTasks(); }
+	BOOL GetTrackOnScreenSaver() const { return m_pageTask.GetTrackOnScreenSaver(); }
+	BOOL GetTrackHibernated() const { return m_pageTask.GetTrackHibernated(); }
 	double GetHoursInOneDay() const { return m_pageTask.GetHoursInOneDay(); }
 	double GetDaysInOneWeek() const { return m_pageTask.GetDaysInOneWeek(); }
 	BOOL GetLogTimeTracking() const { return m_pageTask.GetLogTimeTracking(); }
@@ -172,8 +173,8 @@ public:
 	BOOL GetEnableHeaderSorting() const { return m_pageUI.GetEnableHeaderSorting(); }
 	BOOL GetRTLComments() const { return m_pageUI.GetRTLComments(); }
 	int GetCommentsPos() const { return m_pageUI.GetCommentsPos(); }
-	int GetDefaultCommentsFormat() const { return m_pageUI.GetDefaultCommentsFormat(); }
-	BOOL GetMultiSelCategoryFilter() const { return m_pageUI.GetMultiSelCategoryFilter(); }
+	CONTENTFORMAT GetDefaultCommentsFormat() const { return m_pageUI.GetDefaultCommentsFormat(); }
+	DWORD GetMultiSelFilterFlags() const { return m_pageUI.GetMultiSelFilterFlags(); }
 	BOOL GetAutoReFilter() const { return m_pageUI.GetAutoReFilter(); }
 	BOOL GetRestoreTasklistFilters() const { return m_pageUI.GetRestoreTasklistFilters(); }
 
@@ -199,6 +200,7 @@ public:
 	BOOL GetUseHMSTimeFormat() const { return m_pageUITasklist.GetUseHMSTimeFormat(); }
 	BOOL GetAutoFocusTasklist() const { return m_pageUITasklist.GetAutoFocusTasklist(); }
 	BOOL GetShowSubtaskCompletion() const { return m_pageUITasklist.GetShowSubtaskCompletion(); }
+	BOOL GetShowColumnsOnRight() const { return m_pageUITasklist.GetShowColumnsOnRight(); }
 
 	int GetTextColorOption() const { return m_pageUITasklistColors.GetTextColorOption(); }
 	BOOL GetColorTaskBackground() const { return m_pageUITasklistColors.GetColorTaskBackground(); }
@@ -225,9 +227,9 @@ protected:
 	enum { IDD = IDD_PREFERENCES };
 	CTreeCtrl m_tcPages;
 	//}}AFX_DATA
-	int m_nInitPage;
+//	int m_nInitPage;
 
-	CPropertyPageHost m_pphost;
+//	CPropertyPageHost m_pphost;
 	CPreferencesGenPage m_pageGen;
 	CPreferencesFilePage m_pageFile;
 	CPreferencesExportPage m_pageExport;
@@ -248,23 +250,24 @@ protected:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
-	virtual void OnOK();
+//	virtual void OnOK();
 
 // Implementation
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CPreferencesDlg)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnDestroy();
 	afx_msg void OnHelp();
 	afx_msg void OnSelchangedPages(NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_MSG
+//	afx_msg void OnDestroy();
 	DECLARE_MESSAGE_MAP()
 
 protected:
-	void AddPage(CPropertyPage* pPage, UINT nIDPath);
-	void SetActivePage(int nPage);
+	void AddPage(CPreferencesPageBase* pPage, UINT nIDPath);
+	BOOL SetActivePage(int nPage); // override
 	CString GetItemPath(HTREEITEM hti);
+	void SynchronizeTree();
 };
 
 //{{AFX_INSERT_LOCATION}}

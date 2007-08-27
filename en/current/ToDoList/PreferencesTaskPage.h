@@ -9,11 +9,12 @@
 
 #include "..\shared\groupline.h"
 #include "..\shared\dialoghelper.h"
+#include "..\shared\preferencesbase.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesTaskPage dialog
 
-class CPreferencesTaskPage : public CPropertyPage, public CDialogHelper
+class CPreferencesTaskPage : public CPreferencesPageBase, public CDialogHelper
 {
 	DECLARE_DYNCREATE(CPreferencesTaskPage)
 
@@ -35,9 +36,10 @@ public:
 	BOOL GetWeightPercentCompletionByPriority() const { return m_bWeightPercentCompletionByPriority; }
 	BOOL GetWeightPercentCompletionByNumSubtasks() const { return m_bWeightPercentCompletionByNumSubtasks; }
 	BOOL GetAutoCalcPercentDone() const { return m_bAutoCalcPercentDone; }
-	BOOL GetTrackActiveTasklistOnly() const { return m_bTrackActiveTasklistOnly; }
-	BOOL GetNoTrackOnScreenSaver() const { return m_bNoTrackOnScreenSaver; }
-	BOOL GetTrackSelectedTaskOnly() const { return m_bTrackSelectedTaskOnly; }
+	BOOL GetTrackNonActiveTasklists() const { return m_bTrackNonActiveTasklists; }
+	BOOL GetTrackOnScreenSaver() const { return m_bTrackOnScreenSaver; }
+	BOOL GetTrackNonSelectedTasks() const { return m_bTrackNonSelectedTasks; }
+	BOOL GetTrackHibernated() const { return m_bTrackHibernated; }
 	double GetHoursInOneDay() const;
 	double GetDaysInOneWeek() const;
 	BOOL GetLogTimeTracking() const { return m_bLogTime; }
@@ -59,9 +61,6 @@ protected:
 	BOOL	m_bWeightPercentCompletionByTimeEst;
 	BOOL	m_bWeightPercentCompletionByPriority;
 	BOOL	m_bAutoCalcPercentDone;
-	BOOL	m_bTrackSelectedTaskOnly;
-	BOOL	m_bNoTrackOnScreenSaver;
-	BOOL	m_bTrackActiveTasklistOnly;
 	CString	m_sDaysInWeek;
 	CString	m_sHoursInDay;
 	BOOL	m_bLogTime;
@@ -75,13 +74,15 @@ protected:
 	BOOL	m_bUsePercentDoneInTimeEst;
 	BOOL	m_bAveragePercentSubCompletion;
 	BOOL	m_bIncludeDoneInAverageCalc;
+	BOOL	m_bTrackNonSelectedTasks;
+	BOOL	m_bTrackOnScreenSaver;
+	BOOL	m_bTrackNonActiveTasklists;
+	BOOL	m_bTrackHibernated;
 	CGroupLineManager m_mgrGroupLines;
 
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CPreferencesTaskPage)
-	public:
-	virtual void OnOK();
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -97,6 +98,9 @@ protected:
 	//}}AFX_MSG
 	afx_msg void OnAveragepercentChange();
 	DECLARE_MESSAGE_MAP()
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

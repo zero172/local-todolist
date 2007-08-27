@@ -46,6 +46,7 @@ public:
 	
 	CString sTitle;
 	CString sComments, sCustomComments;
+	CString sCommentsTypeID;
 	COLORREF color;
 	COleDateTime dateStart, dateDue, dateDone, dateCreated;
 	int nPriority;
@@ -70,6 +71,7 @@ public:
 	// cached calculations for drawing optimization
 	// mutable so that they can be updated in const methods
 	mutable int nCalcPriority;
+	mutable int nCalcPriorityIncDue;
 	mutable int nCalcPercent;
 	mutable int nCalcRisk;
 	mutable double dCalcTimeEstimate, dCalcTimeSpent;
@@ -113,7 +115,7 @@ public:
 	BOOL IsTaskDone(DWORD dwID) const;
 	COLORREF GetTaskColor(DWORD dwID) const; // -1 on no item selected
 	CString GetTaskComments(DWORD dwID) const;
-	CString GetTaskCustomComments(DWORD dwID) const;
+	CString GetTaskCustomComments(DWORD dwID, CString& sCommentsTypeID) const;
 	int GetTaskPercent(DWORD dwID, BOOL bCheckIfDone) const;
 	double GetTaskTimeEstimate(DWORD dwID, int& nUnits) const;
 	double GetTaskTimeSpent(DWORD dwID, int& nUnits) const;
@@ -200,11 +202,11 @@ public:
 	int SetTaskColor(DWORD dwID, COLORREF color);
 	int ClearTaskColor(DWORD dwID) { SetTaskColor(dwID, (COLORREF)-1); }
 	int SetTaskComments(DWORD dwID, LPCTSTR szComments);
-	int SetTaskCustomComments(DWORD dwID, const CString& sComments); // can't be LPCTSTR cos not NULL terminated
+	int SetTaskCustomComments(DWORD dwID, const CString& sComments, LPCTSTR szCommentsTypeID); // can't be LPCTSTR cos not NULL terminated
 	int SetTaskPercent(DWORD dwID, int nPercent);
-	int SetTaskTimeEstimate(DWORD dwID, const double& dTime, int nUnits = TDITU_HOURS);
-	int SetTaskTimeSpent(DWORD dwID, const double& dTime, int nUnits = TDITU_HOURS);
-	int SetTaskCost(DWORD dwID, const double& dCost);
+	int SetTaskTimeEstimate(DWORD dwID, double dTime, int nUnits = TDITU_HOURS);
+	int SetTaskTimeSpent(DWORD dwID, double dTime, int nUnits = TDITU_HOURS);
+	int SetTaskCost(DWORD dwID, double dCost);
 	int SetTaskAllocTo(DWORD dwID, const CStringArray& aAllocTo);
 	int SetTaskAllocBy(DWORD dwID, LPCTSTR szAllocBy);
 	int SetTaskStatus(DWORD dwID, LPCTSTR szStatus);
@@ -262,16 +264,13 @@ protected:
 	
 	static BOOL TaskMatches(const COleDateTime& date, const SEARCHPARAMS& params, SEARCHRESULT& result);
 	static BOOL TaskMatches(const CString& sText, const SEARCHPARAMS& params, SEARCHRESULT& result);
-	static BOOL TaskMatches(const double& dValue, const SEARCHPARAMS& params, SEARCHRESULT& result);
+	static BOOL TaskMatches(double dValue, const SEARCHPARAMS& params, SEARCHRESULT& result);
 	static BOOL TaskMatches(int nValue, const SEARCHPARAMS& params, SEARCHRESULT& result);
 	static BOOL TaskMatches(const CStringArray& aItems, const SEARCHPARAMS& params, SEARCHRESULT& result);
 	
 	inline BOOL HasStyle(int nStyle) const { return m_aStyles[nStyle] ? TRUE : FALSE; }
 	
-	// for sorting
 	// sort helper structure
-	class CToDoCtrlData;
-	
 	struct TDSORTSTRUCT
 	{
 		CToDoCtrlData* pData;
@@ -288,7 +287,7 @@ protected:
 	static int Compare(const COleDateTime& date1, const COleDateTime& date2);
 	static int Compare(const CString& sText1, const CString& sText2, BOOL bCheckEmpty = FALSE);
 	static int Compare(int nNum1, int nNum2);
-	static int Compare(const double& dNum1, const double& dNum2);
+	static int Compare(double dNum1, double dNum2);
 	
 };
 

@@ -44,8 +44,12 @@ protected:
 
 #define GET_TASK(t, h, r) { t = TaskFromHandle(h); if (!t) return r; }
 
-CTaskFile::CTaskFile(LPCTSTR szPassword) :
-	CXmlFileEx(TDL_ROOT, szPassword), m_dwNextUniqueID(0)
+CTaskFile::CTaskFile(LPCTSTR szPassword) : m_dwNextUniqueID(0),
+#ifdef NO_TL_ENCRYPTDECRYPT
+	CXmlFile(TDL_ROOT)
+#else
+	CXmlFileEx(TDL_ROOT, szPassword)
+#endif
 {
 }
 
@@ -87,6 +91,8 @@ HRESULT CTaskFile::QueryInterface(REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObj
 	return (*ppvObject ? S_OK : E_NOTIMPL);
 }
 
+#ifndef NO_TL_ENCRYPTDECRYPT
+
 BOOL CTaskFile::Decrypt(LPCTSTR szPassword)
 {
 	BOOL bWasEncrypted = IsEncrypted();
@@ -114,21 +120,28 @@ BOOL CTaskFile::Decrypt(LPCTSTR szPassword)
 	return bResult;
 }
 
+#endif
+
 BOOL CTaskFile::Load(LPCTSTR szFilePath, IXmlParse* pCallback, BOOL bDecrypt)
 {
-  BOOL bRes = CXmlFileEx::Load(szFilePath, TDL_ROOT, pCallback, bDecrypt);
-
-  if (bRes)
-  {
+	
+#ifdef NO_TL_ENCRYPTDECRYPT
+	BOOL bRes = CXmlFile::Load(szFilePath, TDL_ROOT, pCallback);
+#else
+	BOOL bRes = CXmlFileEx::Load(szFilePath, TDL_ROOT, pCallback, bDecrypt);
+#endif
+	
+	if (bRes)
+	{
 		m_dwNextUniqueID = (DWORD)GetItemValueI(TDL_NEXTUNIQUEID);
-
+		
 		if (m_dwNextUniqueID <= 0)
 			m_dwNextUniqueID = 1; // always > 0
-
+		
 		BuildHandleMap();
-  }
-
-  return bRes;
+	}
+	
+	return bRes;
 }
 
 BOOL CTaskFile::LoadHeader(LPCTSTR szFilePath)
@@ -140,9 +153,13 @@ BOOL CTaskFile::LoadHeader(LPCTSTR szFilePath)
 
 BOOL CTaskFile::LoadEx(IXmlParse* pCallback)
 {
-	BOOL bResult = CXmlFileEx::LoadEx(TDL_ROOT, pCallback);
+	BOOL bResult = XMLBASE::LoadEx(TDL_ROOT, pCallback);
 
+#ifdef NO_TL_ENCRYPTDECRYPT
+	if (bResult)
+#else
 	if (bResult && !IsEncrypted())
+#endif
 	{
 		// fix corrupted tasklist where the root item has an ID
 		CXmlItem* pXI = GetItem(TDL_TASKID);
@@ -166,15 +183,108 @@ BOOL CTaskFile::LoadEx(IXmlParse* pCallback)
 
 BOOL CTaskFile::SaveEx()
 {
-	return CXmlFileEx::SaveEx();
+	return XMLBASE::SaveEx();
 }
 
-void CTaskFile::Copy(const CTaskFile& tasks)
+BOOL CTaskFile::Copy(const CTaskFile& tasks)
 {
-	CXmlFileEx::Copy(tasks);
+	XMLBASE::Copy(tasks);
 	BuildHandleMap();
+
+	return TRUE;
 }
 
+BOOL CTaskFile::Copy(const ITaskList* pTasks)
+{
+	Reset();
+	m_dwNextUniqueID = 1;
+
+	// copy top level tasks
+	return CopyTask(NULL, pTasks, NULL);
+}
+
+BOOL CTaskFile::CopyTask(HTASKITEM hSrcTask, const ITaskList* pSrcTasks, HTASKITEM hDestParent)
+{
+	HTASKITEM hDestTask = NULL; // our root
+
+	if (hSrcTask) // NULL if src root
+	{
+		hDestTask = NewTask(pSrcTasks->GetTaskTitle(hSrcTask), hDestParent);
+		ASSERT (hDestTask);
+
+		if (!hDestTask)
+			return FALSE;
+
+		// the rest of the attributes
+		SetTaskComments(hDestTask, pSrcTasks->GetTaskComments(hSrcTask));
+		SetTaskAllocatedTo(hDestTask, pSrcTasks->GetTaskAllocatedTo(hSrcTask));
+		SetTaskAllocatedBy(hDestTask, pSrcTasks->GetTaskAllocatedBy(hSrcTask));
+		SetTaskCategory(hDestTask, pSrcTasks->GetTaskCategory(hSrcTask));
+		SetTaskStatus(hDestTask, pSrcTasks->GetTaskStatus(hSrcTask));
+		SetTaskFileReferencePath(hDestTask, pSrcTasks->GetTaskFileReferencePath(hSrcTask));
+		SetTaskColor(hDestTask, pSrcTasks->GetTaskColor(hSrcTask));
+		SetTaskPriority(hDestTask, pSrcTasks->GetTaskPriority(hSrcTask, FALSE));
+		SetTaskPercentDone(hDestTask, pSrcTasks->GetTaskPercentDone(hSrcTask, FALSE));
+		SetTaskLastModified(hDestTask, pSrcTasks->GetTaskLastModified(hSrcTask));
+		SetTaskDoneDate(hDestTask, pSrcTasks->GetTaskDoneDate(hSrcTask));
+		SetTaskDueDate(hDestTask, pSrcTasks->GetTaskDueDate(hSrcTask));
+		SetTaskStartDate(hDestTask, pSrcTasks->GetTaskStartDate(hSrcTask));
+		SetTaskFlag(hDestTask, pSrcTasks->IsTaskFlagged(hSrcTask));
+
+		char cUnits;
+		double dTime;
+		
+		dTime = pSrcTasks->GetTaskTimeEstimate(hSrcTask, cUnits, FALSE);
+		SetTaskTimeEstimate(hDestTask, dTime, cUnits);
+		dTime = pSrcTasks->GetTaskTimeSpent(hSrcTask, cUnits, FALSE);
+		SetTaskTimeSpent(hDestTask, dTime, cUnits);
+
+		const ITaskList2* pTL2 = GetITLInterface<ITaskList2>(pSrcTasks, IID_TASKLIST2);
+
+		if (pTL2)
+		{
+			SetTaskCreatedBy(hDestTask, pTL2->GetTaskCreatedBy(hSrcTask));
+			SetTaskCreationDate(hDestTask, pTL2->GetTaskCreationDate(hSrcTask));
+		}
+
+		const ITaskList3* pTL3 = GetITLInterface<ITaskList3>(pSrcTasks, IID_TASKLIST3);
+
+		if (pTL3)
+		{
+			SetTaskRisk(hDestTask, pTL3->GetTaskRisk(hSrcTask, FALSE));
+			SetTaskExternalID(hDestTask, pTL3->GetTaskExternalID(hSrcTask));
+		}
+
+		const ITaskList4* pTL4 = GetITLInterface<ITaskList4>(pSrcTasks, IID_TASKLIST4);
+
+		if (pTL4)
+		{
+			SetTaskDependency(hDestTask, pTL4->GetTaskDependency(hSrcTask));
+		}
+
+		const ITaskList6* pTL6 = GetITLInterface<ITaskList6>(pSrcTasks, IID_TASKLIST6);
+
+		if (pTL6)
+		{
+			SetTaskVersion(hDestTask, pTL6->GetTaskVersion(hSrcTask));
+		}
+	}
+
+	// children
+	HTASKITEM hSrcChildTask = pSrcTasks->GetFirstTask(hSrcTask);
+
+	while (hSrcChildTask)
+	{
+		if (!CopyTask(hSrcChildTask, pSrcTasks, hDestTask))
+			return FALSE;
+
+		hSrcChildTask = pSrcTasks->GetNextTask(hSrcChildTask);
+	}
+
+	return TRUE;
+}
+
+#ifndef NO_TL_MERGE
 int CTaskFile::Merge(const CTaskFile& tasks, BOOL bByID, BOOL bMoveExist)
 {
 	CMergeToDoList mtdl(bByID ? TDLM_BYID : TDLM_BYTITLE, 
@@ -202,6 +312,7 @@ int CTaskFile::Merge(LPCTSTR szTaskFilePath, BOOL bByID, BOOL bMoveExist)
 
 	return nMerge;
 }
+#endif
 
 void CTaskFile::SortTasksByID()
 {
@@ -368,21 +479,14 @@ BOOL CTaskFile::GetEarliestDueDate(COleDateTime& date) const
 	return TRUE;
 }
 
-BOOL CTaskFile::SetCustomCommentsType(const GUID& guid)
+BOOL CTaskFile::SetCommentsType(LPCTSTR szID)
 {
-	CString sGuid;
-
-	if (!Misc::GuidIsNull(guid) && Misc::GuidToString(guid, sGuid))
-		return (NULL != SetItemValue(TDL_CUSTOMCOMMENTSTYPE, sGuid));
-
-	return FALSE;
+	return (SetItemValue(TDL_COMMENTSTYPE, szID) != NULL);
 }
 
-BOOL CTaskFile::GetCustomCommentsType(GUID& guid) const
+CString CTaskFile::GetCommentsType() const
 {
-	CString sGuid = GetItemValue(TDL_CUSTOMCOMMENTSTYPE);
-
-	return (Misc::GuidFromString(sGuid, guid) && !Misc::GuidIsNull(guid));
+	return GetItemValue(TDL_COMMENTSTYPE);
 }
 
 bool CTaskFile::SetProjectName(const char* szName)
@@ -598,15 +702,25 @@ BOOL CTaskFile::DeleteTask(HTASKITEM hTask)
 	return pXIParent->DeleteItem(pXITask);
 }
 
-BOOL CTaskFile::SetTaskCustomComments(HTASKITEM hTask, const CString& sContent)
+BOOL CTaskFile::SetTaskCustomComments(HTASKITEM hTask, const CString& sContent, const CString& sType)
 {
 	if (!TaskFromHandle(hTask))
 		return FALSE;
 
-	Base64Coder b64;
-	b64.Encode((const PBYTE)(LPCTSTR)sContent, sContent.GetLength());
+	BOOL bRes = TRUE;
 
-	return SetTaskCChar(hTask, TDL_TASKCUSTOMCOMMENTS, b64.EncodedMessage());
+	if (sContent.GetLength())
+	{
+		Base64Coder b64;
+		b64.Encode((const PBYTE)(LPCTSTR)sContent, sContent.GetLength());
+
+		bRes = SetTaskCChar(hTask, TDL_TASKCUSTOMCOMMENTS, b64.EncodedMessage());
+	}
+
+	if (bRes)
+		bRes = SetTaskCChar(hTask, TDL_TASKCOMMENTSTYPE, sType);
+
+	return bRes;
 }
 
 BOOL CTaskFile::SetTaskHtmlComments(HTASKITEM hTask, const CString& sContent, BOOL bForTransform)
@@ -617,8 +731,12 @@ BOOL CTaskFile::SetTaskHtmlComments(HTASKITEM hTask, const CString& sContent, BO
 	return SetTaskCChar(hTask, TDL_TASKHTMLCOMMENTS, sContent, !bForTransform);
 }
 
-BOOL CTaskFile::GetTaskCustomComments(HTASKITEM hTask, CString& sContent) const
+BOOL CTaskFile::GetTaskCustomComments(HTASKITEM hTask, CString& sContent, CString& sType) const
 {
+	// comments type
+	sType = GetTaskCChar(hTask, TDL_TASKCOMMENTSTYPE);
+
+	// custom comments
 	CString sTemp = GetTaskCChar(hTask, TDL_TASKCUSTOMCOMMENTS);
 
 	if (sTemp.IsEmpty())
@@ -1629,10 +1747,10 @@ bool CTaskFile::SetTaskDate(HTASKITEM hTask, LPCTSTR szDateItem, const COleDateT
 {
 	CXmlItem* pXITask = NULL;
 	GET_TASK(pXITask, hTask, false);
-	
-	double dDate = bIncTime ? tVal.m_dt : floor(tVal);
-	
-	return (pXITask->SetItemValue(szDateItem, dDate) != NULL);
+
+	double dDate = bIncTime ? tVal.m_dt : floor(tVal.m_dt);
+
+   return (pXITask->SetItemValue(szDateItem, dDate) != NULL);
 }
 
 bool CTaskFile::SetTaskDate(HTASKITEM hTask, LPCTSTR szDateItem, time_t tVal, BOOL bIncTime)
@@ -1655,7 +1773,7 @@ bool CTaskFile::SetTaskDate(HTASKITEM hTask, LPCTSTR szDateItem, time_t tVal, BO
 
 	// else
 	COleDateTime date(pTime->tm_year + 1900,
-					  pTime->tm_mon,
+					  pTime->tm_mon + 1,
 					  pTime->tm_mday,
 					  pTime->tm_hour,
 					  pTime->tm_min,
@@ -1860,4 +1978,5 @@ BOOL CTaskFile::SetTaskArray(HTASKITEM hTask, const char* szNumItemTag,
 
 	return TRUE;
 }
+
 

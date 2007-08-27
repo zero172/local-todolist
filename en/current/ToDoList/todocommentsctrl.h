@@ -9,6 +9,7 @@
 
 #include "..\shared\urlricheditctrl.h"
 #include "..\shared\IContentControl.h"
+#include "..\shared\richeditspellcheck.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CToDoCommentsCtrl window
@@ -29,15 +30,16 @@ public:
 	bool SetContent(unsigned char* /*pContent*/, int /*nLength*/) { return false; }
 	void SetReadOnly(bool bReadOnly);
 	HWND GetHwnd() const { return GetSafeHwnd(); }
-	bool HasTypeID() const { return false; }
-	bool GetTypeID(GUID& /*id*/) const { return false; }
-	void Release() { delete this; }
+	const char* GetTypeID() const { return "PLAIN_TEXT"; }
+	void Release() { DestroyWindow(); delete this; }
 	bool ProcessMessage(MSG* pMsg);
+	ISpellCheck* GetSpellCheckInterface() { return &m_reSpellCheck; }
 
 // Attributes
 protected:
 	BOOL m_bAllowNotify;
 	BOOL m_bWordWrap;
+	CRichEditSpellCheck m_reSpellCheck;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -60,14 +62,12 @@ protected:
 	//}}AFX_MSG
 	afx_msg void OnCommentsMenuCmd(UINT nCmdID);
 	afx_msg void OnUpdateCommentsMenuCmd(CCmdUI* pCmdUI);
-	afx_msg void OnNeedTooltip(UINT id, NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg BOOL OnChangeText();
 	afx_msg LRESULT OnSetFont(WPARAM wp, LPARAM lp);
 
 	DECLARE_MESSAGE_MAP()
 
 	virtual LRESULT SendNotifyCustomUrl(LPCTSTR szUrl) const;
-	virtual int OnToolHitTest(CPoint pt, TOOLINFO* pTI) const;
 
 protected:
 	BOOL IsClipboardEmpty() const;

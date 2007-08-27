@@ -68,7 +68,7 @@ void CEnCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast)
 	}
 }
 
-BOOL CEnCommandLineInfo::GetOption(LPCTSTR szFlag, CStringArray* pParams) const
+BOOL CEnCommandLineInfo::GetOption(LPCTSTR szFlag, CStringArray& aParams) const
 {
 	CString sFlag(szFlag), sLookup, sParameter;
 	sFlag.MakeUpper();
@@ -76,20 +76,17 @@ BOOL CEnCommandLineInfo::GetOption(LPCTSTR szFlag, CStringArray* pParams) const
 	if (!m_mapCommandLine.Lookup(sFlag, sParameter))
 		return FALSE;
 
-	if (pParams)
+	aParams.RemoveAll();
+
+	int nParam = 0;
+	sLookup.Format("%s_PARAMETER_%d", sFlag, nParam);
+
+	while (m_mapCommandLine.Lookup(sLookup, sParameter))
 	{
-		pParams->RemoveAll();
+		aParams.Add(sParameter);
 
-		int nParam = 0;
+		nParam++;
 		sLookup.Format("%s_PARAMETER_%d", sFlag, nParam);
-
-		while (m_mapCommandLine.Lookup(sLookup, sParameter))
-		{
-			pParams->Add(sParameter);
-
-			nParam++;
-			sLookup.Format("%s_PARAMETER_%d", sFlag, nParam);
-		}
 	}
 
 	return TRUE;
@@ -104,9 +101,12 @@ BOOL CEnCommandLineInfo::SetOption(LPCTSTR szFlag, LPCTSTR szParam)
 	if (m_mapCommandLine.Lookup(sFlag, sParameter))
 		return FALSE;
 
+	// create flag
+	m_mapCommandLine[sFlag] = "";
+
 	// set szParam as the one and only option parameter
 	sLookup.Format("%s_PARAMETER_0", sFlag);
-	m_mapCommandLine[sLookup] == szParam;
+	m_mapCommandLine[sLookup] = szParam;
 
 	return TRUE;
 }
@@ -123,7 +123,7 @@ BOOL CEnCommandLineInfo::GetOption(LPCTSTR szFlag, CString& sParam) const
 {
 	CStringArray aParams;
 
-	if (GetOption(szFlag, &aParams))
+	if (GetOption(szFlag, aParams))
 	{
 		if (aParams.GetSize())
 			sParam = aParams[0];
@@ -132,6 +132,26 @@ BOOL CEnCommandLineInfo::GetOption(LPCTSTR szFlag, CString& sParam) const
 	}
 
 	return FALSE;
+}
+
+CString CEnCommandLineInfo::GetOption(LPCTSTR szFlag) const
+{
+	CString sOption;
+	GetOption(szFlag, sOption);
+
+	return sOption;
+}
+
+BOOL CEnCommandLineInfo::HasOption(LPCTSTR szFlag) const
+{
+	CString sOption;
+	
+	return GetOption(szFlag, sOption);
+}
+
+void CEnCommandLineInfo::DeleteOption(LPCTSTR szFlag)
+{
+	m_mapCommandLine.RemoveKey(szFlag);
 }
 
 CString CEnCommandLineInfo::ResolveShortcut(LPCTSTR szShortcut)

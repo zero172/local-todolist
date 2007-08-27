@@ -62,12 +62,6 @@ BOOL CContentMgr::Initialize()
 
 				if (pContent)
 				{
-					// do settings initialization
-/*					BOOL bReg = (AfxGetApp()->m_pszRegistryKey != NULL);
-					LPCTSTR szIni = bReg ? NULL : AfxGetApp()->m_pszProfileName;
-
-					pContent->SetIniLocation((bReg != FALSE), szIni);
-*/
 					// save
 					m_aContent.Add(pContent);
 				}
@@ -91,19 +85,19 @@ int CContentMgr::GetNumContent() const
 	return m_aContent.GetSize();
 }
 
-BOOL CContentMgr::GetContentTypeID(int nContent, GUID& type) const
+CString CContentMgr::GetContentTypeID(int nContent) const
 {
 	if (!m_bInitialized) 
-		return FALSE;
+		return "";
 
 	if (nContent >= 0 && nContent < m_aContent.GetSize())
 	{
 		ASSERT (m_aContent[nContent] != NULL);
-		return m_aContent[nContent]->GetTypeID(type);
+		return m_aContent[nContent]->GetTypeID();
 	}
 
 	// else
-	return FALSE;
+	return "";
 }
 
 CString CContentMgr::GetContentTypeDescription(int nContent) const
@@ -119,6 +113,16 @@ CString CContentMgr::GetContentTypeDescription(int nContent) const
 	
 	// else
 	return "";
+}
+
+BOOL CContentMgr::ContentFormatIsText(int nContent) const
+{
+	return GetContentFormat(nContent).FormatIsText();
+}
+
+BOOL CContentMgr::ContentFormatIsText(const CString& sTypeID) const
+{
+	return ContentFormatIsText(FindContent(sTypeID));
 }
 
 BOOL CContentMgr::CreateContentControl(int nContent, CContentCtrl& ctrl, UINT nCtrlID, DWORD nStyle, 
@@ -150,39 +154,40 @@ BOOL CContentMgr::CreateContentControl(int nContent, CContentCtrl& ctrl, UINT nC
 	return FALSE;
 }
 
-BOOL CContentMgr::CreateContentControl(const GUID& type, CContentCtrl& ctrl, UINT nCtrlID, DWORD nStyle, 
+BOOL CContentMgr::CreateContentControl(const CONTENTFORMAT& cf, CContentCtrl& ctrl, UINT nCtrlID, DWORD nStyle, 
 							 DWORD dwExStyle, const CRect& rect, HWND hwndParent)
 {
 	// check if the CContentCtrl already has a valid control
-	if (ctrl.GetSafeHwnd() && ctrl.IsType(type))
+	if (ctrl.GetSafeHwnd() && ctrl.IsFormat(cf))
 		return TRUE;
 
-	return CreateContentControl(FindContent(type), ctrl, nCtrlID, nStyle, dwExStyle, rect, hwndParent);
+	return CreateContentControl(FindContent(cf), ctrl, nCtrlID, nStyle, dwExStyle, rect, hwndParent);
 }
 
-int CContentMgr::FindContent(const GUID& type) const
+int CContentMgr::FindContent(LPCTSTR szID) const
 {
 	int nContent = m_aContent.GetSize();
-	GUID typeContent;
 
 	while (nContent--)
 	{
 		ASSERT (m_aContent[nContent] != NULL);
 
-		if (m_aContent[nContent]->GetTypeID(typeContent))
-		{
-			if (memcmp(&type, &typeContent, sizeof(GUID)) == 0)
-				return nContent;
-		}
+		if (GetContentTypeID(nContent).Compare(szID) == 0)
+			return nContent;
 	}
 
 	// else not found
 	return -1;
 }
 
-BOOL CContentMgr::ConvertContentToHtml(const CString& sContent, CString& sHtml, const GUID& type)
+CONTENTFORMAT CContentMgr::GetContentFormat(int nContent) const
 {
-	int nContent = FindContent(type);
+	return GetContentTypeID(nContent);
+}
+
+BOOL CContentMgr::ConvertContentToHtml(const CString& sContent, CString& sHtml, LPCTSTR szID)
+{
+	int nContent = FindContent(szID);
 
 	if (nContent == -1)
 		return FALSE;

@@ -5,6 +5,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+#include "..\shared\Subclass.h"
+
 // ColourPopup.h : header file
 //
 // Written by Chris Maunder (chrismaunder@codeguru.com)
@@ -42,7 +44,7 @@ typedef struct {
 /////////////////////////////////////////////////////////////////////////////
 // CColourPopup window
 
-class CColourPopup : public CWnd
+class CColourPopup : public CWnd, public CSubclasser
 {
 // Construction
 public:
@@ -115,7 +117,6 @@ protected:
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnPaint();
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-    afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg BOOL OnQueryNewPalette();
     afx_msg void OnPaletteChanged(CWnd* pFocusWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
@@ -126,6 +127,8 @@ protected:
 	 afx_msg void OnActivateApp(BOOL bActive, DWORD hTask);
 #endif
     DECLARE_MESSAGE_MAP()
+
+	virtual LRESULT ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp);
 };
 
 /////////////////////////////////////////////////////////////////////////////

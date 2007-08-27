@@ -25,6 +25,8 @@
 #define STRING_COLOR                    53
 #define STRING_DEFAULT                  54
 #define STRING_CUSTOM                   55
+#define IDS_FIND_TITLE                  56
+#define IDS_REPLACE_TITLE               57
 #define IDR_POPUP                       16000
 #define IDB_TOOLBAR                     16003
 #define ID_EDIT_DELETE                  32774
@@ -38,6 +40,9 @@
 #define ID_EDIT_SUPERSCRIPT             32784
 #define ID_EDIT_SUBSCRIPT               32785
 #define ID_EDIT_PASTESIMPLE             32786
+#define ID_EDIT_SPELLCHECK              33067
+#define ID_EDIT_FINDREPLACE             33072
+#define IDS_COMMENTSGOTOERRMSG          58073
 
 // Next default values for new objects
 // 

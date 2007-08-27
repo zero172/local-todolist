@@ -8,8 +8,10 @@
 //
 
 #include "rulerricheditctrl.h"
+
 #include "..\shared\IContentControl.h"
 #include "..\shared\toolbarhelper.h"
+#include "..\shared\richeditspellcheck.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CRTFContentControl window
@@ -27,15 +29,16 @@ public:
 	bool SetTextContent(const char* szContent);
 	void SetReadOnly(bool bReadOnly);
 	HWND GetHwnd() const;
-	bool HasTypeID() const;
-	bool GetTypeID(GUID& id) const;
+	const char* GetTypeID() const;
 	void Release();
 	bool ProcessMessage(MSG* pMsg);
+	ISpellCheck* GetSpellCheckInterface() { return &m_reSpellCheck; }
 
 // Attributes
 protected:
 	BOOL m_bAllowNotify;
 	CToolbarHelper m_tbHelper;
+	CRichEditSpellCheck m_reSpellCheck;
 
 // Operations
 public:

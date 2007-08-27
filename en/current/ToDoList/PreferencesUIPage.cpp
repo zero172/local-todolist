@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "todolist.h"
 #include "PreferencesUIPage.h"
+#include "tdcenum.h"
 
 #include "..\shared\misc.h"
 #include "..\shared\enstring.h"
@@ -17,62 +18,20 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesUIPage property page
 
-IMPLEMENT_DYNCREATE(CPreferencesUIPage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CPreferencesUIPage, CPreferencesPageBase)
 
 CPreferencesUIPage::CPreferencesUIPage(const CContentMgr* pMgr) : 
-	CPropertyPage(CPreferencesUIPage::IDD), m_pContentMgr(pMgr), m_bNotifyCommentsFormatChange(FALSE) 
+	CPreferencesPageBase(CPreferencesUIPage::IDD), 
+		m_pContentMgr(pMgr), 
+		m_cbCommentsFmt(pMgr),
+		m_nDefaultCommentsFormat(-1)
 {
 	//{{AFX_DATA_INIT(CPreferencesUIPage)
 	m_bMultiSelCategoryFilter = FALSE;
 	m_bAutoReFilter = FALSE;
 	m_bRestoreTasklistFilters = FALSE;
-	m_bMultiSelAllocToFilter = FALSE;
 	//}}AFX_DATA_INIT
 
-	// load settings
-	m_bShowCtrlsAsColumns = AfxGetApp()->GetProfileInt("Preferences", "ShowCtrlsAsColumns", FALSE);
-	m_bShowEditMenuAsColumns = AfxGetApp()->GetProfileInt("Preferences", "ShowEditMenuAsColumns", FALSE);
-	m_bShowCommentsAlways = AfxGetApp()->GetProfileInt("Preferences", "ShowCommentsAlways", FALSE);
-	m_bAutoReposCtrls = AfxGetApp()->GetProfileInt("Preferences", "AutoReposCtrls", TRUE);
-	m_bSpecifyToolbarImage = AfxGetApp()->GetProfileInt("Preferences", "SpecifyToolbarImage", FALSE);
-	m_bSharedCommentsHeight = AfxGetApp()->GetProfileInt("Preferences", "SharedCommentsHeight", TRUE);
-	m_bAutoHideTabbar = AfxGetApp()->GetProfileInt("Preferences", "AutoHideTabbar", TRUE);
-	m_bStackTabbarItems = AfxGetApp()->GetProfileInt("Preferences", "StackTabbarItems", FALSE);
-	m_bRightAlignLabels = AfxGetApp()->GetProfileInt("Preferences", "RightAlignLabels", TRUE);
-	m_bFocusTreeOnEnter = AfxGetApp()->GetProfileInt("Preferences", "FocusTreeOnEnter", FALSE);
-	m_bLargeToolbarIcons = AfxGetApp()->GetProfileInt("Preferences", "LargeToolbarIcons", TRUE);
-	m_nNewTaskPos = AfxGetApp()->GetProfileInt("Preferences", "NewTaskPos", PUIP_BELOW);
-	m_nNewSubtaskPos = AfxGetApp()->GetProfileInt("Preferences", "NewSubtaskPos", PUIP_BOTTOM);
-	m_bKeepTabsOrdered = AfxGetApp()->GetProfileInt("Preferences", "KeepTabsOrdered", FALSE);
-	m_bShowTasklistCloseButton = AfxGetApp()->GetProfileInt("Preferences", "ShowTasklistCloseButton", TRUE);
-	m_bEnableCtrlMBtnClose = AfxGetApp()->GetProfileInt("Preferences", "EnableCtrlMBtnClose", TRUE);
-	m_bEnableHeaderSorting = AfxGetApp()->GetProfileInt("Preferences", "EnableHeaderSorting", TRUE);
-	m_bAutoReSort = AfxGetApp()->GetProfileInt("Preferences", "AutoReSort", FALSE);
-	m_bSortVisibleOnly = AfxGetApp()->GetProfileInt("Preferences", "SortVisibleOnly", FALSE);
-	m_bSortDoneTasksAtBottom = AfxGetApp()->GetProfileInt("Preferences", "SortDoneTasksAtBottom", TRUE);
-	m_bRTLComments = AfxGetApp()->GetProfileInt("Preferences", "RTLComments", FALSE);
-	m_nCommentsPos = AfxGetApp()->GetProfileInt("Preferences", "VertComments", PUIP_RIGHTCOMMENTS);
-	m_bMultiSelCategoryFilter = AfxGetApp()->GetProfileInt("Preferences", "MultiSelCategoryFilter", TRUE);
-	m_bAutoReFilter = AfxGetApp()->GetProfileInt("Preferences", "AutoReFilter", FALSE);
-	m_bRestoreTasklistFilters = AfxGetApp()->GetProfileInt("Preferences", "RestoreTasklistFilters", FALSE);
-	m_bMultiSelAllocToFilter = AfxGetApp()->GetProfileInt("Preferences", "MultiSelAllocToFilter", TRUE);
-//	m_b = AfxGetApp()->GetProfileInt("Preferences", "", FALSE);
-
-	// comments format
-	if (m_pContentMgr)
-	{
-		// get the index via the guid if there is one
-		GUID idFormat;
-		CString sDefaultCommentsFormatID = AfxGetApp()->GetProfileString("Preferences", "DefaultCommentsFormatID");
-
-		if (Misc::GuidFromString(sDefaultCommentsFormatID, idFormat))
-			m_nDefaultCommentsFormat = m_pContentMgr->FindContent(idFormat);
-		else
-			m_nDefaultCommentsFormat = AfxGetApp()->GetProfileInt("Preferences", "DefaultCommentsFormat", 1);
-
-		if (m_nDefaultCommentsFormat < 0 || m_nDefaultCommentsFormat >= m_pContentMgr->GetNumContent())
-			m_nDefaultCommentsFormat = 0;
-	}
 }
 
 CPreferencesUIPage::~CPreferencesUIPage()
@@ -81,7 +40,7 @@ CPreferencesUIPage::~CPreferencesUIPage()
 
 void CPreferencesUIPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesUIPage)
 	DDX_Check(pDX, IDC_SHOWCTRLSASCOLUMNS, m_bShowCtrlsAsColumns);
 	DDX_Check(pDX, IDC_SHOWCOMMENTSALWAYS, m_bShowCommentsAlways);
@@ -113,7 +72,7 @@ void CPreferencesUIPage::DoDataExchange(CDataExchange* pDX)
 //	DDX_Check(pDX, IDC_RTLCOMMENTS, m_bRTLComments);
 }
 
-BEGIN_MESSAGE_MAP(CPreferencesUIPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesUIPage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesUIPage)
 	//}}AFX_MSG_MAP
 	ON_CBN_SELCHANGE(IDC_COMMENTSFORMAT, OnSelchangeCommentsformat)
@@ -124,7 +83,7 @@ END_MESSAGE_MAP()
 
 BOOL CPreferencesUIPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	CPreferencesPageBase::OnInitDialog();
 
 	m_mgrGroupLines.AddGroupLine(IDC_TOOLBARGROUP, *this);
 	m_mgrGroupLines.AddGroupLine(IDC_SORTGROUP, *this);
@@ -132,80 +91,119 @@ BOOL CPreferencesUIPage::OnInitDialog()
 	m_mgrGroupLines.AddGroupLine(IDC_COMMENTSGROUP, *this);
 	m_mgrGroupLines.AddGroupLine(IDC_FILTERGROUP, *this);
 
-	// content types
-	if (m_pContentMgr)
-	{
-		for (int nItem = 0; nItem < m_pContentMgr->GetNumContent(); nItem++)
-		{
-			CString sItem = m_pContentMgr->GetContentTypeDescription(nItem);
-			m_cbCommentsFmt.AddString(sItem);
-		}
-
-		m_cbCommentsFmt.SetCurSel(m_nDefaultCommentsFormat);
-	}
-	
-	GetDlgItem(IDC_COMMENTSFORMAT)->EnableWindow(m_pContentMgr != NULL);
+	m_cbCommentsFmt.SetCurSel(m_nDefaultCommentsFormat);
+	GetDlgItem(IDC_COMMENTSFORMAT)->EnableWindow(m_nDefaultCommentsFormat != CB_ERR);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CPreferencesUIPage::OnOK() 
+void CPreferencesUIPage::OnSelchangeCommentsformat() 
 {
-	CPropertyPage::OnOK();
-	
+	m_cbCommentsFmt.GetSelectedFormat(m_cfDefault);
+}
+
+void CPreferencesUIPage::LoadPreferences(const CPreferencesStorage& prefs)
+{
+	// load settings
+	m_bShowCtrlsAsColumns = prefs.GetProfileInt("Preferences", "ShowCtrlsAsColumns", FALSE);
+	m_bShowEditMenuAsColumns = prefs.GetProfileInt("Preferences", "ShowEditMenuAsColumns", FALSE);
+	m_bShowCommentsAlways = prefs.GetProfileInt("Preferences", "ShowCommentsAlways", FALSE);
+	m_bAutoReposCtrls = prefs.GetProfileInt("Preferences", "AutoReposCtrls", TRUE);
+	m_bSpecifyToolbarImage = prefs.GetProfileInt("Preferences", "SpecifyToolbarImage", FALSE);
+	m_bSharedCommentsHeight = prefs.GetProfileInt("Preferences", "SharedCommentsHeight", TRUE);
+	m_bAutoHideTabbar = prefs.GetProfileInt("Preferences", "AutoHideTabbar", TRUE);
+	m_bStackTabbarItems = prefs.GetProfileInt("Preferences", "StackTabbarItems", FALSE);
+	m_bRightAlignLabels = prefs.GetProfileInt("Preferences", "RightAlignLabels", TRUE);
+	m_bFocusTreeOnEnter = prefs.GetProfileInt("Preferences", "FocusTreeOnEnter", FALSE);
+	m_bLargeToolbarIcons = prefs.GetProfileInt("Preferences", "LargeToolbarIcons", TRUE);
+	m_nNewTaskPos = prefs.GetProfileInt("Preferences", "NewTaskPos", PUIP_BELOW);
+	m_nNewSubtaskPos = prefs.GetProfileInt("Preferences", "NewSubtaskPos", PUIP_BOTTOM);
+	m_bKeepTabsOrdered = prefs.GetProfileInt("Preferences", "KeepTabsOrdered", FALSE);
+	m_bShowTasklistCloseButton = prefs.GetProfileInt("Preferences", "ShowTasklistCloseButton", TRUE);
+	m_bEnableCtrlMBtnClose = prefs.GetProfileInt("Preferences", "EnableCtrlMBtnClose", TRUE);
+	m_bEnableHeaderSorting = prefs.GetProfileInt("Preferences", "EnableHeaderSorting", TRUE);
+	m_bAutoReSort = prefs.GetProfileInt("Preferences", "AutoReSort", FALSE);
+	m_bSortVisibleOnly = prefs.GetProfileInt("Preferences", "SortVisibleOnly", FALSE);
+	m_bSortDoneTasksAtBottom = prefs.GetProfileInt("Preferences", "SortDoneTasksAtBottom", TRUE);
+	m_bRTLComments = prefs.GetProfileInt("Preferences", "RTLComments", FALSE);
+	m_nCommentsPos = prefs.GetProfileInt("Preferences", "VertComments", PUIP_RIGHTCOMMENTS);
+	m_bMultiSelCategoryFilter = prefs.GetProfileInt("Preferences", "MultiSelCategoryFilter", TRUE);
+	m_bAutoReFilter = prefs.GetProfileInt("Preferences", "AutoReFilter", FALSE);
+	m_bRestoreTasklistFilters = prefs.GetProfileInt("Preferences", "RestoreTasklistFilters", FALSE);
+	m_bMultiSelAllocToFilter = prefs.GetProfileInt("Preferences", "MultiSelAllocToFilter", TRUE);
+//	m_b = prefs.GetProfileInt("Preferences", "", FALSE);
+
+	// comments format
+	if (m_cbCommentsFmt.IsInitialized())
+	{
+		m_cfDefault = prefs.GetProfileString("Preferences", "DefaultCommentsFormatID");
+		m_nDefaultCommentsFormat = m_cbCommentsFmt.SetSelectedFormat(m_cfDefault);
+
+		// fallback
+		if (m_nDefaultCommentsFormat == CB_ERR)
+			m_nDefaultCommentsFormat = prefs.GetProfileInt("Preferences", "DefaultCommentsFormat", -1);
+
+		if (m_nDefaultCommentsFormat == CB_ERR || m_nDefaultCommentsFormat >= m_cbCommentsFmt.GetCount())
+		{
+			ASSERT (m_cbCommentsFmt.GetCount());
+
+			m_nDefaultCommentsFormat = 0;
+		}
+
+		m_cbCommentsFmt.SetCurSel(m_nDefaultCommentsFormat);
+		m_cbCommentsFmt.GetSelectedFormat(m_cfDefault);
+	}
+}
+
+void CPreferencesUIPage::SavePreferences(CPreferencesStorage& prefs)
+{
 	// save settings
-	AfxGetApp()->WriteProfileInt("Preferences", "ShowCtrlsAsColumns", m_bShowCtrlsAsColumns);
-	AfxGetApp()->WriteProfileInt("Preferences", "ShowEditMenuAsColumns", m_bShowEditMenuAsColumns);
-	AfxGetApp()->WriteProfileInt("Preferences", "ShowCommentsAlways", m_bShowCommentsAlways);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoReposCtrls", m_bAutoReposCtrls);
-	AfxGetApp()->WriteProfileInt("Preferences", "SpecifyToolbarImage", m_bSpecifyToolbarImage);
-	AfxGetApp()->WriteProfileInt("Preferences", "SharedCommentsHeight", m_bSharedCommentsHeight);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoHideTabbar", m_bAutoHideTabbar);
-	AfxGetApp()->WriteProfileInt("Preferences", "StackTabbarItems", m_bStackTabbarItems);
-	AfxGetApp()->WriteProfileInt("Preferences", "RightAlignLabels", m_bRightAlignLabels);
-	AfxGetApp()->WriteProfileInt("Preferences", "FocusTreeOnEnter", m_bFocusTreeOnEnter);
-	AfxGetApp()->WriteProfileInt("Preferences", "LargeToolbarIcons", m_bLargeToolbarIcons);
-	AfxGetApp()->WriteProfileInt("Preferences", "NewTaskPos", m_nNewTaskPos);
-	AfxGetApp()->WriteProfileInt("Preferences", "NewSubtaskPos", m_nNewSubtaskPos);
-	AfxGetApp()->WriteProfileInt("Preferences", "KeepTabsOrdered", m_bKeepTabsOrdered);
-	AfxGetApp()->WriteProfileInt("Preferences", "ShowTasklistCloseButton", m_bShowTasklistCloseButton);
-	AfxGetApp()->WriteProfileInt("Preferences", "EnableCtrlMBtnClose", m_bEnableCtrlMBtnClose);
-	AfxGetApp()->WriteProfileInt("Preferences", "EnableHeaderSorting", m_bEnableHeaderSorting);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoReSort", m_bAutoReSort);
-	AfxGetApp()->WriteProfileInt("Preferences", "SortVisibleOnly", m_bSortVisibleOnly);
-	AfxGetApp()->WriteProfileInt("Preferences", "SortDoneTasksAtBottom", m_bSortDoneTasksAtBottom);
-	AfxGetApp()->WriteProfileInt("Preferences", "RTLComments", m_bRTLComments);
-	AfxGetApp()->WriteProfileInt("Preferences", "VertComments", m_nCommentsPos);
-	AfxGetApp()->WriteProfileInt("Preferences", "MultiSelCategoryFilter", m_bMultiSelCategoryFilter);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoReFilter", m_bAutoReFilter);
-	AfxGetApp()->WriteProfileInt("Preferences", "RestoreTasklistFilters", m_bRestoreTasklistFilters);
-	AfxGetApp()->WriteProfileInt("Preferences", "MultiSelAllocToFilter", m_bMultiSelAllocToFilter);
-//	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
+	prefs.WriteProfileInt("Preferences", "ShowCtrlsAsColumns", m_bShowCtrlsAsColumns);
+	prefs.WriteProfileInt("Preferences", "ShowEditMenuAsColumns", m_bShowEditMenuAsColumns);
+	prefs.WriteProfileInt("Preferences", "ShowCommentsAlways", m_bShowCommentsAlways);
+	prefs.WriteProfileInt("Preferences", "AutoReposCtrls", m_bAutoReposCtrls);
+	prefs.WriteProfileInt("Preferences", "SpecifyToolbarImage", m_bSpecifyToolbarImage);
+	prefs.WriteProfileInt("Preferences", "SharedCommentsHeight", m_bSharedCommentsHeight);
+	prefs.WriteProfileInt("Preferences", "AutoHideTabbar", m_bAutoHideTabbar);
+	prefs.WriteProfileInt("Preferences", "StackTabbarItems", m_bStackTabbarItems);
+	prefs.WriteProfileInt("Preferences", "RightAlignLabels", m_bRightAlignLabels);
+	prefs.WriteProfileInt("Preferences", "FocusTreeOnEnter", m_bFocusTreeOnEnter);
+	prefs.WriteProfileInt("Preferences", "LargeToolbarIcons", m_bLargeToolbarIcons);
+	prefs.WriteProfileInt("Preferences", "NewTaskPos", m_nNewTaskPos);
+	prefs.WriteProfileInt("Preferences", "NewSubtaskPos", m_nNewSubtaskPos);
+	prefs.WriteProfileInt("Preferences", "KeepTabsOrdered", m_bKeepTabsOrdered);
+	prefs.WriteProfileInt("Preferences", "ShowTasklistCloseButton", m_bShowTasklistCloseButton);
+	prefs.WriteProfileInt("Preferences", "EnableCtrlMBtnClose", m_bEnableCtrlMBtnClose);
+	prefs.WriteProfileInt("Preferences", "EnableHeaderSorting", m_bEnableHeaderSorting);
+	prefs.WriteProfileInt("Preferences", "AutoReSort", m_bAutoReSort);
+	prefs.WriteProfileInt("Preferences", "SortVisibleOnly", m_bSortVisibleOnly);
+	prefs.WriteProfileInt("Preferences", "SortDoneTasksAtBottom", m_bSortDoneTasksAtBottom);
+	prefs.WriteProfileInt("Preferences", "RTLComments", m_bRTLComments);
+	prefs.WriteProfileInt("Preferences", "VertComments", m_nCommentsPos);
+	prefs.WriteProfileInt("Preferences", "MultiSelCategoryFilter", m_bMultiSelCategoryFilter);
+	prefs.WriteProfileInt("Preferences", "AutoReFilter", m_bAutoReFilter);
+	prefs.WriteProfileInt("Preferences", "RestoreTasklistFilters", m_bRestoreTasklistFilters);
+	prefs.WriteProfileInt("Preferences", "MultiSelAllocToFilter", m_bMultiSelAllocToFilter);
+//	prefs.WriteProfileInt("Preferences", "", m_b);
 
 	// comments format
 	if (m_pContentMgr)
 	{
-		AfxGetApp()->WriteProfileInt("Preferences", "DefaultCommentsFormat", m_nDefaultCommentsFormat);
-		AfxGetApp()->WriteProfileString("Preferences", "DefaultCommentsFormatID", ""); // clear
-
-		GUID idFormat;
-
-		if (m_pContentMgr->GetContentTypeID(m_nDefaultCommentsFormat, idFormat))
-		{
-			CString sIDFormat;
-
-			if (!Misc::GuidIsNull(idFormat) && Misc::GuidToString(idFormat, sIDFormat))
-				AfxGetApp()->WriteProfileString("Preferences", "DefaultCommentsFormatID", sIDFormat);
-		}
+		prefs.WriteProfileInt("Preferences", "DefaultCommentsFormat", m_nDefaultCommentsFormat);
+		prefs.WriteProfileString("Preferences", "DefaultCommentsFormatID", m_cfDefault);
 	}
 }
 
-void CPreferencesUIPage::OnSelchangeCommentsformat() 
+DWORD CPreferencesUIPage::GetMultiSelFilterFlags() const
 {
-	// notify once only
-	if (!m_bNotifyCommentsFormatChange)
-		MessageBox(CEnString(IDS_COMMENTFORMATCHANGE), CEnString(IDS_COMMENTFORMATCHANGE_TITLE));
+	DWORD dwFlags = 0;
 
-	m_bNotifyCommentsFormatChange = TRUE;
+	if (m_bMultiSelAllocToFilter)
+		dwFlags |= FB_MULTISELALLOCTO;
+
+	if (m_bMultiSelCategoryFilter)
+		dwFlags |= FB_MULTISELCAT;
+
+	return dwFlags;
 }

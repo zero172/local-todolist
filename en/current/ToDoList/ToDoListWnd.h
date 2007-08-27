@@ -16,6 +16,7 @@
 #include "TDLImportExportMgr.h"
 #include "TDLContentMgr.h"
 #include "filterbar.h"
+#include "TDLSendTasksDlg.h"
 
 #include "..\shared\trayicon.h"
 #include "..\shared\toolbarhelper.h"
@@ -32,8 +33,9 @@
 #include "..\shared\deferWndMove.h"
 #include "..\shared\colorcombobox.h"
 #include "..\shared\enBrowserctrl.h"
-
+#include "..\shared\UIExtensionMgr.h"
 #include "..\shared\menuiconmgr.h"
+
 #include "..\3rdparty\statusbarACT.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,6 +110,7 @@ protected:
 	CStatusBarACT	m_statusBar;
 	HWND m_hwndLastFocus;
 	CMenuIconMgr m_mgrMenuIcons;
+	CUIExtensionMgr m_mgrUIExtensions;
 
 	struct TDCSTARTUP
 	{
@@ -213,9 +216,20 @@ protected:
 	afx_msg void OnUpdateEditCleartaskcolor(CCmdUI* pCmdUI);
 	afx_msg void OnEditSelectall();
 	afx_msg void OnUpdateEditSelectall(CCmdUI* pCmdUI);
+	afx_msg void OnCloseallbutthis();
+	afx_msg void OnUpdateCloseallbutthis(CCmdUI* pCmdUI);
+	afx_msg void OnSendtasks();
+	afx_msg void OnEditInsertdate();
+	afx_msg void OnUpdateEditInsertdate(CCmdUI* pCmdUI);
+	afx_msg void OnGotoNexttask();
+	afx_msg void OnGotoPrevtask();
+	afx_msg void OnUpdateGotoPrevtask(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateGotoNexttask(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg LRESULT OnSelchangeFilter(WPARAM wp, LPARAM lp);
 	afx_msg void OnWindow(UINT nCmdID);
+	afx_msg void OnUserUIExtension(UINT nCmdID);
+	afx_msg void OnUpdateUserUIExtension(CCmdUI* pCmdUI);
 	afx_msg void OnUserImport(UINT nCmdID);
 	afx_msg void OnUserExport(UINT nCmdID);
 	afx_msg void OnViewNext();
@@ -444,7 +458,7 @@ protected:
 	BOOL DoDueTaskNotification(const CFilteredToDoCtrl* pCtrl, int nDueBy);
 	BOOL DoDueTaskNotification(int nDueBy); // works on active tasklist
 	void DoExit();
-	void PauseTimeTracking(BOOL bPause = TRUE);
+	void RefreshPauseTimeTracking();
 	void SetTimer(UINT nTimerID, BOOL bOn);
 	void EnsureVisible();
 	void RefreshTabOrder();
@@ -470,6 +484,7 @@ protected:
 
 	void PrepareEditMenu(CMenu* pMenu);
 	void PrepareSortMenu(CMenu* pMenu);
+	void PrepareSourceControlMenu(CMenu* pMenu);
 
 	int MapFindWhat(FIND_WHAT fw);
 	void AddFindResult(const SEARCHRESULT& result, const SEARCHPARAMS& params, int nTaskList);
@@ -522,6 +537,8 @@ protected:
 	int GetTasks(int nTDC, BOOL bWantCompleted, BOOL bWantIncomplete,
                BOOL bWantSelected, BOOL bWantSelSubtasks, BOOL bHtmlComments, 
 			   BOOL bTransform, CTaskFile& tasks);
+
+	void DoSendTasks(TD_SENDWHAT nWhat, TD_SENDAS nSendAs);
 
 	TDC_ARCHIVE GetAutoArchiveOptions(LPCTSTR szFilePath, CString& sArchivePath) const;
 

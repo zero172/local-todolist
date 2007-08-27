@@ -36,23 +36,22 @@ public:
 	void SetPriorityColors(const CDWordArray& aColors);
 	int CalcHeight(int nWidth);
 	void SetVisibleFilters(const CTDCColumnArray& aFilters);
-//	void ShowFilter(TDC_COLUMN nType, BOOL bShow, BOOL bUpdate = TRUE);
 	BOOL FilterMatches(const FTDCFILTER& filter) { return (filter == m_filter); }
 
-	void EnableMultiCategorySelection(BOOL bEnable = TRUE);
+	void EnableMultiSelection(DWORD dwFlags = FB_MULTISELALLOCTO | FB_MULTISELCAT);
 
 protected:
 // Dialog Data
 	//{{AFX_DATA(CFilterBar)
-		// NOTE: the ClassWizard will add data members here
+	enum { IDD = IDD_FILTER_BAR };
+	BOOL	m_bMatchAllAllocTo;
+	BOOL	m_bMatchAllCategory;
 	//}}AFX_DATA
 	CTabbedComboBox	m_cbTaskFilter;
 	int		m_nFilterWhat;
 	CEnCheckComboBox	m_cbAllocToFilter;
-//	CComboBox	m_cbAllocByFilter;
 	CEnCheckComboBox	m_cbAllocByFilter;
 	CEnCheckComboBox	m_cbCategoryFilter;
-//	CComboBox	m_cbStatusFilter;
 	CEnCheckComboBox	m_cbStatusFilter;
 	CTDLPriorityComboBox	m_cbPriorityFilter;
 	CTDLRiskComboBox	m_cbRiskFilter;

@@ -16,10 +16,10 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesFilePage property page
 
-IMPLEMENT_DYNCREATE(CPreferencesFilePage, CPropertyPage)
+IMPLEMENT_DYNCREATE(CPreferencesFilePage, CPreferencesPageBase)
 
 CPreferencesFilePage::CPreferencesFilePage() : 
-		CPropertyPage(CPreferencesFilePage::IDD),
+		CPreferencesPageBase(CPreferencesFilePage::IDD),
 		m_eExportFolderPath(FES_FOLDERS | FES_COMBOSTYLEBTN),
 		m_eSaveExportStylesheet(FES_COMBOSTYLEBTN, CEnString(IDS_XSLFILEFILTER)),
 		m_eDueTaskStylesheet(FES_COMBOSTYLEBTN, CEnString(IDS_XSLFILEFILTER))
@@ -27,41 +27,9 @@ CPreferencesFilePage::CPreferencesFilePage() :
 //	m_psp.dwFlags &= ~PSP_HASHELP;
 
 	//{{AFX_DATA_INIT(CPreferencesFilePage)
-	m_bExpandTasks = FALSE;
-	m_bCheckForChangesBeforeSaving = FALSE;
+	m_bAutoSaveOnSwitchTasklist = FALSE;
+	m_bAutoSaveOnSwitchApp = FALSE;
 	//}}AFX_DATA_INIT
-	m_bNotifyDueOnLoad = AfxGetApp()->GetProfileInt("Preferences", "NotifyDue", FALSE);
-	m_bNotifyDueOnSwitch = AfxGetApp()->GetProfileInt("Preferences", "NotifyDueOnSwitch", FALSE);
-	m_bAutoArchive = AfxGetApp()->GetProfileInt("Preferences", "AutoArchive", FALSE);
-	m_bNotifyReadOnly = AfxGetApp()->GetProfileInt("Preferences", "NotifyReadOnly", TRUE);
-	m_bRemoveArchivedTasks = AfxGetApp()->GetProfileInt("Preferences", "RemoveArchivedTasks", TRUE);
-	m_bRemoveOnlyOnAbsoluteCompletion = AfxGetApp()->GetProfileInt("Preferences", "RemoveOnlyOnAbsoluteCompletion", TRUE);
-	m_nAutoSaveFrequency = AfxGetApp()->GetProfileInt("Preferences", "AutoSaveFrequency", 0);
-	m_bAutoSave = (m_nAutoSaveFrequency > 0);
-	m_bAutoHtmlExport = AfxGetApp()->GetProfileInt("Preferences", "AutoHtmlExport", FALSE);
-	m_sExportFolderPath = AfxGetApp()->GetProfileString("Preferences", "ExportFolderPath", "");
-	m_nNotifyDueByOnLoad = AfxGetApp()->GetProfileInt("Preferences", "NotifyDueBy", PFP_DUETODAY);
-	m_nNotifyDueByOnSwitch = AfxGetApp()->GetProfileInt("Preferences", "NotifyDueByOnSwitch", PFP_DUETODAY);
-	m_bDisplayDueTasksInHtml = AfxGetApp()->GetProfileInt("Preferences", "DisplayDueTasksInHtml", TRUE);
-	m_bRefreshFindOnLoad = AfxGetApp()->GetProfileInt("Preferences", "RefreshFindOnLoad", FALSE);
-	m_bDueTaskTitlesOnly = AfxGetApp()->GetProfileInt("Preferences", "DueTaskTitlesOnly", FALSE);
-	m_sDueTasksStylesheet = AfxGetApp()->GetProfileString("Preferences", "DueTasksStylesheet", FALSE);
-	m_sSaveExportStylesheet = AfxGetApp()->GetProfileString("Preferences", "SaveExportStylesheet");
-	m_sDueTaskPerson = AfxGetApp()->GetProfileString("Preferences", "DueTaskPerson");
-	m_bOnlyShowDueTasksForPerson = !m_sDueTaskPerson.IsEmpty();
-	m_bWarnAddDeleteArchive = AfxGetApp()->GetProfileInt("Preferences", "WarnAddDeleteArchive", TRUE);
-	m_bDontAutoSaveUnsaved = AfxGetApp()->GetProfileInt("Preferences", "DontAutoSaveUnsaved", FALSE);
-	m_bDontRemoveFlagged = AfxGetApp()->GetProfileInt("Preferences", "DontRemoveFlagged", FALSE);
-	m_bExpandTasks = AfxGetApp()->GetProfileInt("Preferences", "ExpandTasks", FALSE);
-	m_bCheckForChangesBeforeSaving = AfxGetApp()->GetProfileInt("Preferences", "CheckForChangesBeforeSaving", TRUE);
-//	m_b = AfxGetApp()->GetProfileInt("Preferences", "", FALSE);
-
-	m_sExportFolderPath.TrimLeft();
-	m_sExportFolderPath.TrimRight();
-
-	m_bExportToFolder = !m_sExportFolderPath.IsEmpty();
-	m_bUseStylesheetForSaveExport = !m_sSaveExportStylesheet.IsEmpty();
-	m_bUseStyleSheetForDueTasks = !m_sDueTasksStylesheet.IsEmpty();
 }
 
 CPreferencesFilePage::~CPreferencesFilePage()
@@ -70,7 +38,7 @@ CPreferencesFilePage::~CPreferencesFilePage()
 
 void CPreferencesFilePage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+	CPreferencesPageBase::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CPreferencesFilePage)
 	DDX_Control(pDX, IDC_SAVEEXPORTSTYLESHEET, m_eSaveExportStylesheet);
 	DDX_Control(pDX, IDC_DUETASKSTYLESHEET, m_eDueTaskStylesheet);
@@ -87,10 +55,11 @@ void CPreferencesFilePage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ONLYSHOWDUETASKFORPERSON, m_bOnlyShowDueTasksForPerson);
 	DDX_Text(pDX, IDC_DUETASKPERSON, m_sDueTaskPerson);
 	DDX_Check(pDX, IDC_WARNADDDELARCHIVE, m_bWarnAddDeleteArchive);
-	DDX_Check(pDX, IDC_DONTAUTOSAVEUNSAVED, m_bDontAutoSaveUnsaved);
 	DDX_Check(pDX, IDC_DONTREMOVEFLAGGED, m_bDontRemoveFlagged);
 	DDX_Check(pDX, IDC_EXPANDTASKS, m_bExpandTasks);
 	DDX_Check(pDX, IDC_CHECKFORCHANGESBEFOESAVING, m_bCheckForChangesBeforeSaving);
+	DDX_Check(pDX, IDC_AUTOSAVEONSWITCHTASKLIST, m_bAutoSaveOnSwitchTasklist);
+	DDX_Check(pDX, IDC_AUTOSAVEONSWITCHAPP, m_bAutoSaveOnSwitchApp);
 	//}}AFX_DATA_MAP
 	DDX_CBIndex(pDX, IDC_NOTIFYDUEBYONLOAD, m_nNotifyDueByOnLoad);
 	DDX_CBIndex(pDX, IDC_NOTIFYDUEBYONSWITCH, m_nNotifyDueByOnSwitch);
@@ -135,7 +104,7 @@ void CPreferencesFilePage::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CPreferencesFilePage, CPropertyPage)
+BEGIN_MESSAGE_MAP(CPreferencesFilePage, CPreferencesPageBase)
 	//{{AFX_MSG_MAP(CPreferencesFilePage)
 	ON_BN_CLICKED(IDC_EXPORTTOFOLDER, OnExporttofolder)
 	ON_BN_CLICKED(IDC_AUTOHTMLEXPORT, OnAutohtmlexport)
@@ -155,7 +124,7 @@ END_MESSAGE_MAP()
 
 BOOL CPreferencesFilePage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	CPreferencesPageBase::OnInitDialog();
 
 	m_mgrGroupLines.AddGroupLine(IDC_LOADGROUP, *this);
 	m_mgrGroupLines.AddGroupLine(IDC_ARCHIVEGROUP, *this);
@@ -169,7 +138,6 @@ BOOL CPreferencesFilePage::OnInitDialog()
 	GetDlgItem(IDC_REMOVEONLYONABSCOMPLETION)->EnableWindow(m_bRemoveArchivedTasks);
 	GetDlgItem(IDC_DONTREMOVEFLAGGED)->EnableWindow(m_bRemoveArchivedTasks);
 	GetDlgItem(IDC_AUTOSAVEFREQUENCY)->EnableWindow(m_bAutoSave);
-	GetDlgItem(IDC_DONTAUTOSAVEUNSAVED)->EnableWindow(m_bAutoSave);
 	GetDlgItem(IDC_EXPORTTOFOLDER)->EnableWindow(m_bAutoHtmlExport);
 	GetDlgItem(IDC_EXPORTFOLDER)->EnableWindow(m_bAutoHtmlExport && m_bExportToFolder);
 	GetDlgItem(IDC_NOTIFYDUEBYONLOAD)->EnableWindow(m_bNotifyDueOnLoad);
@@ -192,43 +160,11 @@ void CPreferencesFilePage::OnRemovearchiveditems()
 	GetDlgItem(IDC_DONTREMOVEFLAGGED)->EnableWindow(m_bRemoveArchivedTasks);
 }
 
-void CPreferencesFilePage::OnOK() 
-{
-	CPropertyPage::OnOK();
-	
-	// save settings
-	AfxGetApp()->WriteProfileInt("Preferences", "NotifyDue", m_bNotifyDueOnLoad);
-	AfxGetApp()->WriteProfileInt("Preferences", "NotifyDueOnSwitch", m_bNotifyDueOnSwitch);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoArchive", m_bAutoArchive);
-	AfxGetApp()->WriteProfileInt("Preferences", "NotifyReadOnly", m_bNotifyReadOnly);
-	AfxGetApp()->WriteProfileInt("Preferences", "RemoveArchivedTasks", m_bRemoveArchivedTasks);
-	AfxGetApp()->WriteProfileInt("Preferences", "RemoveOnlyOnAbsoluteCompletion", m_bRemoveOnlyOnAbsoluteCompletion);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoHtmlExport", m_bAutoHtmlExport);
-	AfxGetApp()->WriteProfileInt("Preferences", "AutoSaveFrequency", m_nAutoSaveFrequency);
-	AfxGetApp()->WriteProfileString("Preferences", "ExportFolderPath", (m_bAutoHtmlExport && m_bExportToFolder) ? m_sExportFolderPath : "");
-	AfxGetApp()->WriteProfileInt("Preferences", "NotifyDueBy", m_nNotifyDueByOnLoad);
-	AfxGetApp()->WriteProfileInt("Preferences", "NotifyDueByOnSwitch", m_nNotifyDueByOnSwitch);
-	AfxGetApp()->WriteProfileInt("Preferences", "DisplayDueTasksInHtml", m_bDisplayDueTasksInHtml);
-	AfxGetApp()->WriteProfileInt("Preferences", "RefreshFindOnLoad", m_bRefreshFindOnLoad);
-	AfxGetApp()->WriteProfileInt("Preferences", "DueTaskTitlesOnly", m_bDueTaskTitlesOnly);
-	AfxGetApp()->WriteProfileString("Preferences", "DueTasksStylesheet", m_bUseStyleSheetForDueTasks ? m_sDueTasksStylesheet : "");
-	AfxGetApp()->WriteProfileString("Preferences", "SaveExportStylesheet", m_bUseStylesheetForSaveExport ? m_sSaveExportStylesheet : "");
-	AfxGetApp()->WriteProfileString("Preferences", "DueTaskPerson", m_bOnlyShowDueTasksForPerson ? m_sDueTaskPerson : "");
-	AfxGetApp()->WriteProfileInt("Preferences", "WarnAddDeleteArchive", m_bWarnAddDeleteArchive);
-	AfxGetApp()->WriteProfileInt("Preferences", "DontAutoSaveUnsaved", m_bDontAutoSaveUnsaved);
-	AfxGetApp()->WriteProfileInt("Preferences", "DontRemoveFlagged", m_bDontRemoveFlagged);
-	AfxGetApp()->WriteProfileInt("Preferences", "ExpandTasks", m_bExpandTasks);
-	AfxGetApp()->WriteProfileInt("Preferences", "CheckForChangesBeforeSaving", m_bCheckForChangesBeforeSaving);
-
-//	AfxGetApp()->WriteProfileInt("Preferences", "", m_b);
-}
-
 void CPreferencesFilePage::OnAutosave() 
 {
 	UpdateData();
 
 	GetDlgItem(IDC_AUTOSAVEFREQUENCY)->EnableWindow(m_bAutoSave);
-	GetDlgItem(IDC_DONTAUTOSAVEUNSAVED)->EnableWindow(m_bAutoSave);
 
 	if (m_bAutoSave && !m_nAutoSaveFrequency)
 	{
@@ -304,4 +240,71 @@ void CPreferencesFilePage::OnOnlyshowduetaskforperson()
 	UpdateData();
 	
 	GetDlgItem(IDC_DUETASKPERSON)->EnableWindow(m_bOnlyShowDueTasksForPerson);
+}
+
+void CPreferencesFilePage::LoadPreferences(const CPreferencesStorage& prefs)
+{
+	m_bNotifyDueOnLoad = prefs.GetProfileInt("Preferences", "NotifyDue", FALSE);
+	m_bNotifyDueOnSwitch = prefs.GetProfileInt("Preferences", "NotifyDueOnSwitch", FALSE);
+	m_bAutoArchive = prefs.GetProfileInt("Preferences", "AutoArchive", FALSE);
+	m_bNotifyReadOnly = prefs.GetProfileInt("Preferences", "NotifyReadOnly", TRUE);
+	m_bRemoveArchivedTasks = prefs.GetProfileInt("Preferences", "RemoveArchivedTasks", TRUE);
+	m_bRemoveOnlyOnAbsoluteCompletion = prefs.GetProfileInt("Preferences", "RemoveOnlyOnAbsoluteCompletion", TRUE);
+	m_nAutoSaveFrequency = prefs.GetProfileInt("Preferences", "AutoSaveFrequency", 0);
+	m_bAutoSave = (m_nAutoSaveFrequency > 0);
+	m_bAutoHtmlExport = prefs.GetProfileInt("Preferences", "AutoHtmlExport", FALSE);
+	m_sExportFolderPath = prefs.GetProfileString("Preferences", "ExportFolderPath", "");
+	m_nNotifyDueByOnLoad = prefs.GetProfileInt("Preferences", "NotifyDueBy", PFP_DUETODAY);
+	m_nNotifyDueByOnSwitch = prefs.GetProfileInt("Preferences", "NotifyDueByOnSwitch", PFP_DUETODAY);
+	m_bDisplayDueTasksInHtml = prefs.GetProfileInt("Preferences", "DisplayDueTasksInHtml", TRUE);
+	m_bRefreshFindOnLoad = prefs.GetProfileInt("Preferences", "RefreshFindOnLoad", FALSE);
+	m_bDueTaskTitlesOnly = prefs.GetProfileInt("Preferences", "DueTaskTitlesOnly", FALSE);
+	m_sDueTasksStylesheet = prefs.GetProfileString("Preferences", "DueTasksStylesheet", FALSE);
+	m_sSaveExportStylesheet = prefs.GetProfileString("Preferences", "SaveExportStylesheet");
+	m_sDueTaskPerson = prefs.GetProfileString("Preferences", "DueTaskPerson");
+	m_bOnlyShowDueTasksForPerson = !m_sDueTaskPerson.IsEmpty();
+	m_bWarnAddDeleteArchive = prefs.GetProfileInt("Preferences", "WarnAddDeleteArchive", TRUE);
+	m_bDontRemoveFlagged = prefs.GetProfileInt("Preferences", "DontRemoveFlagged", FALSE);
+	m_bExpandTasks = prefs.GetProfileInt("Preferences", "ExpandTasks", FALSE);
+	m_bCheckForChangesBeforeSaving = AfxGetApp()->GetProfileInt("Preferences", "CheckForChangesBeforeSaving", TRUE);
+	m_bAutoSaveOnSwitchTasklist = prefs.GetProfileInt("Preferences", "AutoSaveOnSwitchTasklist", FALSE);
+	m_bAutoSaveOnSwitchApp = prefs.GetProfileInt("Preferences", "AutoSaveOnSwitchApp", FALSE);
+//	m_b = prefs.GetProfileInt("Preferences", "", FALSE);
+
+	m_sExportFolderPath.TrimLeft();
+	m_sExportFolderPath.TrimRight();
+
+	m_bExportToFolder = !m_sExportFolderPath.IsEmpty();
+	m_bUseStylesheetForSaveExport = !m_sSaveExportStylesheet.IsEmpty();
+	m_bUseStyleSheetForDueTasks = !m_sDueTasksStylesheet.IsEmpty();
+}
+
+void CPreferencesFilePage::SavePreferences(CPreferencesStorage& prefs)
+{
+	// save settings
+	prefs.WriteProfileInt("Preferences", "NotifyDue", m_bNotifyDueOnLoad);
+	prefs.WriteProfileInt("Preferences", "NotifyDueOnSwitch", m_bNotifyDueOnSwitch);
+	prefs.WriteProfileInt("Preferences", "AutoArchive", m_bAutoArchive);
+	prefs.WriteProfileInt("Preferences", "NotifyReadOnly", m_bNotifyReadOnly);
+	prefs.WriteProfileInt("Preferences", "RemoveArchivedTasks", m_bRemoveArchivedTasks);
+	prefs.WriteProfileInt("Preferences", "RemoveOnlyOnAbsoluteCompletion", m_bRemoveOnlyOnAbsoluteCompletion);
+	prefs.WriteProfileInt("Preferences", "AutoHtmlExport", m_bAutoHtmlExport);
+	prefs.WriteProfileInt("Preferences", "AutoSaveFrequency", m_nAutoSaveFrequency);
+	prefs.WriteProfileString("Preferences", "ExportFolderPath", (m_bAutoHtmlExport && m_bExportToFolder) ? m_sExportFolderPath : "");
+	prefs.WriteProfileInt("Preferences", "NotifyDueBy", m_nNotifyDueByOnLoad);
+	prefs.WriteProfileInt("Preferences", "NotifyDueByOnSwitch", m_nNotifyDueByOnSwitch);
+	prefs.WriteProfileInt("Preferences", "DisplayDueTasksInHtml", m_bDisplayDueTasksInHtml);
+	prefs.WriteProfileInt("Preferences", "RefreshFindOnLoad", m_bRefreshFindOnLoad);
+	prefs.WriteProfileInt("Preferences", "DueTaskTitlesOnly", m_bDueTaskTitlesOnly);
+	prefs.WriteProfileString("Preferences", "DueTasksStylesheet", m_bUseStyleSheetForDueTasks ? m_sDueTasksStylesheet : "");
+	prefs.WriteProfileString("Preferences", "SaveExportStylesheet", m_bUseStylesheetForSaveExport ? m_sSaveExportStylesheet : "");
+	prefs.WriteProfileString("Preferences", "DueTaskPerson", m_bOnlyShowDueTasksForPerson ? m_sDueTaskPerson : "");
+	prefs.WriteProfileInt("Preferences", "WarnAddDeleteArchive", m_bWarnAddDeleteArchive);
+	prefs.WriteProfileInt("Preferences", "DontRemoveFlagged", m_bDontRemoveFlagged);
+	prefs.WriteProfileInt("Preferences", "ExpandTasks", m_bExpandTasks);
+	prefs.WriteProfileInt("Preferences", "CheckForChangesBeforeSaving", m_bCheckForChangesBeforeSaving);
+	prefs.WriteProfileInt("Preferences", "AutoSaveOnSwitchTasklist", m_bAutoSaveOnSwitchTasklist);
+	prefs.WriteProfileInt("Preferences", "AutoSaveOnSwitchApp", m_bAutoSaveOnSwitchApp);
+
+//	prefs.WriteProfileInt("Preferences", "", m_b);
 }

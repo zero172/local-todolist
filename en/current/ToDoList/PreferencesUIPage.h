@@ -10,6 +10,8 @@
 #include "..\shared\contentMgr.h"
 #include "..\shared\fileedit.h"
 #include "..\shared\groupline.h"
+#include "..\shared\preferencesbase.h"
+#include "..\shared\contenttypecombobox.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesUIPage dialog
@@ -26,10 +28,10 @@ enum
 {
 	PUIP_BOTTOMCOMMENTS,
 	PUIP_RIGHTCOMMENTS,
-	PUIP_BOTTOMRIGHTCOMMENTS,
+//	PUIP_BOTTOMRIGHTCOMMENTS,
 };
 
-class CPreferencesUIPage : public CPropertyPage
+class CPreferencesUIPage : public CPreferencesPageBase
 {
 	DECLARE_DYNCREATE(CPreferencesUIPage)
 
@@ -59,11 +61,10 @@ public:
 	BOOL GetSortDoneTasksAtBottom() const { return m_bSortDoneTasksAtBottom; }
 	BOOL GetRTLComments() const { return m_bRTLComments; }
 	int GetCommentsPos() const { return m_nCommentsPos; }
-	int GetDefaultCommentsFormat() const { return m_nDefaultCommentsFormat; }
-	BOOL GetMultiSelCategoryFilter() const { return m_bMultiSelCategoryFilter; }
+	CONTENTFORMAT GetDefaultCommentsFormat() const { return m_cfDefault; }
+	DWORD GetMultiSelFilterFlags() const;
 	BOOL GetAutoReFilter() const { return m_bAutoReFilter; }
 	BOOL GetRestoreTasklistFilters() const { return m_bRestoreTasklistFilters; }
-	BOOL GetMultiSelAllocToFilter() const { return m_bMultiSelAllocToFilter; }
 //	BOOL Get() const { return ; }
 
 protected:
@@ -93,15 +94,15 @@ protected:
 	BOOL	m_bMultiSelAllocToFilter;
 	//}}AFX_DATA
 	int		m_nCommentsPos;
-	CComboBox	m_cbCommentsFmt;
+	CContentTypeComboBox	m_cbCommentsFmt;
 	BOOL	m_bAutoReSort;
 	BOOL	m_bSortVisibleOnly;
 	BOOL	m_bSortDoneTasksAtBottom;
 	BOOL	m_bEnableHeaderSorting;
-	BOOL	m_bNotifyCommentsFormatChange;
-	int		m_nDefaultCommentsFormat;
 	const CContentMgr* m_pContentMgr;
 	CGroupLineManager m_mgrGroupLines;
+	CONTENTFORMAT m_cfDefault;
+	int m_nDefaultCommentsFormat;
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -109,8 +110,6 @@ protected:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
-public:
-	virtual void OnOK();
 
 // Implementation
 protected:
@@ -120,6 +119,9 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSelchangeCommentsformat();
 	DECLARE_MESSAGE_MAP()
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

@@ -158,7 +158,7 @@ void CRRECRuler::OnPaint()
 	// Frame the inside
 	CThemed th(this, "EDIT");
 
-	if (th.AreControlsThemed())
+	if (th.AreControlsThemed()) 
 	{
 		winRect.InflateRect(0, 1, 0, 1);
 

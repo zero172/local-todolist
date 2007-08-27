@@ -39,7 +39,7 @@ BEGIN_MESSAGE_MAP(CCheckComboBox, CAutoComboBox)
 	//}}AFX_MSG_MAP
 	ON_CONTROL_REFLECT_EX(CBN_EDITCHANGE, OnEditchange)
 	ON_CONTROL_REFLECT_EX(CBN_DROPDOWN, OnDropdown)
-	ON_CONTROL_REFLECT_EX(CBN_CLOSEUP, OnCloseUp)
+//	ON_CONTROL_REFLECT_EX(CBN_CLOSEUP, OnCloseUp)
 	ON_CONTROL(LBN_SELCHANGE, 1000, OnLBSelChange)
 END_MESSAGE_MAP()
 
@@ -255,8 +255,8 @@ LRESULT CCheckComboBox::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM 
 		if (IsType(CBS_DROPDOWNLIST) && m_bDrawing)
 			return -1;
 		break;
-		
-	case WM_CHAR: 
+				
+	case WM_CHAR: // sent by the edit control
 		if (wp == VK_SPACE) 
 		{
 			ASSERT (GetDroppedState());
@@ -277,8 +277,6 @@ LRESULT CCheckComboBox::ScWindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM 
 
 			return 0;
 		}
-		else if (wp == VK_ESCAPE)
-			ShowDropDown(FALSE);
 		break;
 	
 	case WM_LBUTTONDOWN: 
@@ -416,6 +414,7 @@ BOOL CCheckComboBox::OnDropdown()
 	return FALSE; // pass to parent
 }
 
+/*
 BOOL CCheckComboBox::OnCloseUp()
 {
 	// notify parent of (possible) selection change
@@ -423,6 +422,7 @@ BOOL CCheckComboBox::OnCloseUp()
 	
 	return FALSE; // pass to parent
 }
+*/
 
 // this handles messages destined for the embedded edit field
 LRESULT CCheckComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -433,15 +433,18 @@ LRESULT CCheckComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp
 		if (wp == VK_DOWN && !GetDroppedState())
 		{
 			ShowDropDown();
-				
-			// eat message else it'll go to the edit window
-			return 0L;
+			return 0L; // eat
 		}
+ 		else if (wp == VK_RETURN)
+ 		{
+ 			HandleReturnKey();
+			return 0L; // eat
+ 		}
 //		else if (wp == VK_ESCAPE)
 //			ShowDropDown(FALSE);
 		break;
 
-	case WM_CHAR:
+	case WM_CHAR: // if CTRL+Space then forward to listbox
 		if (wp == VK_SPACE && (GetKeyState(VK_CONTROL) & 0x8000))
 		{
 			if ((GetDroppedState() && IsType(CBS_DROPDOWN)) || IsType(CBS_SIMPLE))
@@ -450,10 +453,6 @@ LRESULT CCheckComboBox::WindowProc(HWND hRealWnd, UINT msg, WPARAM wp, LPARAM lp
 				return 0;
 			}
 		}
-// 		else if (wp == VK_RETURN)
-// 		{
-// 			HandleReturnKey();
-// 		}
 		break;
 	}
 	
@@ -474,6 +473,11 @@ void CCheckComboBox::HandleReturnKey()
 		// notify parent of (possible) selection change
 		NotifyParent(CBN_SELCHANGE);
 	}
+}
+
+CString CCheckComboBox::GetSelectedItem() const
+{
+	return m_sText;
 }
 
 void CCheckComboBox::OnLBSelChange()

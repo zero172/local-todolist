@@ -159,7 +159,7 @@ int CDateHelper::FirstDayOfWeek()
 
 	int nFirstDOW = atoi(szFDW);
 
-	// we need dates to have same order as COleDateTime::GetDayOfWeek()
+	// we need days to have same order as COleDateTime::GetDayOfWeek()
 	// which is 1 (sun) - 7 (sat)
 	switch (nFirstDOW)
 	{

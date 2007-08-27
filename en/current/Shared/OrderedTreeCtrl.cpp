@@ -22,7 +22,7 @@ const UINT MINGUTTER = 16;
 
 static CMap<int, int&, UINT, UINT&> g_mapWidths;
 
-COrderedTreeCtrl::COrderedTreeCtrl() : 
+COrderedTreeCtrl::COrderedTreeCtrl(DWORD dwGutterStyles) : 
 
     // because CTreeCtrlHelper wants a reference passed
     // to its constructor we have to pass '*this'. however
@@ -31,7 +31,7 @@ COrderedTreeCtrl::COrderedTreeCtrl() :
 #pragma warning (disable: 4355)
 	m_ht(*this),
 #pragma warning (default: 4355)
-
+	m_gutter(dwGutterStyles),
 	m_bShowingPosColumn(TRUE), 
 	m_crGridlines(OTC_GRIDCOLOR),
 	m_crAltLines((COLORREF)-1),
@@ -69,6 +69,7 @@ ON_REGISTERED_MESSAGE(WM_NCG_ISITEMSELECTED, OnGutterIsItemSelected)
 ON_REGISTERED_MESSAGE(WM_NCG_GETSELECTEDCOUNT, OnGutterGetSelectedCount)
 ON_REGISTERED_MESSAGE(WM_NCG_GETPARENTITEM, OnGutterGetParentID)
 ON_REGISTERED_MESSAGE(WM_NCG_WANTRECALC, OnGutterWantRecalc)
+ON_REGISTERED_MESSAGE(WM_NCG_WANTREDRAW, OnGutterWantRedraw)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -215,6 +216,24 @@ LRESULT COrderedTreeCtrl::OnGutterWantRecalc(WPARAM /*wParam*/, LPARAM /*lParam*
 	return 0L;
 }
 
+LRESULT COrderedTreeCtrl::OnGutterWantRedraw(WPARAM /*wParam*/, LPARAM lParam)
+{
+	MSG* pMsg = (MSG*)lParam;
+
+	switch (pMsg->message)
+	{
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+	case WM_SYSKEYDOWN:
+	case WM_SYSKEYUP:
+		if (pMsg->wParam == VK_CONTROL || pMsg->wParam == VK_SHIFT || pMsg->wParam == VK_MENU)
+			return TRUE; // prevent redraw
+		break;
+	}
+
+	return FALSE; // allow redraw
+}
+
 LRESULT COrderedTreeCtrl::OnGutterGetFirstChildItem(WPARAM /*wParam*/, LPARAM lParam)
 {
 	HTREEITEM hti = (HTREEITEM)lParam;
@@ -310,8 +329,13 @@ LRESULT COrderedTreeCtrl::OnGutterHitTest(WPARAM /*wParam*/, LPARAM lParam)
 	return (LRESULT)hti;
 }
 
-void COrderedTreeCtrl::PostNcDraw(CDC* /*pDC*/, const CRect& /*rWindow*/)
+void COrderedTreeCtrl::PostNcDraw(CDC* pDC, const CRect& rWindow)
 {
+	// vertical divider
+	if (m_crGridlines != -1 && GutterHasStyle(NCGS_RIGHTCOLUMNS) && !(GetStyle() & WS_VSCROLL))
+	{
+		pDC->FillSolidRect(rWindow.left, rWindow.top, 1, rWindow.Height(), m_crGridlines);
+	}
 }
 
 void COrderedTreeCtrl::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, UINT nColID, CRect& rItem, 
@@ -342,7 +366,6 @@ void COrderedTreeCtrl::NcDrawItem(CDC* pDC, DWORD dwItem, DWORD dwParentItem, UI
 			sPos.Format("%d", nPos);
 		else
 			sPos.Format("%s.%d", sParentPos, nPos);
-//			sPos.Format("%s%s%d", sParentPos, Misc::GetDecimalSeparator(), nPos);
 		
 		// add to map for our children
 		if (bHasChildren)
@@ -427,7 +450,10 @@ BOOL COrderedTreeCtrl::OnCustomDraw(NMHDR* pNMHDR, LRESULT* pResult)
 	NMCUSTOMDRAW* pNMCD = (NMCUSTOMDRAW*)pNMHDR;
 	NMTVCUSTOMDRAW* pTVCD = (NMTVCUSTOMDRAW*)pNMCD;
 	
-	if (pNMCD->dwDrawStage == CDDS_ITEMPREPAINT)
+	if (pNMCD->dwDrawStage == CDDS_PREPAINT)
+		*pResult |= CDRF_NOTIFYITEMDRAW | CDRF_NOTIFYPOSTPAINT;	
+	
+	else if (pNMCD->dwDrawStage == CDDS_ITEMPREPAINT)
 	{
 		HTREEITEM hti = (HTREEITEM)pTVCD->nmcd.dwItemSpec;
 

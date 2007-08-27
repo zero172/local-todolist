@@ -9,6 +9,7 @@
 
 #include "runtimedlg.h"
 #include "richeditncborder.h"
+#include "richeditspellcheck.h"
 
 #include "..\3rdparty\statlink.h"
 
@@ -17,20 +18,25 @@
 
 const int IDNOERRORS = 20; // can be returned from DoModal
 
+class ISpellChecker;
 class ISpellCheck;
 
 class CSpellCheckDlg : public CRuntimeDlg
 {
 // Construction
 public:
-	CSpellCheckDlg(LPCTSTR szDictionaryPath, LPCTSTR szText, CWnd* pParent = NULL);   // standard constructor
+	CSpellCheckDlg(LPCTSTR szDictionaryPath = NULL, ISpellCheck* pSpellCheck = NULL, LPCTSTR szText = NULL, CWnd* pParent = NULL);   // standard constructor
 	virtual ~CSpellCheckDlg();
 
-	BOOL IsInitialized() { return (NULL != m_pSpellChecker); }
+	BOOL IsInitialized() { return ((m_pSpellCheck || !m_sText.IsEmpty()) && m_pSpellChecker); }
 	int DoModal(BOOL bEndOnNoErrors = FALSE);
+
+	void SetSpellCheck(ISpellCheck* pSpellCheck);
 
 	void SetText(LPCTSTR szText);
 	CString GetCorrectedText() { return m_sText; }
+
+	BOOL MadeChanges() const { return m_bMadeChanges; }
 
 protected:
 // Dialog Data
@@ -41,14 +47,18 @@ protected:
 	CString	m_sMisspeltWord;
 	CString	m_sSuggestion;
 	//}}AFX_DATA
-	CHARRANGE m_crMisspeltWord;
-	ISpellCheck* m_pSpellChecker;
+//	CHARRANGE m_crMisspeltWord;
+	ISpellChecker* m_pSpellChecker;
+	ISpellCheck* m_pSpellCheck;
 	CString m_sEnginePath;
 	CComboBox m_cbDictionaries;
 	CString m_sSelDictionary;
 	BOOL m_bEndOnNoErrors;
     CStaticLink m_stURL;
 	CRichEditNcBorder m_ncBorder;
+	CRichEditSpellCheck m_reSpellCheck;
+	BOOL m_bMadeChanges;
+	mutable CPoint m_ptTopLeft;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -74,13 +84,19 @@ protected:
 	afx_msg void OnDblClkSuggestions();
 	DECLARE_MESSAGE_MAP()
 
-	void StartChecking(int nFrom = 0);
-	BOOL FindNextWord(int nFrom, CHARRANGE& range, CString& sWord);
-	BOOL FindNextMisspeltWord(int nFrom, CHARRANGE& range, CString& sWord);
-	void ProcessMisspeltWord(LPCTSTR szWord, CHARRANGE crWord, CHARRANGE crPrev);
+	enum CHECKFROM { CH_START, CH_CURRENT, CH_NEXT };
+
+	BOOL StartChecking(CHECKFROM nFrom = CH_START);
+	BOOL FindNextWord(CString& sWord, CHECKFROM nFrom = CH_NEXT);
+	BOOL FindNextMisspeltWord(CString& sWord, CHECKFROM nFrom = CH_NEXT);
+	void ProcessMisspeltWord(LPCTSTR szWord);
 	BOOL IsWordMisspelt(LPCTSTR szWord);
-	void HighlightWord(CHARRANGE& crWord, BOOL bHighlight = TRUE);
+	void HighlightWord(BOOL bHighlight = TRUE);
 	BOOL InitDictionary(LPCTSTR szDicPath);
+
+	void InitDialog(ISpellCheck* pSpellCheck, LPCTSTR szText);
+
+	virtual CPoint GetInitialPos() const;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -10,13 +10,14 @@
 #include "..\shared\shortcutManager.h"
 #include "..\shared\orderedtreectrl.h"
 #include "..\shared\hotkeyctrlex.h"
+#include "..\shared\preferencesbase.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesShortcutsPage dialog
 
 #define PSP_SHORTCUTCOLUMNID (OTC_POSCOLUMNID - 1)
 
-class CPreferencesShortcutsPage : public CPropertyPage
+class CPreferencesShortcutsPage : public CPreferencesPageBase
 {
 // Construction
 public:
@@ -65,6 +66,9 @@ protected:
 
 	HTREEITEM AddMenuItem(HTREEITEM htiParent, const CMenu* pMenu, int nPos);
 	int GetLongestShortcutText(HTREEITEM hti, CDC* pDC);
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

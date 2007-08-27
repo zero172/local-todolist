@@ -37,6 +37,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	virtual CLIPFORMAT GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFORMAT format);
+	virtual int OnToolHitTest(CPoint pt, TOOLINFO* pTI) const;
+	virtual HRESULT GetDragDropEffect(BOOL fDrag, DWORD grfKeyState, LPDWORD pdwEffect);
 
 };
 

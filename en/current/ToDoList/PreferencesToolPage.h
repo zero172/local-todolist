@@ -11,6 +11,7 @@
 
 #include "..\shared\fileedit.h"
 #include "..\shared\sysimagelist.h"
+#include "..\shared\preferencesbase.h"
 
 #include <afxtempl.h>
 
@@ -19,7 +20,7 @@
 
 const UINT WM_PTP_TESTTOOL = ::RegisterWindowMessage("WM_PTP_TESTTOOL");
 
-class CPreferencesToolPage : public CPropertyPage
+class CPreferencesToolPage : public CPreferencesPageBase
 {
 	DECLARE_DYNCREATE(CPreferencesToolPage)
 
@@ -82,6 +83,9 @@ protected:
 	int GetCurSel();
 	
 	static CString CmdIDToPlaceholder(UINT nCmdID);
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

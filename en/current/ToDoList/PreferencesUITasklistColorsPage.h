@@ -11,14 +11,13 @@
 #include "..\shared\colorbutton.h"
 #include "..\shared\fontcombobox.h"
 #include "..\shared\autocombobox.h"
+#include "..\shared\preferencesbase.h"
 
 #include <afxtempl.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesUITasklistColorsPage dialog
 
-const COLORREF TASKDONECOLOR = RGB(128, 128, 128);
-const COLORREF TASKDUECOLOR = RGB(255, 0, 0);
 enum { COLOROPT_CATEGORY, COLOROPT_PRIORITY, COLOROPT_DEFAULT };
 
 struct CATCOLOR
@@ -29,7 +28,7 @@ struct CATCOLOR
 
 typedef CArray<CATCOLOR, CATCOLOR&> CCatColorArray;
 
-class CPreferencesUITasklistColorsPage : public CPropertyPage
+class CPreferencesUITasklistColorsPage : public CPreferencesPageBase
 {
 	DECLARE_DYNCREATE(CPreferencesUITasklistColorsPage)
 
@@ -40,13 +39,13 @@ public:
 
 	BOOL GetColorPriority() const { return m_bColorPriority; }
 	int GetTextColorOption() const { return m_nTextColorOption; }
-	BOOL GetHidePriorityNumber() const { return m_bHidePriorityNumber/* && m_bColorPriority*/; }
+	BOOL GetHidePriorityNumber() const { return m_bHidePriorityNumber; }
 	int GetPriorityColors(CDWordArray& aColors) const;
 	int GetCategoryColors(CCatColorArray& aColors) const;
 	BOOL GetTreeFont(CString& sFaceName, int& nPointSize) const;
 	BOOL GetCommentsFont(CString& sFaceName, int& nPointSize) const;
 	COLORREF GetGridlineColor() const { return m_bSpecifyGridColor ? m_crGridlines : -1; }
-	COLORREF GetTaskDoneColor() const { return m_bSpecifyDoneColor ? m_crDone : TASKDONECOLOR; }
+	COLORREF GetTaskDoneColor() const { return m_bSpecifyDoneColor ? m_crDone : -1; }
 	COLORREF GetAlternateLineColor() const { return m_bAlternateLineColor ? m_crAltLine : -1; }
 	void GetTaskDueColors(COLORREF& crDue, COLORREF& crDueToday) const;
 	BOOL GetColorTaskBackground() const { return m_bColorTaskBackground; }
@@ -104,7 +103,6 @@ protected:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
-	virtual void OnOK();
 
 // Implementation
 protected:
@@ -141,6 +139,9 @@ protected:
 
 protected:
 	int FindCategoryColor(LPCTSTR szCategory);
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 };
 
 //{{AFX_INSERT_LOCATION}}

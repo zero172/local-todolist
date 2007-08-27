@@ -88,9 +88,9 @@ CFindTaskDlg::CFindTaskDlg(CWnd* pParent /*=NULL*/)
 	m_pageTimeSpent(FALSE, FALSE), 
 	m_pageCost(FALSE, FALSE), 
 	m_pageTaskID(TRUE, FALSE),
-	m_pageVersion(FALSE, FALSE),
+	m_pageVersion(0),
 	m_bDockable(FALSE),
-	m_bSearchResults(FALSE),
+	m_bSearchResults(FALSE), 
 	m_nCurSel(-1)
 {
 	m_sResultsLabel.LoadString(IDS_FTD_RESULTS);
@@ -427,7 +427,7 @@ void CFindTaskDlg::AddHeaderRow(LPCTSTR szText, BOOL bSpaceAbove)
 
 	// bold font for rendering
 	if (m_fontBold.GetSafeHandle() == NULL)
-		Misc::CreateFont(m_fontBold, (HFONT)m_lcResults.SendMessage(WM_GETFONT), Misc::BOLD);
+		Misc::CreateFont(m_fontBold, (HFONT)m_lcResults.SendMessage(WM_GETFONT), MFS_BOLD);
 }
 
 BOOL CFindTaskDlg::GetSearchAllTasklists()
@@ -561,6 +561,9 @@ BOOL CFindTaskDlg::GetMatchAllItems()
 {
 	switch (m_nFindOption)
 	{
+	case FW_TITLECOMMENTS:
+		return m_pageTitleComments.GetMatchAllItems();
+		
 	case FW_CATEGORY:
 		return m_pageCategory.GetMatchAllItems();
 		
@@ -1214,7 +1217,7 @@ void CFindTaskDlg::OnItemchangingResults(NMHDR* pNMHDR, LRESULT* pResult)
 		// has a header row just become selected?
 		if (bIsSel && !bWasSel && pNMListView->lParam == HEADERROW)
 		{
-			if (GetKeyState(VK_LBUTTON) & 0x8000)
+			if (Misc::KeyIsPressed(VK_LBUTTON))
 			{
 				// restore previous selection
 				SelectItem(m_nCurSel);

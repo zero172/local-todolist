@@ -22,6 +22,7 @@ public:
 	BOOL MoveWindow(CWnd* pWnd, LPCRECT lpRect, BOOL bRepaint = TRUE);
 	CRect OffsetCtrl(CWnd* pParent, UINT nCtrlID, int x = 0, int y = 0);
 	CRect ResizeCtrl(CWnd* pParent, UINT nCtrlID, int cx = 0, int cy = 0);
+	CRect MoveCtrl(CWnd* pParent, UINT nCtrlID, int x, int y);
 
 protected:
 	HDWP m_hdwp;

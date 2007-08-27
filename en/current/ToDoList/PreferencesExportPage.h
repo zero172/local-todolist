@@ -9,11 +9,13 @@
 
 #include "..\shared\fontcombobox.h"
 //#include "..\shared\groupline.h"
+#include "..\shared\preferencesbase.h"
+#include "..\shared\enedit.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPreferencesExportPage dialog
 
-class CPreferencesExportPage : public CPropertyPage
+class CPreferencesExportPage : public CPreferencesPageBase
 {
 	DECLARE_DYNCREATE(CPreferencesExportPage)
 
@@ -49,6 +51,7 @@ protected:
 	CString m_sHtmlFont;
 	int m_nTextIndent;
 	int m_nHtmlFontSize;
+	CEnEdit m_eCharset;
 //	CGroupLineManager m_mgrGroupLines;
 
 // Overrides
@@ -57,7 +60,6 @@ protected:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
-	virtual void OnOK();
 
 // Implementation
 protected:
@@ -66,7 +68,11 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeTextIndentType();
 	//}}AFX_MSG
+	afx_msg LRESULT OnEEBtnClick(WPARAM wp, LPARAM lp);
 	DECLARE_MESSAGE_MAP()
+
+   virtual void LoadPreferences(const CPreferencesStorage& prefs);
+   virtual void SavePreferences(CPreferencesStorage& prefs);
 
 };
 

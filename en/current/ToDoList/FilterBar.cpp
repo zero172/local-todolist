@@ -19,6 +19,9 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 
+const int FILTERCTRLXSPACING = 6; // dlu
+const int FILTERCTRLYSPACING = 2; // dlu
+
 struct FILTERCTRL
 {
 	UINT nIDLabel;
@@ -34,14 +37,14 @@ static FILTERCTRL FILTERCTRLS[] =
 	{ IDC_PRIORITYFILTERLABEL, IDC_PRIORITYFILTERCOMBO, 45, 75, TDCC_PRIORITY },
 	{ IDC_RISKFILTERLABEL, IDC_RISKFILTERCOMBO, 45, 75, TDCC_RISK },
 	{ IDC_ALLOCTOFILTERLABEL, IDC_ALLOCTOFILTERCOMBO, 45, 75, TDCC_ALLOCTO },
+	{ 0, IDC_ALLALLOCTO, 1, 119, TDCC_ALLOCTO },
 	{ IDC_ALLOCBYFILTERLABEL, IDC_ALLOCBYFILTERCOMBO, 45, 75, TDCC_ALLOCBY },
 	{ IDC_STATUSFILTERLABEL, IDC_STATUSFILTERCOMBO, 45, 75, TDCC_STATUS },
-	{ IDC_CATEGORYFILTERLABEL, IDC_CATEGORYFILTERCOMBO, 45, 75, TDCC_CATEGORY }
+	{ IDC_CATEGORYFILTERLABEL, IDC_CATEGORYFILTERCOMBO, 45, 75, TDCC_CATEGORY },
+	{ 0, IDC_ALLCATEGORIES, 1, 119, TDCC_CATEGORY }
 };
 
 const int NUMFILTERCTRLS = sizeof(FILTERCTRLS) / sizeof(FILTERCTRL);
-const int FILTERCTRLXSPACING = 6; // dlu
-const int FILTERCTRLYSPACING = 2; // dlu
 
 #define WM_WANTCOMBOPROMPT (WM_APP+1)
 
@@ -56,7 +59,8 @@ CFilterBar::CFilterBar(CWnd* pParent /*=NULL*/)
 	  m_cbStatusFilter(FALSE, 0, IDS_TDC_ANY)
 {
 	//{{AFX_DATA_INIT(CFilterBar)
-		// NOTE: the ClassWizard will add member initialization here
+	m_bMatchAllAllocTo = FALSE;
+	m_bMatchAllCategory = FALSE;
 	//}}AFX_DATA_INIT
 
 	m_aVisibility.SetSize(TDCC_LAST);
@@ -67,7 +71,6 @@ void CFilterBar::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CFilterBar)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
 	DDX_Control(pDX, IDC_FILTERCOMBO, m_cbTaskFilter);
@@ -78,7 +81,6 @@ void CFilterBar::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PRIORITYFILTERCOMBO, m_cbPriorityFilter);
 	DDX_Control(pDX, IDC_RISKFILTERCOMBO, m_cbRiskFilter);
 	DDX_CBIndex(pDX, IDC_FILTERCOMBO, (int&)m_filter.nFilter);
-//	DDX_CBString(pDX, IDC_ALLOCTOFILTERCOMBO, m_filter.sAllocTo);
 	DDX_CBString(pDX, IDC_ALLOCBYFILTERCOMBO, m_filter.sAllocBy);
 	DDX_CBString(pDX, IDC_STATUSFILTERCOMBO, m_filter.sStatus);
 	
@@ -111,9 +113,13 @@ void CFilterBar::DoDataExchange(CDataExchange* pDX)
 
 		// cats
 		m_cbCategoryFilter.GetChecked(m_filter.aCategories);
+		DDX_Check(pDX, IDC_ALLCATEGORIES, m_bMatchAllCategory);
+		m_filter.SetFlag(FT_ANYCATEGORY, !m_bMatchAllCategory);
 
 		// allocto
 		m_cbAllocToFilter.GetChecked(m_filter.aAllocTo);
+		DDX_Check(pDX, IDC_ALLALLOCTO, m_bMatchAllAllocTo);
+		m_filter.SetFlag(FT_ANYALLOCTO, !m_bMatchAllAllocTo);
 	}
 	else
 	{
@@ -143,9 +149,13 @@ void CFilterBar::DoDataExchange(CDataExchange* pDX)
 
 		// cats
 		m_cbCategoryFilter.SetChecked(m_filter.aCategories);
+		m_bMatchAllCategory = !m_filter.HasFlag(FT_ANYCATEGORY);
+		DDX_Check(pDX, IDC_ALLCATEGORIES, m_bMatchAllCategory);
 
 		// allocto
 		m_cbAllocToFilter.SetChecked(m_filter.aAllocTo);
+		m_bMatchAllAllocTo = !m_filter.HasFlag(FT_ANYALLOCTO);
+		DDX_Check(pDX, IDC_ALLALLOCTO, m_bMatchAllAllocTo);
 	}
 }
 
@@ -153,15 +163,15 @@ void CFilterBar::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CFilterBar, CDialog)
 	//{{AFX_MSG_MAP(CFilterBar)
 	ON_WM_SIZE()
+	ON_BN_CLICKED(IDC_ALLALLOCTO, OnSelchangeFilter)
+	ON_BN_CLICKED(IDC_ALLCATEGORIES, OnSelchangeFilter)
 	//}}AFX_MSG_MAP
 	ON_CBN_SELCHANGE(IDC_FILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_ALLOCTOFILTERCOMBO, OnSelchangeFilter)
-//	ON_CBN_CLOSEUP(IDC_ALLOCTOFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_ALLOCBYFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_STATUSFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_PRIORITYFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_CATEGORYFILTERCOMBO, OnSelchangeFilter)
-//	ON_CBN_CLOSEUP(IDC_CATEGORYFILTERCOMBO, OnSelchangeFilter)
 	ON_CBN_SELCHANGE(IDC_RISKFILTERCOMBO, OnSelchangeFilter)
 END_MESSAGE_MAP()
 
@@ -242,9 +252,14 @@ void CFilterBar::SetFilterLabelAlignment(BOOL bLeft)
 	
 	while (nLabel--)
 	{
-		CWnd* pLabel = GetDlgItem(FILTERCTRLS[nLabel].nIDLabel);
-		pLabel->ModifyStyle(SS_TYPEMASK, nAlign);
-		pLabel->Invalidate();
+		UINT nLabelID = FILTERCTRLS[nLabel].nIDLabel;
+
+		if (nLabelID)
+		{
+			CWnd* pLabel = GetDlgItem(nLabelID);
+			pLabel->ModifyStyle(SS_TYPEMASK, nAlign);
+			pLabel->Invalidate();
+		}
 	}
 }
 
@@ -278,19 +293,6 @@ int CFilterBar::CalcHeight(int nWidth)
 	return ReposControls(nWidth, TRUE);
 }
 
-/*
-void CFilterBar::ShowFilter(TDC_COLUMN nType, BOOL bShow, BOOL bUpdate)
-{
-	if ((int)nType < 0)
-		return;
-
-	m_aVisibility[(DWORD)nType] = bShow;
-
-	if (bUpdate)
-		ReposControls();
-}
-*/
-
 void CFilterBar::SetVisibleFilters(const CTDCColumnArray& aFilters)
 {
 	// clear first
@@ -319,9 +321,10 @@ BOOL CFilterBar::WantShowFilter(TDC_COLUMN nType)
 	return (BOOL)m_aVisibility[(DWORD)nType];
 }
 
-void CFilterBar::EnableMultiCategorySelection(BOOL bEnable)
+void CFilterBar::EnableMultiSelection(DWORD dwFlags)
 {
-	m_cbCategoryFilter.EnableMultiSelection(bEnable);
+	m_cbCategoryFilter.EnableMultiSelection(dwFlags & FB_MULTISELCAT);
+	m_cbAllocToFilter.EnableMultiSelection(dwFlags & FB_MULTISELALLOCTO);
 }
 
 int CFilterBar::ReposControls(int nWidth, BOOL bCalcOnly)
@@ -365,7 +368,6 @@ int CFilterBar::ReposControls(int nWidth, BOOL bCalcOnly)
 		{
 			// if we're at the start of the line then just move ctrls
 			// else we must check whether there's enough space to fit
-			
 			if (nXPos > 0 || (nYPos > 0 && nXPos > nLineIndent)) // we're not the first
 			{
 				// work out the total length of label + ctrl
@@ -386,11 +388,14 @@ int CFilterBar::ReposControls(int nWidth, BOOL bCalcOnly)
 			rCtrl.top = nYPos;
 			rCtrl.bottom = nYPos + nCtrlHeight;
 			
-			if (!bCalcOnly)
+			if (fc.nIDLabel && !bCalcOnly)
 				dwm.MoveWindow(GetDlgItem(fc.nIDLabel), rCtrl);
 			
-			// update XPos
-			nXPos = rCtrl.right + dlu.ToPixelsX(FILTERCTRLXSPACING);
+			// update XPos for the label
+			nXPos = rCtrl.right;
+		
+			// add spacing
+			nXPos += dlu.ToPixelsX(FILTERCTRLXSPACING);
 			
 			// move ctrl
 			rCtrl.left = nXPos;
@@ -401,16 +406,24 @@ int CFilterBar::ReposControls(int nWidth, BOOL bCalcOnly)
 			if (!bCalcOnly)
 				dwm.MoveWindow(GetDlgItem(fc.nIDCtrl), rCtrl);
 			
-			// update XPos
+			// update XPos for the control
 			nXPos = rCtrl.right + dlu.ToPixelsX(FILTERCTRLXSPACING);
 
 			nVisible++;
 		}
-		
-		GetDlgItem(fc.nIDLabel)->ShowWindow(bWantCtrl ? SW_SHOW : SW_HIDE);
-		GetDlgItem(fc.nIDLabel)->EnableWindow(bWantCtrl);
-		GetDlgItem(fc.nIDCtrl)->ShowWindow(bWantCtrl ? SW_SHOW : SW_HIDE);
-		GetDlgItem(fc.nIDCtrl)->EnableWindow(bWantCtrl);
+
+		//show/hide as appropriate
+		if (!bCalcOnly)
+		{
+			if (fc.nIDLabel)
+			{
+				GetDlgItem(fc.nIDLabel)->ShowWindow(bWantCtrl ? SW_SHOW : SW_HIDE);
+				GetDlgItem(fc.nIDLabel)->EnableWindow(bWantCtrl);
+			}
+			
+			GetDlgItem(fc.nIDCtrl)->ShowWindow(bWantCtrl ? SW_SHOW : SW_HIDE);
+			GetDlgItem(fc.nIDCtrl)->EnableWindow(bWantCtrl);
+		}
 	}
 
 	return nYPos + nCtrlHeight + 2;
@@ -423,9 +436,6 @@ void CFilterBar::SetFilter(const FTDCFILTER& filter)
 
 	// the droplists don't get set properly if they
 	// are empty but were not previously so we do it manually
-// 	if (m_filter.sAllocTo.IsEmpty())
-// 		m_cbAllocToFilter.SetCurSel(0);
-	
 	if (m_filter.sAllocBy.IsEmpty())
 		m_cbAllocByFilter.SetCurSel(0);
 	

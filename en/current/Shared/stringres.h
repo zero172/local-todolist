@@ -9,6 +9,7 @@
 
 const LPCTSTR BTN_OK = _T("OK");
 const LPCTSTR BTN_CANCEL = _T("Cancel");
+const LPCTSTR BTN_CLOSE = _T("Close");
 
 const LPCTSTR ABOUT_TITLE = _T("About");
 

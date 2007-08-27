@@ -58,10 +58,14 @@ protected:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CAutoComboBox)
-	afx_msg BOOL OnKillfocus();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	//}}AFX_MSG
+	afx_msg BOOL OnSelEndOK();
+	afx_msg BOOL OnSelChange();
+	afx_msg BOOL OnCloseUp();
+//	afx_msg BOOL OnKillFocus();
 	
 	DECLARE_MESSAGE_MAP()
 		
@@ -72,6 +76,7 @@ protected:
 	BOOL IsSimpleCombo();
 	virtual void HandleReturnKey();
 	void NotifyParent(UINT nIDNotify);
+	virtual CString GetSelectedItem() const;
 
 };
 

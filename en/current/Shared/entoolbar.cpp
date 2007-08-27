@@ -13,7 +13,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const COLORREF NO_COLOR = (COLORREF)-1;
+const COLORREF NO_COLOR = NO_COLOR;
 
 /////////////////////////////////////////////////////////////////////////////
 // CEnToolBar
@@ -104,10 +104,8 @@ BOOL CEnToolBar::SetImage(CEnBitmapEx* pBitmap, COLORREF crMask)
 	CEnBitmapEx bmDis;
 	bmDis.CopyImage(pBitmap); // for later
 	
-   if (crMask == NO_COLOR) // map 3d colors
+    if (crMask == NO_COLOR) // map 3d colors
 	   pBitmap->RemapSysColors();
-   else
-      pBitmap->ReplaceColor(crMask, GetSysColor(COLOR_3DFACE));
 	
 	// button size
 	BITMAP BM;
@@ -123,10 +121,17 @@ BOOL CEnToolBar::SetImage(CEnBitmapEx* pBitmap, COLORREF crMask)
 	CSize sizeBtn(sizeBmp.cx + 7, sizeBmp.cy + 7);
 	
 	SetSizes(sizeBtn, sizeBmp);
+
+	m_ilNormal.DeleteImageList();
 	
-	if (SetBitmap((HBITMAP)pBitmap->Detach()))
+	if (m_ilNormal.Create(sizeBmp.cx, sizeBmp.cy, ILC_COLOR32 | ILC_MASK, 0, 1))
 	{
+		m_ilNormal.Add(pBitmap, crMask);
+				
+		GetToolBarCtrl().SetImageList(&m_ilNormal);
+		GetToolBarCtrl().SetHotImageList(&m_ilNormal);
 		RefreshDisabledImageList(&bmDis, crMask);
+
 		return TRUE;
 	}
 	
@@ -137,8 +142,6 @@ BOOL CEnToolBar::SetImage(CEnBitmapEx* pBitmap, COLORREF crMask)
 BOOL CEnToolBar::GrayScale(CEnBitmapEx* pBitmap, COLORREF crMask)
 {
 	// create 'nice' disabled imagelist 
-//	COLORREF cr3DFACE = GetSysColor(COLOR_3DFACE);
-
 	C32BIPArray aProcessors;
 	CImageSysColorMapper ip1;
 	CImageGrayer ip2(0.33, 0.33, 0.33);

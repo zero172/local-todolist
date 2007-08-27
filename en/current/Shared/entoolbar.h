@@ -30,7 +30,7 @@ public:
 	
 	// Attributes
 protected:
-	CImageList m_ilDisabled;
+	CImageList m_ilDisabled, m_ilNormal;
 	
 	// Operations
 public:

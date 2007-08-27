@@ -57,159 +57,6 @@ protected:
 #endif 
 
 /////////////////////////////////////////////////////////////////////////////
-// CRecTaskDailyPage dialog
-
-class CRecTaskDailyPage : public CPropertyPage
-{
-	DECLARE_DYNCREATE(CRecTaskDailyPage)
-
-// Construction
-public:
-	CRecTaskDailyPage();
-	~CRecTaskDailyPage();
-
-	BOOL HasValidData();
-
-// Dialog Data
-	//{{AFX_DATA(CRecTaskDailyPage)
-	int		m_nNumDays;
-	//}}AFX_DATA
-
-
-// Overrides
-	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CRecTaskDailyPage)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
-protected:
-	// Generated message map functions
-	//{{AFX_MSG(CRecTaskDailyPage)
-	afx_msg void OnChangeValues();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CRecTaskWeeklyPage dialog
-
-class CRecTaskWeeklyPage : public CPropertyPage
-{
-	DECLARE_DYNCREATE(CRecTaskWeeklyPage)
-
-// Construction
-public:
-	CRecTaskWeeklyPage();
-	~CRecTaskWeeklyPage();
-
-	BOOL HasValidData();
-
-// Dialog Data
-	//{{AFX_DATA(CRecTaskWeeklyPage)
-	CCheckListBox	m_lbWeekdays;
-	int		m_nNumWeeks;
-	//}}AFX_DATA
-	DWORD m_dwWeekdays;
-
-// Overrides
-	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CRecTaskWeeklyPage)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
-protected:
-	// Generated message map functions
-	//{{AFX_MSG(CRecTaskWeeklyPage)
-	virtual BOOL OnInitDialog();
-	afx_msg void OnChangeValues();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CRecTaskMonthlyPage dialog
-
-class CRecTaskMonthlyPage : public CPropertyPage
-{
-	DECLARE_DYNCREATE(CRecTaskMonthlyPage)
-
-// Construction
-public:
-	CRecTaskMonthlyPage();
-	~CRecTaskMonthlyPage();
-
-	BOOL HasValidData();
-
-// Dialog Data
-	//{{AFX_DATA(CRecTaskMonthlyPage)
-	int		m_nNumMonths;
-	int		m_nDay;
-	//}}AFX_DATA
-
-
-// Overrides
-	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CRecTaskMonthlyPage)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
-protected:
-	// Generated message map functions
-	//{{AFX_MSG(CRecTaskMonthlyPage)
-	afx_msg void OnChangeValues();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CRecTaskYearlyPage dialog
-
-class CRecTaskYearlyPage : public CPropertyPage
-{
-	DECLARE_DYNCREATE(CRecTaskYearlyPage)
-
-// Construction
-public:
-	CRecTaskYearlyPage();
-	~CRecTaskYearlyPage();
-
-	BOOL HasValidData();
-
-// Dialog Data
-	//{{AFX_DATA(CRecTaskYearlyPage)
-	CMonthComboBox	m_cbMonths;
-	int 	m_nMonth;
-	int		m_nDay;
-	//}}AFX_DATA
-
-
-// Overrides
-	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CRecTaskYearlyPage)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
-protected:
-	// Generated message map functions
-	//{{AFX_MSG(CRecTaskYearlyPage)
-	afx_msg void OnChangeValues();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-};
-
-/////////////////////////////////////////////////////////////////////////////
 // CRecurringTaskOptionDlg dialog
 
 class CRecurringTaskOptionDlg : public CDialog
@@ -226,18 +73,21 @@ protected:
 	int		m_nRegularity;
 	int		m_bRecalcFromDue;
 	//}}AFX_DATA
-	CPropertyPageHost m_host;
-	CRecTaskYearlyPage m_pageYearly;
-	CRecTaskMonthlyPage m_pageMonthly;
-	CRecTaskWeeklyPage m_pageWeekly;
-	CRecTaskDailyPage m_pageDaily;
+	int		m_nNumDays;
+	CCheckListBox	m_lbWeekdays;
+	int		m_nNumWeeks;
+	DWORD m_dwWeekdays;
+	CMonthComboBox	m_cbMonths;
+	int 	m_nMonth;
+	int		m_nYearMonthDay;
+	int		m_nNumMonths;
+	int		m_nMonthDay;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CRecurringTaskOptionDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual void OnOK();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -248,8 +98,14 @@ protected:
 	afx_msg void OnSelchangeRegularity();
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
-	afx_msg LRESULT OnValueChange(WPARAM wp, LPARAM lp);
+	afx_msg void OnChangeDailyValues();
+	afx_msg void OnChangeMonthlyValues();
+	afx_msg void OnChangeWeeklyValues();
+	afx_msg void OnChangeYearlyValues();
 	DECLARE_MESSAGE_MAP()
+
+protected:
+	BOOL HasValidData();
 };
 
 // !defined(AFX_RECURRENCEEDIT_H__4EE655E3_F4B1_44EA_8AAA_39DD459AD8A8__INCLUDED_)

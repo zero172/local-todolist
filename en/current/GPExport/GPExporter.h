@@ -25,8 +25,8 @@ public:
 
 	// caller must copy only
 	const char* GetMenuText() { return "GanttProject"; }
-	const char* GetFileFilter() { return "GanttProject Files (*.gp.xml)|*.gp.xml||"; }
-	const char* GetFileExtension() { return "gp.xml"; }
+	const char* GetFileFilter() { return "GanttProject Files (*.gan)|*.gan||"; }
+	const char* GetFileExtension() { return "gan"; }
 
 	bool Export(const ITaskList* pSrcTaskFile, const char* szDestFilePath);
 

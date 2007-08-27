@@ -62,7 +62,7 @@ protected:
 	//}}AFX_MSG
 	afx_msg BOOL OnEditchange();
 	afx_msg BOOL OnDropdown();
-	afx_msg BOOL OnCloseUp();
+//	afx_msg BOOL OnCloseUp();
 	afx_msg void OnLBSelChange();
 
 	DECLARE_MESSAGE_MAP()
@@ -75,6 +75,7 @@ protected:
 	virtual void DrawItemText(HDC hdc, int nItem, CRect rText, const CString& sText, UINT nState);
 	virtual void RefreshMaxDropWidth();
 	virtual void HandleReturnKey();
+	virtual CString GetSelectedItem() const;
 
 };
 

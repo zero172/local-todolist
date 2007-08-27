@@ -24,17 +24,22 @@ public:
 	BOOL SomePluginsHaveBadversions() const { return m_bSomeBadVersions; }
 	
 	int GetNumContent() const;
-	int FindContent(const GUID& type) const;
+
+	int FindContent(LPCTSTR szID) const;
 	
-	BOOL GetContentTypeID(int nContent, GUID& type) const;
+	CString GetContentTypeID(int nContent) const;
 	CString GetContentTypeDescription(int nContent) const;
+	CONTENTFORMAT GetContentFormat(int nContent) const;
+
+	BOOL ContentFormatIsText(int nContent) const;
+	BOOL ContentFormatIsText(const CString& sTypeID) const;
 
 	BOOL CreateContentControl(int nContent, CContentCtrl& ctrl, UINT nCtrlID, DWORD nStyle, 
 							 DWORD dwExStyle, const CRect& rect, HWND hwndParent);
-	BOOL CreateContentControl(const GUID& type, CContentCtrl& ctrl, UINT nCtrlID, DWORD nStyle, 
+	BOOL CreateContentControl(const CONTENTFORMAT& cf, CContentCtrl& ctrl, UINT nCtrlID, DWORD nStyle, 
 							 DWORD dwExStyle, const CRect& rect, HWND hwndParent);
 
-	BOOL ConvertContentToHtml(const CString& sContent, CString& sHtml, const GUID& type);
+	BOOL ConvertContentToHtml(const CString& sContent, CString& sHtml, LPCTSTR szID);
 	
 protected:
 	BOOL m_bInitialized;

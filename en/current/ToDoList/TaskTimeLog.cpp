@@ -19,6 +19,9 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+LPCTSTR COLUMNHEADINGS = "Task ID, Time Spent (Hrs), User ID, End Date/Time, Start Date/Time";
+LPCTSTR LOGFORMAT = "%ld, %.3f, %s, %s %s, %s %s";
+
 CTaskTimeLog::CTaskTimeLog(LPCTSTR szRefPath) : m_sRefPath(szRefPath)
 {
 }
@@ -30,12 +33,28 @@ CTaskTimeLog::~CTaskTimeLog()
 
 BOOL CTaskTimeLog::LogTime(DWORD dwTaskID, double dTime, BOOL bLogSeparately)
 {
+	CString sLogPath = GetLogPath(dwTaskID, bLogSeparately);
+
+	// if the file doesn't exist then we insert the column headings as the first line
+	if (!FileMisc::FileExists(sLogPath))
+		FileMisc::AppendLineToFile(sLogPath, COLUMNHEADINGS);
+
+	// then log the time spent
 	CString sLog;
 
-	sLog.Format("%ld,%.3f,%s,%s", dwTaskID, dTime, Misc::GetUserName(),
-				CDateHelper::FormatCurrentDate(TRUE));
-	
-	return FileMisc::AppendLineToFile(GetLogPath(dwTaskID, bLogSeparately), sLog);
+	COleDateTime dtEnd = COleDateTime::GetCurrentTime();
+	COleDateTime dtStart = dtEnd - COleDateTime(dTime / 24); // dTime is in hours
+
+	sLog.Format(LOGFORMAT, 
+				dwTaskID, 
+				dTime, 
+				Misc::GetUserName(),
+				CDateHelper::FormatDate(dtEnd, TRUE), 
+				dtEnd.Format(VAR_TIMEVALUEONLY),
+				CDateHelper::FormatDate(dtStart, TRUE), 
+				dtStart.Format(VAR_TIMEVALUEONLY));
+
+	return FileMisc::AppendLineToFile(sLogPath, sLog);
 }
 
 CString CTaskTimeLog::GetLogPath(DWORD dwTaskID, BOOL bLogSeparately)

@@ -24,7 +24,7 @@ class CFilterDlg : public CDialog, public CDialogHelper
 {
 // Construction
 public:
-	CFilterDlg(BOOL bMultiCategorySel, CWnd* pParent = NULL);   // standard constructor
+	CFilterDlg(DWORD dwFlags = FB_MULTISELALLOCTO | FB_MULTISELCAT, CWnd* pParent = NULL);   // standard constructor
 
 	int DoModal(const CFilteredToDoCtrl& tdc, 
 				const CDWordArray& aPriorityColors);
@@ -36,10 +36,8 @@ protected:
 	enum { IDD = IDD_FILTER_DIALOG };
 	//}}AFX_DATA
 	CEnCheckComboBox	m_cbCategoryFilter;
-//	CComboBox	m_cbStatusFilter;
 	CEnCheckComboBox	m_cbStatusFilter;
 	CEnCheckComboBox	m_cbAllocToFilter;
-//	CComboBox m_cbAllocByFilter;
 	CEnCheckComboBox m_cbAllocByFilter;
 	CTabbedComboBox	m_cbTaskFilter;
 	CTDLPriorityComboBox	m_cbPriorityFilter;

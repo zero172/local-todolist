@@ -27,6 +27,8 @@ File :			RuleRichEdit.cpp
 
 #include "..\shared\RichEdithelper.h"
 #include "..\shared\autoflag.h"
+#include "..\shared\enbitmap.h"
+#include "..\shared\misc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,6 +52,7 @@ Access :		Public
 	
 	  ============================================================*/
 {
+	EnableToolTips();
 }
 
 CRulerRichEdit::~CRulerRichEdit()
@@ -118,17 +121,70 @@ LRESULT CRulerRichEdit::OnDropFiles(WPARAM wp, LPARAM lp)
 {
 	CWaitCursor cursor;
 	
-	if (GetKeyState(VK_SHIFT) & 0x8000)
+	if (Misc::KeyIsPressed(VK_SHIFT)) // insert
 	{
+		// restore selection
+		SetSel(m_crDropSel);
+
 		TCHAR szFileName[_MAX_PATH];
 		::DragQueryFile((HDROP)wp, 0, szFileName, _MAX_PATH);
-		
-		CReFileObject fo(*this);
-		
-		return fo.Insert(szFileName);
+
+		// if CTRL is also down AND it's an image file then insert as bits
+		if (Misc::KeyIsPressed(VK_CONTROL) && CEnBitmap::CopyImageFileToClipboard(szFileName))
+		{
+			Paste(FALSE);
+			return TRUE;
+		}
+		else // insert as OLE object
+		{
+			CReFileObject fo(*this);
+			return fo.Insert(szFileName);
+		}
 	}
 	else
 		return CUrlRichEditCtrl::OnDropFiles(wp, lp); // link
+}
+
+HRESULT CRulerRichEdit::GetDragDropEffect(BOOL fDrag, DWORD grfKeyState, LPDWORD pdwEffect)
+{
+	if (!fDrag) // allowable dest effects
+	{
+      BOOL bEnable = !(GetStyle() & ES_READONLY) && IsWindowEnabled();
+		
+		if (!bEnable)
+			*pdwEffect = DROPEFFECT_NONE;
+		else
+		{
+			DWORD dwEffect = DROPEFFECT_NONE;
+			BOOL bFileDrop = ((*pdwEffect & DROPEFFECT_LINK) == DROPEFFECT_LINK);
+			BOOL bShift = (grfKeyState & MK_SHIFT) == MK_SHIFT;
+			BOOL bCtrl = (grfKeyState & MK_CONTROL) == MK_CONTROL;
+
+			if (bFileDrop)
+			{
+				// if SHIFT is down then show this as a copy because we are embedding
+				if (bShift)
+					dwEffect = DROPEFFECT_COPY | DROPEFFECT_MOVE;
+
+				else // show as a move to match CUrlRichEditCtrl
+					dwEffect = DROPEFFECT_MOVE;
+
+				TrackDragCursor();
+			}
+			else
+			{
+				if (bCtrl)
+					dwEffect = DROPEFFECT_COPY;
+				else
+					dwEffect = DROPEFFECT_MOVE;
+			}
+
+			// make sure allowed type
+			if ((dwEffect & *pdwEffect) == dwEffect) 
+				*pdwEffect = dwEffect;
+		}
+	}
+	return S_OK;
 }
 
 CLIPFORMAT CRulerRichEdit::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFORMAT format) 
@@ -147,7 +203,6 @@ CLIPFORMAT CRulerRichEdit::GetAcceptableClipFormat(LPDATAOBJECT lpDataOb, CLIPFO
 			CF_BITMAP,
 			CF_TEXT,
 			CF_UNICODETEXT,
-			CF_BITMAP,          
 			CF_METAFILEPICT,    
 			CF_SYLK,            
 			CF_DIF,             
@@ -202,14 +257,30 @@ void CRulerRichEdit::Paste(BOOL bSimple)
 		CUrlRichEditCtrl::Paste();
 	}
 }
-LRESULT CRulerRichEdit::OnIMEStartComposition(WPARAM wp, LPARAM lp)
+
+int CRulerRichEdit::OnToolHitTest(CPoint point, TOOLINFO* pTI) const
+{
+	return CUrlRichEditCtrl::OnToolHitTest(point, pTI);
+/*
+	int nHit = MAKELONG(point.x, point.y);
+	pTI->hwnd = m_hWnd;
+	pTI->uId  = nHit;
+	pTI->rect = CRect(CPoint(point.x-1,point.y-1),CSize(2,2));
+	pTI->uFlags |= TTF_NOTBUTTON | TTF_ALWAYSTIP;
+	pTI->lpszText = LPSTR_TEXTCALLBACK;
+	
+	return nHit;
+*/
+}
+
+LRESULT CRulerRichEdit::OnIMEStartComposition(WPARAM /*wp*/, LPARAM /*lp*/)
 {
 	m_bIMEComposing = TRUE;
 
 	return Default();
 }
 
-LRESULT CRulerRichEdit::OnIMEEndComposition(WPARAM wp, LPARAM lp)
+LRESULT CRulerRichEdit::OnIMEEndComposition(WPARAM /*wp*/, LPARAM /*lp*/)
 {
 	m_bIMEComposing = FALSE;
 

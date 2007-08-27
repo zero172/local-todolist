@@ -17,8 +17,8 @@ static char THIS_FILE[]=__FILE__;
 
 class CDefaultContent : public IContent
 {
-	bool GetTypeID(GUID& /*id*/) { return false; }
-	const char* GetTypeDescription() { static LPCTSTR sDesc = "Simple Text"; return sDesc; }
+	const char* GetTypeID() const { static LPCTSTR sID = "PLAIN_TEXT"; return sID; }
+	const char* GetTypeDescription() const { static LPCTSTR sDesc = "Simple Text"; return sDesc; }
 
 	IContentControl* CreateCtrl(unsigned short nCtrlID, unsigned long nStyle, 
 						long nLeft, long nTop, long nWidth, long nHeight, HWND hwndParent)
@@ -37,7 +37,6 @@ class CDefaultContent : public IContent
 	}
 
 	void Release() { delete this; }
-	void SetIniLocation(bool /*bRegistry*/, const char* /*szIniPathName*/) {} // do nothing
 
 	int ConvertToHtml(const unsigned char* /*pContent*/, int /*nLength*/,
 						char*& /*szHtml*/) { return 0; } // not supported

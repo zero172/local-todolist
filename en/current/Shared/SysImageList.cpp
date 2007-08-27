@@ -83,6 +83,15 @@ int CSysImageList::GetFileImageIndex(LPCTSTR szFilePath, BOOL bFailUnKnown)
 	if (!m_hImageList && !Initialize() || !szFilePath || !(*szFilePath))
 		return -1;
 
+	// test for web protocol
+	if (IsWebAddress(szFilePath))
+	{
+		if (m_nHtmlImage == -1)
+			m_nHtmlImage = GetImageIndex("test.html");
+
+		return m_nHtmlImage;
+	}
+
 	// get the file's extension
 	CString sExt;
 	FileMisc::SplitPath(szFilePath, NULL, NULL, NULL, &sExt);
@@ -102,15 +111,6 @@ int CSysImageList::GetFileImageIndex(LPCTSTR szFilePath, BOOL bFailUnKnown)
 		// else
 		if (FileMisc::FolderExists(szFilePath))
 			return m_nFolderImage;
-	}
-
-	// then test for web protocol
-	if (IsWebAddress(szFilePath))
-	{
-		if (m_nHtmlImage == -1)
-			m_nHtmlImage = GetImageIndex("test.html");
-
-		return m_nHtmlImage;
 	}
 
 	// fail if no extension
@@ -211,5 +211,9 @@ HIMAGELIST CSysImageList::GetHImageList()
 
 BOOL CSysImageList::IsWebAddress(LPCTSTR szFilePath)
 {
-	return ::PathIsURL(szFilePath);
+	if (::PathIsURL(szFilePath))
+		return TRUE;
+
+	// check for www.
+	return (CString(szFilePath).Find("www.") == 0);
 }

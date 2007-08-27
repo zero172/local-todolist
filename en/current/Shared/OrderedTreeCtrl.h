@@ -21,7 +21,7 @@ class COrderedTreeCtrl : public CTreeCtrl//, public CTreeCtrlHelper
 {
 // Construction
 public:
-	COrderedTreeCtrl();
+	COrderedTreeCtrl(DWORD dwGutterStyles = NCGS_SHOWHEADER);
 	virtual ~COrderedTreeCtrl();
 
 	int AddGutterColumn(UINT nColID, LPCTSTR szTitle = NULL, UINT nWidth = 0, UINT nTextAlign = DT_LEFT);
@@ -35,6 +35,9 @@ public:
 	BOOL IsGutterPosColumnShowing() const { return m_bShowingPosColumn; }
 	void SetGridlineColor(COLORREF color);
     COLORREF GetGridlineColor() const { return m_crGridlines; }
+
+	void EnableGutterStyle(DWORD dwStyle, BOOL bEnable = TRUE) { m_gutter.EnableStyle(dwStyle, bEnable); }
+	BOOL GutterHasStyle(DWORD dwStyle) const { return m_gutter.HasStyle(dwStyle); }
 
 	inline void RedrawGutter() { m_gutter.Redraw(); }
 	inline void RedrawGutterItem(DWORD dwItem) { m_gutter.RedrawItem(dwItem); }
@@ -92,6 +95,7 @@ protected:
 	afx_msg LRESULT OnGutterNotifyItemClick(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGutterGetParentID(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGutterWantRecalc(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnGutterWantRedraw(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 

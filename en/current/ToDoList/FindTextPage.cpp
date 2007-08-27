@@ -16,13 +16,14 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CFindTextPage, CPropertyPage)
 
-CFindTextPage::CFindTextPage(BOOL bShowMatchCase, BOOL bShowMatchWholeWord) : 
-	CPropertyPage(CFindTextPage::IDD), m_bShowMatchCase(bShowMatchCase), m_bShowMatchWholeWord(bShowMatchWholeWord)
+CFindTextPage::CFindTextPage(DWORD dwShowFlags) : 
+	CPropertyPage(CFindTextPage::IDD), m_dwShowFlags(dwShowFlags)
 {
 	//{{AFX_DATA_INIT(CFindTextPage)
 	m_sText = _T("");
 	m_bMatchWholeWord = FALSE;
 	m_bMatchCase = FALSE;
+	m_bMatchAll = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -80,7 +81,7 @@ BOOL CFindTextPage::GetMatchCase()
 	if (GetSafeHwnd())
 	{
 		UpdateData();
-		return m_bShowMatchCase && m_bMatchCase;
+		return (m_dwShowFlags & FTP_SHOWMATCHCASE) && m_bMatchCase;
 	}
 
 	return FALSE;
@@ -91,13 +92,24 @@ BOOL CFindTextPage::GetMatchWholeWord()
 	if (GetSafeHwnd())
 	{
 		UpdateData();
-		return m_bShowMatchWholeWord && m_bMatchWholeWord;
+		return (m_dwShowFlags & FTP_SHOWMATCHWHOLEWORD) && m_bMatchWholeWord;
 	}
 
 	return FALSE;
 }
 
-BOOL CFindTextPage::OnInitDialog() 
+BOOL CFindTextPage::GetMatchAllItems()
+{
+	if (GetSafeHwnd())
+	{
+		UpdateData();
+		return (m_dwShowFlags & FTP_SHOWMATCHALLWORDS) && m_bMatchAll;
+	}
+
+	return FALSE;
+}
+
+BOOL CFindTextPage::OnInitDialog()  
 {
 	CPropertyPage::OnInitDialog();
 
@@ -117,17 +129,24 @@ BOOL CFindTextPage::OnInitDialog()
 	m_sText = AfxGetApp()->GetProfileString(sKey, "LastLookFor");
 	m_bMatchCase = AfxGetApp()->GetProfileInt(sKey, "MatchCase", FALSE);
 	m_bMatchWholeWord = AfxGetApp()->GetProfileInt(sKey, "MatchWholeWord", FALSE);
+	m_bMatchAll = AfxGetApp()->GetProfileInt(sKey, "MatchAllItems", FALSE);
 
-	if (!m_bShowMatchCase)
+	if (!(m_dwShowFlags & FTP_SHOWMATCHCASE))
 	{
 		GetDlgItem(IDC_MATCHCASE)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_MATCHCASE)->EnableWindow(FALSE);
 	}
 
-	if (!m_bShowMatchWholeWord)
+	if (!(m_dwShowFlags & FTP_SHOWMATCHWHOLEWORD))
 	{
 		GetDlgItem(IDC_MATCHWHOLEWORD)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_MATCHWHOLEWORD)->EnableWindow(FALSE);
+	}
+
+	if (!(m_dwShowFlags & FTP_SHOWMATCHALLWORDS))
+	{
+		GetDlgItem(IDC_MATCHALLWORDS)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_MATCHALLWORDS)->EnableWindow(FALSE);
 	}
 
 	UpdateData(FALSE);
@@ -163,6 +182,7 @@ void CFindTextPage::OnDestroy()
 	AfxGetApp()->WriteProfileString(sKey, "LastLookFor", m_sText);
 	AfxGetApp()->WriteProfileInt(sKey, "MatchCase", m_bMatchCase);
 	AfxGetApp()->WriteProfileInt(sKey, "MatchWholeWord", m_bMatchWholeWord);
+	AfxGetApp()->WriteProfileInt(sKey, "MatchAllItems", m_bMatchAll);
 }
 
 CString CFindTextPage::GetRegKey() const

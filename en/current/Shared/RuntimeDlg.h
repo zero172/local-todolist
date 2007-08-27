@@ -94,14 +94,12 @@ protected: // intended to be used only from a derived class
 
 	static void SetControlState(CWnd* pParent, UINT nCtrlID, RT_CTRLSTATE nState);
 	static void SetControlState(HWND hCtrl, RT_CTRLSTATE nState);
+	static void SetControlsState(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, RT_CTRLSTATE nState);
 
-	static void SetControlsReadOnly(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bReadOnly = TRUE);
-	static void SetControlReadOnly(HWND hCtrl, BOOL bReadOnly = TRUE);
-
-	static void EnableControls(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bEnable = TRUE);
 	static void ShowControls(CWnd* pParent, UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bShow = TRUE);
 	static void ShowControl(CWnd* pParent, UINT nCtrlID, BOOL bShow = TRUE);
 	static void ShowControl(CWnd* pCtrl, BOOL bShow = TRUE);
+
 	static void ExcludeControls(CWnd* pParent, CDC* pDC, UINT nCtrlIDFrom, UINT nCtrlIDTo);
 
 	static BOOL IsEdit(CWnd* pParent, UINT nCtrlID);
@@ -152,13 +150,17 @@ protected:
 	BOOL CreateControl(const RTCONTROL& ctrl);
 	void CreateControls();
 	BOOL AddRCControl(const CString& sRCCtrl);
+	CSize GetCtrlSize(UINT nCtrlID) { return OffsetCtrl(nCtrlID).Size(); }
+	CPoint GetCtrlPos(UINT nCtrlID) { return OffsetCtrl(nCtrlID).TopLeft(); }
 	CRect OffsetCtrl(UINT nCtrlID, int x = 0, int y = 0);
 	CRect ResizeCtrl(UINT nCtrlID, int cx = 0, int cy = 0);
-	CRect MoveCtrl(UINT nCtrlID, int cx, int cy);
+	CRect MoveCtrl(UINT nCtrlID, int x, int y);
 	void EnableControls(UINT uCtrlIDFrom, UINT nCtrlIDTo, BOOL bEnable = TRUE);
 	void ShowControls(UINT nCtrlIDFrom, UINT nCtrlIDTo, BOOL bShow = TRUE);
 	void ShowControl(UINT nCtrlID, BOOL bShow = TRUE);
 	void ExcludeControls(CDC* pDC, UINT nCtrlIDFrom, UINT nCtrlIDTo);
+
+	virtual CPoint GetInitialPos() const { return CPoint(-1, -1); }
 
 	inline BOOL IsEdit(UINT nCtrlID) { return IsEdit(this, nCtrlID); }
 

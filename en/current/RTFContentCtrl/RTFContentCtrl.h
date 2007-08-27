@@ -25,14 +25,15 @@
 static const GUID RTF_TYPEID = 
 { 0x849cf988, 0x79fe, 0x418a, { 0xa4, 0xd, 0x1, 0xfe, 0x3a, 0xfc, 0xab, 0x2c } };
 
-class CRTFContentCtrlApp : public IContent
+class CRTFContentCtrlApp : public IContent, public CWinApp
 {
 public:
 	CRTFContentCtrlApp();
 
 	// IContent implementation
-	bool GetTypeID(GUID& id);
-	const char* GetTypeDescription();
+	const char* GetTypeID() const;
+	const char* GetTypeDescription() const;
+
 	IContentControl* CreateCtrl(unsigned short nCtrlID, unsigned long nStyle, 
 						long nLeft, long nTop, long nWidth, long nHeight, HWND hwndParent);
 	void Release();

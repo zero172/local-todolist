@@ -16,6 +16,7 @@
 #include "..\shared\enstring.h"
 #include "..\shared\regkey.h"
 #include "..\shared\filemisc.h"
+#include "..\shared\autoflag.h"
 
 #include "..\3rdparty\xmlnodewrapper.h"
 #include "..\3rdparty\ini.h"
@@ -104,11 +105,13 @@ BOOL CToDoListApp::InitInstance()
 	}
 
 	CEnCommandLineInfo cmdInfo;
-	ParseCommandLine(&cmdInfo);
 	
+	if (!ParseCommandLine(&cmdInfo))
+		return FALSE;
+
 	// see if the user just wants to see the commandline options
-	if (cmdInfo.GetOption("h") || cmdInfo.GetOption("help") || 
-		cmdInfo.GetOption("?"))
+	if (cmdInfo.HasOption("h") || cmdInfo.HasOption("help") || 
+		cmdInfo.HasOption("?"))
 	{
 		AfxMessageBox(IDS_COMMANDLINEOPTIONS, MB_OK | MB_ICONINFORMATION);
 		return FALSE;
@@ -125,7 +128,7 @@ BOOL CToDoListApp::InitInstance()
 		return FALSE;
 
 	// does the user want single instance only
-	BOOL bSingleInstance = !CPreferencesGenPage().GetMultiInstance();
+	BOOL bSingleInstance = !CPreferencesDlg().GetMultiInstance();
 
 	if (bSingleInstance && g_SingleInstanceObj.IsAnotherInstanceRunning())
 	{
@@ -142,7 +145,7 @@ BOOL CToDoListApp::InitInstance()
 				MessageBox(NULL, CEnString(IDS_EARLIERVERRUNNING), CEnString(IDS_COPYRIGHT), MB_OK);
 			
 			::SendMessage(hWnd, WM_TDL_SHOWWINDOW, 0, 0);
-			
+
 			// pass on file to open
 			if (!cmdInfo.m_strFileName.IsEmpty())
 				SendDataMessage(hWnd, OPENTASKLIST, cmdInfo.m_strFileName);
@@ -182,8 +185,8 @@ BOOL CToDoListApp::InitInstance()
 		}
 	}
 
-	BOOL bForceVisible = cmdInfo.GetOption("v");
-	BOOL bPasswordPrompting = !cmdInfo.GetOption("x");
+	BOOL bForceVisible = cmdInfo.HasOption("v");
+	BOOL bPasswordPrompting = !cmdInfo.HasOption("x");
 
 	DWORD dwFlags = (bForceVisible ? TLD_FORCEVISIBLE : 0) |
 					(bPasswordPrompting ? TLD_PASSWORDPROMPTING : 0);
@@ -231,32 +234,51 @@ BOOL CToDoListApp::InitInstance()
 	return FALSE;
 }
 
-void CToDoListApp::ParseCommandLine(CEnCommandLineInfo* pInfo)
+BOOL CToDoListApp::ParseCommandLine(CEnCommandLineInfo* pInfo)
 {
 	ASSERT (pInfo);
 
 	CWinApp::ParseCommandLine(*pInfo); // default
 
 	// check for task link
-	if (pInfo->m_strFileName.Find(TDL_PROTOCOL) != -1)
+	CString sLink;
+
+	if (pInfo->GetOption("l", sLink) && sLink.Find(TDL_PROTOCOL) != -1)
 	{
 		CString sFilePath;
 		DWORD dwID = 0;
 
-		CToDoCtrl::ParseTaskLink(pInfo->m_strFileName, dwID, sFilePath);
+		CToDoCtrl::ParseTaskLink(sLink, dwID, sFilePath);
 
 		if (!sFilePath.IsEmpty() && dwID)
 		{
+			// remove possible trailing slash on file path
+			sFilePath.TrimRight('\\');
+
 			// replace possible %20 by spaces
 			sFilePath.Replace("%20", " ");
-			pInfo->m_strFileName = sFilePath;
-			pInfo->SetOption("tid", dwID);
+
+			// verify the file existence unless the path is relative
+			if (/*PathIsRelative(sFilePath) || */FileMisc::FileExists(sFilePath))
+			{
+				pInfo->m_strFileName = sFilePath;
+				pInfo->SetOption("tid", dwID);
+			}
+			else
+			{
+				pInfo->m_strFileName.Empty();
+				pInfo->DeleteOption("tid");
+				AfxMessageBox(CEnString(IDS_TDLLINKLOADFAILED, sFilePath));
+
+				return FALSE;
+			}
 		}
 	}
-
-	// validate file path
-	if (GetFileAttributes(pInfo->m_strFileName) == 0xffffffff)
+	// else validate file path
+	else if (!FileMisc::FileExists(pInfo->m_strFileName))
 		pInfo->m_strFileName.Empty();
+
+	return TRUE;
 }
 
 BOOL CToDoListApp::SendDataMessage(HWND hWnd, int nType, int nSize, void* pData)
@@ -300,27 +322,6 @@ BOOL CALLBACK FindOtherInstance(HWND hwnd, LPARAM lParam)
 
 BOOL CToDoListApp::PreTranslateMessage(MSG* pMsg) 
 {
-/*
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		if (pMsg->wParam != VK_CONTROL && pMsg->wParam != VK_SHIFT && pMsg->wParam != VK_MENU)
-		{
-			CString sKeys;
-
-			if (GetKeyState(VK_CONTROL) & 0x8000)
-				sKeys += 'C';
-
-			if (GetKeyState(VK_SHIFT) & 0x8000)
-				sKeys += 'S';
-
-			if (GetKeyState(VK_MENU) & 0x8000)
-				sKeys += 'A';
-
-			TRACE("CToDoListApp::PreTranslateMessage(%d, %s)\n", pMsg->wParam, sKeys);
-		}
-	}
-*/
-
 	// give first chance to main window for handling accelerators
 	if (m_pMainWnd && m_pMainWnd->PreTranslateMessage(pMsg))
 		return TRUE;
@@ -341,6 +342,14 @@ void CToDoListApp::WinHelp(DWORD dwData, UINT nCmd)
 
 void CToDoListApp::DoHelp(const CString& /*sHelpRef*/)
 {
+	// prevent reentrancy
+	static BOOL bAlreadyHere = FALSE;
+
+	if (bAlreadyHere)
+		return;
+
+	CAutoFlag af(bAlreadyHere, TRUE);
+
 	// 1. look for todolist_help.tdl in the registry
 	CString sHelpTopic, sHelpFile = GetProfileString("Help", "TDLFile");
 

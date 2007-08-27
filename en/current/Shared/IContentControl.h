@@ -18,7 +18,9 @@
 #	define DLL_DECLSPEC __declspec(dllimport)
 #endif 
 
-#define ICONTENTCTRL_VERSION 0x0001
+#define ICONTENTCTRL_VERSION 0x0002
+
+const UINT WM_ICC_WANTSPELLCHECK = ::RegisterWindowMessage("WM_ICC_WANTSPELLCHECK");
 
 class IContent;
 class IContentControl;
@@ -81,20 +83,20 @@ static BOOL IsContentDll(const char* szDllPath)
 class IContent  
 {
 public:
-	virtual bool GetTypeID(GUID& id) = 0;
-	virtual const char* GetTypeDescription() = 0;
+	virtual const char* GetTypeID() const = 0;
+	virtual const char* GetTypeDescription() const = 0;
 
 	virtual IContentControl* CreateCtrl(unsigned short nCtrlID, unsigned long nStyle, 
 						long nLeft, long nTop, long nWidth, long nHeight, HWND hwndParent) = 0;
 
 	virtual void Release() = 0;
 	
-//	virtual void SetIniLocation(bool bRegistry, const char* szIniPathName) = 0;
-
 	// returns the length of the html or zero if not supported
 	virtual int ConvertToHtml(const unsigned char* pContent, int nLength,
 							  char*& pHtml) = 0;
 };
+
+class ISpellCheck;
 
 class IContentControl  
 {
@@ -102,6 +104,7 @@ public:
 	// custom/binary data format
 	virtual int GetContent(unsigned char* pContent) const = 0;
 	virtual bool SetContent(unsigned char* pContent, int nLength) = 0;
+	virtual const char* GetTypeID() const = 0;
 
 	// text content if supported. return false if not supported
 	virtual int GetTextContent(char* szContent, int nLength = -1) const = 0;
@@ -110,14 +113,10 @@ public:
 	virtual void SetReadOnly(bool bReadOnly) = 0;
 	virtual HWND GetHwnd() const = 0;
 
-	// return false for unformatted text
-	virtual bool HasTypeID() const = 0;
-	virtual bool GetTypeID(GUID& id) const = 0;
-
 	virtual void Release() = 0;
-
 	virtual bool ProcessMessage(MSG* pMsg) = 0;
 
+	virtual ISpellCheck* GetSpellCheckInterface() = 0;
 };
 
 #endif // AFX_ICONTENTCONTROL_H__7741547B_BA15_4851_A41B_2B4EC1DC12D5__INCLUDED_
