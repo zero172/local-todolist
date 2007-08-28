@@ -167,6 +167,9 @@ BEGIN
         MENUITEM "插入文件链接...(&F)",         ID_EDIT_FILEBROWSE
         MENUITEM SEPARATOR
         MENUITEM "插入时间(&D)",                ID_EDIT_INSERTDATESTAMP
+        MENUITEM "插入文件链接...(&F)",        ID_EDIT_FILEBROWSE
+        MENUITEM SEPARATOR
+        MENUITEM "拼写检查(&H)",             ID_EDIT_SPELLCHECK
         MENUITEM SEPARATOR
         MENUITEM "显示格式工具栏(&F)",          ID_EDIT_SHOWTOOLBAR
         MENUITEM "显示标尺(&R)",                ID_EDIT_SHOWRULER
@@ -192,6 +195,8 @@ BEGIN
     STRING_COLOR            "字"
     STRING_DEFAULT          "自动"
     STRING_CUSTOM           "其它颜色..."
+    IDS_FIND_TITLE          "Find In Comments"
+    IDS_REPLACE_TITLE       "Replace In Comments"
 END
 
 STRINGTABLE 
@@ -213,6 +218,11 @@ STRINGTABLE DISCARDABLE
 BEGIN
     BUTTON_TEXTCOLOR        "文本颜色"
     BUTTON_BACKCOLOR        "背景颜色"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_COMMENTSGOTOERRMSG  "不能打开选择的文件。\n\n请检查文件是否存在，\n以及是否有程序注册为打开该文件类型。"
 END
 
 #endif    // 中文(中华人民共和国) resources
