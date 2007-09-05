@@ -27,7 +27,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,3,2,0
+ FILEVERSION 5,3,4,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -46,7 +46,7 @@ BEGIN
             VALUE "Comments", "边城狂人 汉化"
             VALUE "CompanyName", "AbstractSpoon Software"
             VALUE "FileDescription", "ToDoList"
-            VALUE "FileVersion", "5, 3, 2, 0"
+            VALUE "FileVersion", "5, 4, 2, 0"
             VALUE "InternalName", "ToDoList"
             VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2003-07"
             VALUE "OriginalFilename", "ToDoList.exe"
@@ -1859,7 +1859,7 @@ BEGIN
             , GRAYED
         END
         MENUITEM SEPARATOR
-        MENUITEM "发送到...(&S)",               ID_SENDTASKS
+        MENUITEM "发送到...(&T)",               ID_SENDTASKS
         MENUITEM SEPARATOR
         MENUITEM "退出(&X)",                    ID_EXIT
     END
@@ -1944,22 +1944,18 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "剪切(&U)",                    ID_EDIT_CUT
         MENUITEM "复制(&C)",                    ID_EDIT_COPY
-        POPUP "C&opy As"
+        POPUP "拷贝为(&O)"
         BEGIN
             MENUITEM "文本(&T)",                    ID_EDIT_COPYAS_TEXT
             MENUITEM "&HTML",                       ID_EDIT_COPYAS_HTML
             MENUITEM SEPARATOR
-            MENUITEM "引用任务(&R)",                ID_TASKCONTEXT_COPYAS_TASKREF
-
-            MENUITEM "引用任务（完整）(&R)",        ID_TASKCONTEXT_COPYASREFFULL
-
+            MENUITEM "引用任务(&R)",                ID_EDIT_COPYAS_REF
+            MENUITEM "引用任务（完整）(&R)",        ID_EDIT_COPYAS_REFFULL
             MENUITEM SEPARATOR
-            MENUITEM "依赖任务(&D)",                ID_TASKCONTEXT_COPYAS_TASKDEPENDENCY
-
-            MENUITEM "依赖任务（完整）(&D)",        ID_TASKCONTEXT_COPYASDEPENDENCYFULL
-
+            MENUITEM "依赖任务(&D)",                ID_EDIT_COPYAS_DEPEND
+            MENUITEM "依赖任务（完整）(&D)",        ID_EDIT_COPYAS_DEPENDFULL
             MENUITEM SEPARATOR
-            MENUITEM "任务路径(&P)",                ID_EDIT_COPYASPATH
+            MENUITEM "任务路径(&P)",                ID_EDIT_COPYAS_PATH
         END
         MENUITEM SEPARATOR
         MENUITEM "粘贴为当前任务的子任务(&A)",  ID_EDIT_PASTESUB
