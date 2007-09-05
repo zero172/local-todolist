@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,3,2,0
+ FILEVERSION 5,3,4,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -47,7 +47,7 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 3, 2, 0\0"
+            VALUE "FileVersion", "5, 3, 4, 0\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-07\0"
             VALUE "LegalTrademarks", "\0"
@@ -1944,7 +1944,7 @@ BEGIN
             , GRAYED
         END
         MENUITEM SEPARATOR
-        MENUITEM "&Send To...",                 ID_SENDTASKS
+        MENUITEM "Send &To...",                 ID_SENDTASKS
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_EXIT
     END
@@ -2040,17 +2040,14 @@ BEGIN
             MENUITEM "&Text",                       ID_EDIT_COPYAS_TEXT
             MENUITEM "&HTML",                       ID_EDIT_COPYAS_HTML
             MENUITEM SEPARATOR
-            MENUITEM "Task &Reference",             ID_TASKCONTEXT_COPYAS_TASKREF
-
-            MENUITEM "Task &Reference (full)",      ID_TASKCONTEXT_COPYASREFFULL
+            MENUITEM "Task &Reference",             ID_EDIT_COPYAS_REF
+            MENUITEM "Task &Reference (full)",      ID_EDIT_COPYAS_REFFULL
+            MENUITEM SEPARATOR
+            MENUITEM "Task &Dependency",            ID_EDIT_COPYAS_DEPEND
+            MENUITEM "Task &Dependency (full)",     ID_EDIT_COPYAS_DEPENDFULL
 
             MENUITEM SEPARATOR
-            MENUITEM "Task &Dependency",            ID_TASKCONTEXT_COPYAS_TASKDEPENDENCY
-
-            MENUITEM "Task &Dependency (full)",     ID_TASKCONTEXT_COPYASDEPENDENCYFULL
-
-            MENUITEM SEPARATOR
-            MENUITEM "Task &Path",                  ID_EDIT_COPYASPATH
+            MENUITEM "Task &Path",                  ID_EDIT_COPYAS_PATH
         END
         MENUITEM SEPARATOR
         MENUITEM "P&aste as a Subtask of the Selected Task", 
