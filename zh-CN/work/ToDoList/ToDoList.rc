@@ -1944,7 +1944,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "剪切(&U)",                    ID_EDIT_CUT
         MENUITEM "复制(&C)",                    ID_EDIT_COPY
-        POPUP "拷贝为(&O)"
+        POPUP "复制为(&O)"
         BEGIN
             MENUITEM "文本(&T)",                    ID_EDIT_COPYAS_TEXT
             MENUITEM "&HTML",                       ID_EDIT_COPYAS_HTML
