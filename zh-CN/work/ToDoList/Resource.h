@@ -84,6 +84,7 @@
 #define IDD_REGMIGRATION_DIALOG         203
 #define IDD_SENDTASKS_DIALOG            204
 #define IDR_TREEDRAGDROP                206
+#define IDD_IMPORT_DIALOG               207
 #define IDC_TB_FRAME                    1001
 #define IDC_REGULARITY                  1001
 #define IDC_REC_OPTIONS_FRAME           1002
@@ -101,9 +102,11 @@
 #define IDC_PRINTTITLE                  1007
 #define IDC_CHARSET                     1007
 #define IDC_MONTHDAY                    1007
+#define IDC_FROMFILEPATH                1007
 #define IDC_DONE                        1008
 #define IDC_SAVEEXPORTSTYLESHEET        1008
 #define IDC_MONTHLIST                   1008
+#define IDC_FROMCLIPBOARDTEXT           1008
 #define IDC_DATETIMEPICKER1             1009
 #define IDC_BEFOREDATE                  1009
 #define IDC_PRINTSTYLESHEET             1009
@@ -217,6 +220,7 @@
 #define IDC_ALLTASKLISTS                1055
 #define IDC_SENDACTIVETASKLIST          1055
 #define IDC_DAILY                       1055
+#define IDC_FROMFILE                    1055
 #define IDC_BUTTON1                     1056
 #define IDC_LOWPRIORITYCOLOR            1056
 #define IDC_ASSIGNSHORTCUT              1056
@@ -231,6 +235,7 @@
 #define IDC_CLEARALLCOLS                1056
 #define IDC_SENDSELECTEDTASKS           1056
 #define IDC_WEEKLY                      1056
+#define IDC_FROMCLIPBOARD               1056
 #define IDC_BUTTON2                     1057
 #define IDC_HIGHPRIORITYCOLOR           1057
 #define IDC_DELETETOOL                  1057
@@ -243,12 +248,15 @@
 #define IDC_THIS                        1058
 #define IDC_ACTIVETASKLIST              1058
 #define IDC_YEARLY                      1058
+#define IDC_TONEWTASKLIST               1058
 #define IDC_BUTTON3                     1059
 #define IDC_SETPRIORITYCOLOR            1059
 #define IDC_IMPORT                      1059
+#define IDC_TOACTIVETASLIST             1059
 #define IDC_TABCONTROL                  1060
 #define IDC_SETDEFAULTCOLOR             1060
 #define IDC_SETGRIDLINECOLOR            1060
+#define IDC_TOSELECTEDTASK              1060
 #define IDC_CHECK2                      1061
 #define IDC_USEPARENTATTRIB             1061
 #define IDC_SPECIFYTREEFONT             1061
@@ -420,6 +428,7 @@
 #define IDC_COLORTASKSBYCOLOR           1168
 #define IDC_SORTDONETASKSATBOTTOM       1168
 #define IDC_PATHLABEL                   1169
+#define IDC_NOCOLORTASKS                1169
 #define IDC_INFOTIPCOMMENTSMAX          1170
 #define IDC_KEEPTABSORDERED             1171
 #define IDC_SHOWTASKLISTCLOSEBTN        1172
@@ -504,6 +513,10 @@
 #define IDC_ENABLEDELAYEDLOADING        1240
 #define IDC_RIGHTSIDECOLUMNS            1241
 #define IDC_ONCE                        1242
+#define IDC_BACKUPONSAVE                1244
+#define IDC_BACKUPLOCATION              1245
+#define IDC_BACKUPLOCATIONLABEL         1246
+#define IDC_NUMBACKUPSTOKEEP            1248
 #define IDB_TOOLBAR24GRAY               30997
 #define ID_NEWITEM                      32771
 #define ID_DELETETASK                   32772
@@ -557,7 +570,7 @@
 #define ID_SAVEALL                      32852
 #define ID_CLOSEALL                     32853
 #define ID_EXIT                         32854
-#define ID_IMPORT_TASKLIST              32855
+#define ID_TOOLS_IMPORT                 32855
 #define ID_TRAYICON_CREATETASK          32857
 #define ID_EDIT_SETPRIORITY0            32882
 #define ID_EDIT_SETPRIORITY1            32883
@@ -603,6 +616,7 @@
 #define ID_TOOLS_TODAYSDATE             32922
 #define ID_TOOLS_TODOLIST               32923
 #define ID_TOOLS_SELTASKCOMMENTS        32924
+#define ID_TOOLS_SELTASKFILELINK        33925
 #define ID_TOOLS_EXPORTTOHTML           32929
 #define ID_TOOLS_EXPORTTOPLAINTEXT      32930
 #define ID_NEXTTOPLEVELTASK             32932
@@ -1237,9 +1251,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        207
-#define _APS_NEXT_COMMAND_VALUE         33222
-#define _APS_NEXT_CONTROL_VALUE         1243
+#define _APS_NEXT_RESOURCE_VALUE        209
+#define _APS_NEXT_COMMAND_VALUE         33226
+#define _APS_NEXT_CONTROL_VALUE         1253
 #define _APS_NEXT_SYMED_VALUE           105
 #endif
 #endif

@@ -48,7 +48,7 @@ BEGIN
             VALUE "FileDescription", "RTFContentCtrl DLL\0"
             VALUE "FileVersion", "1, 0, 0, 2\0"
             VALUE "InternalName", "RTFContentCtrl\0"
-            VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2005 & Johan Rosengren 2005\0"
+            VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2005 & Johan Rosengren (r) 2005\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "RTFContentCtrl.DLL\0"
             VALUE "PrivateBuild", "\0"
@@ -126,6 +126,8 @@ BEGIN
     SEPARATOR
     BUTTON      BUTTON_TEXTCOLOR
     BUTTON      BUTTON_BACKCOLOR
+    SEPARATOR
+    BUTTON      BUTTON_WORDWRAP
 END
 
 
@@ -181,6 +183,8 @@ BEGIN
         MENUITEM "撤消(&U)\tCtrl+Z",            ID_EDIT_UNDO
         MENUITEM "恢复(&R)\tCtrl+Y",            ID_EDIT_REDO
         MENUITEM SEPARATOR
+        MENUITEM "插入横线(&H)",                ID_EDIT_HORZRULE
+        MENUITEM "",                            1
     END
 END
 
@@ -225,6 +229,15 @@ BEGIN
     IDS_COMMENTSGOTOERRMSG  "不能打开选择的文件。\n\n请检查文件是否存在，\n以及是否有程序注册为打开该文件类型。"
 END
 
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_WORDWRAP        "\n自动换行"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    BUTTON_WORDWRAP         "\n自动换行"
+END
 #endif    // 中文(中华人民共和国) resources
 /////////////////////////////////////////////////////////////////////////////
 

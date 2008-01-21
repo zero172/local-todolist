@@ -153,6 +153,9 @@ copy debug\todolistloc.dll ..\debug /y
 			RelativePath="..\RES\bitmap1.bmp">
 		</File>
 		<File
+			RelativePath="..\Res\cc_somerights.bmp">
+		</File>
+		<File
 			RelativePath="..\RES\checklistbox.bmp">
 		</File>
 		<File
