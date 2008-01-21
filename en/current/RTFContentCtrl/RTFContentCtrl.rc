@@ -141,6 +141,8 @@ BEGIN
     SEPARATOR
     BUTTON      BUTTON_TEXTCOLOR
     BUTTON      BUTTON_BACKCOLOR
+    SEPARATOR
+    BUTTON      BUTTON_WORDWRAP
 END
 
 
@@ -190,13 +192,15 @@ BEGIN
         MENUITEM "Show &Formatting Toolbar",    ID_EDIT_SHOWTOOLBAR
         MENUITEM "Show &Ruler",                 ID_EDIT_SHOWRULER
         MENUITEM SEPARATOR
-        MENUITEM "Wordwrap",                    ID_EDIT_WORDWRAP
+        MENUITEM "Word Wrap",                   ID_EDIT_WORDWRAP
     END
     POPUP "unused"
     BEGIN
         MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
         MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
         MENUITEM SEPARATOR
+        MENUITEM "Insert &Horizontal Line",     ID_EDIT_HORZRULE
+        MENUITEM "",                            1
     END
 END
 
@@ -239,6 +243,16 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_COMMENTSGOTOERRMSG  "The selected file could not be opened.\n\nPlease check that the file exists and that there is an application \nregistered for opening the selected file type."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_WORDWRAP        "\nWordwrap"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    BUTTON_WORDWRAP         "\nWord Wrap"
 END
 
 #endif    // English (Australia) resources
