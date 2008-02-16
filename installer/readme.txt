@@ -4,7 +4,6 @@ ToDoList-Installer
 ©¦
 ©¸©¤ToDoList
     ©¦  ToDoList.exe
-    ©¦  CalendarExt.dll
     ©¦  EncryptDecrypt.dll
     ©¦  FMindImportExport.dll
     ©¦  GPExport.dll
@@ -22,7 +21,10 @@ ToDoList-Installer
     ©¦      ToDoListTableStylesheet_v1.xsl
     ©¦      ToDoListDocumentation.tdl
     ©¦
-    ©¸©¤zh-CN
-            RTFContentCtrlLOC.dll
-            ToDoListLOC.dll
-            ToDoListDocumentation.tdl
+    ©À©¤zh-CN
+    ©¦      RTFContentCtrlLOC.dll
+    ©¦      ToDoListLOC.dll
+    ©¦      ToDoListDocumentation.tdl
+    ©¦
+    ©¸©¤plugins
+            CalendarExt.dll

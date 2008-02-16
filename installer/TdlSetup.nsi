@@ -69,7 +69,6 @@ SectionGroup /e "ToDoList" SEC_TODOLIST
     File "ToDoList\GPExport.dll"
     File "ToDoList\FMindImportExport.dll"
     File "ToDoList\EncryptDecrypt.dll"
-    File "ToDoList\CalendarExt.dll"
     File "ToDoList\ToDoList.exe"
 
     SetOutPath "$INSTDIR\Resources"
@@ -78,8 +77,10 @@ SectionGroup /e "ToDoList" SEC_TODOLIST
     File "ToDoList\Resources\TodoListStyler_Firefox.xsl"
     File "ToDoList\Resources\TodoListStyler_v1.5.xsl"
     File "ToDoList\Resources\ToDoListTableStylesheet_v1.xsl"
+
     SetOverwrite on
     File "ToDoList\Resources\ToDoListDocumentation.tdl"
+    SetFileAttributes "$INSTDIR\Resources\ToDoListDocumentation.tdl" READONLY
 
   ; Shortcuts
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
@@ -103,11 +104,13 @@ SectionGroup /e "简体中文资源" SEC_ZH_CN
   Section "简体中文文档" SEC_ZH_CN_DOC
     SetOutPath "$INSTDIR\Resources"
     File "ToDoList\zh-CN\ToDoListDocumentation.tdl"
+    SetFileAttributes "$INSTDIR\Resources\ToDoListDocumentation.tdl" READONLY
   SectionEnd
 SectionGroupEnd
 
 SectionGroup /e "插件" SEC_PLUGINS
   Section /o "日历插件" SEC_PLUGIN_CALC
+    File "ToDoList\plugins\CalendarExt.dll"
   SectionEnd
 SectionGroupEnd
 
