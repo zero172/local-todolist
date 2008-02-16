@@ -4,7 +4,7 @@
 !define PRODUCT_NAME "ToDoList"
 !define PRODUCT_VERSION "5.4.5"
 !define PRODUCT_PUBLISHER "Dan.G"
-!define PRODUCT_WEB_SITE "http://www.codeproject.com/KB/applications/todolist2.aspx"
+!define PRODUCT_WEB_SITE "http://jamesfancy.5d6d.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ToDoList.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -57,7 +57,7 @@ InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
 
-SectionGroup /e "ToDoList" SEC_TODOLIST
+SectionGroup "ToDoList" SEC_TODOLIST
   Section "核心组件" SEC_CORE
     SetOutPath "$INSTDIR"
     SetOverwrite ifnewer
@@ -88,13 +88,9 @@ SectionGroup /e "ToDoList" SEC_TODOLIST
     CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\ToDoList.lnk" "$INSTDIR\ToDoList.exe"
     !insertmacro MUI_STARTMENU_WRITE_END
   SectionEnd
-  
-  Section "桌面快捷方式" SEC_DESKTOP
-    CreateShortCut "$DESKTOP\ToDoList.lnk" "$INSTDIR\ToDoList.exe"
-  SectionEnd
 SectionGroupEnd
 
-SectionGroup /e "简体中文资源" SEC_ZH_CN
+SectionGroup "简体中文资源" SEC_ZH_CN
   Section "简体中文界面" SEC_ZH_CN_UI
     SetOutPath "$INSTDIR"
     File "ToDoList\zh-CN\ToDoListLOC.dll"
@@ -105,6 +101,21 @@ SectionGroup /e "简体中文资源" SEC_ZH_CN
     SetOutPath "$INSTDIR\Resources"
     File "ToDoList\zh-CN\ToDoListDocumentation.tdl"
     SetFileAttributes "$INSTDIR\Resources\ToDoListDocumentation.tdl" READONLY
+  SectionEnd
+SectionGroupEnd
+
+SectionGroup /e "快捷方式" SEC_SHORTCUT
+  Section "桌面快捷方式" SEC_DESKTOP
+    CreateShortCut "$DESKTOP\ToDoList.lnk" "$INSTDIR\ToDoList.exe"
+  SectionEnd
+
+  Section "相关网站" SEC_SITES
+    !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
+    CreateDirectory "$SMPROGRAMS\$ICONS_GROUP\相关网站"
+    CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\相关网站\ToDoList官方网站.lnk" "http://www.codeproject.com/KB/applications/todolist2.aspx"
+    CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\相关网站\ToDoList中文资讯.lnk" "http://hi.baidu.com/jamesfancy"
+    CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\相关网站\ToDoList中文讨论区.lnk" "http://jamesfancy.5d6d.com/forum-4-1.html"
+    !insertmacro MUI_STARTMENU_WRITE_END
   SectionEnd
 SectionGroupEnd
 
@@ -135,11 +146,13 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_TODOLIST} "ToDoList英文原版"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE} "ToDoList主程序和核心插件"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP} "在桌面创建ToDoList的快捷方式"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_ZH_CN} "简体中文资源，包括界面和文档等"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_ZH_CN_UI} "使ToDoList界面文本显示为简体中文"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_ZH_CN_DOC} "安装简体中文和文档。选择此选项不会安装英文文档"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SHORTCUT} "创建附加的快捷方式"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_PLUGINS} "ToDoList的一些插件"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP} "在桌面创建ToDoList的快捷方式"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SITES} "在开始菜单中创建ToDoList相关的一些网站链接"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_PLUGIN_CALC} "Dan.G推荐的一个不错的日历插件"
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
@@ -147,11 +160,6 @@ Function .onInit
   SectionGetFlags "${SEC_CORE}" $R0
   IntOp $R0 $R0 | ${SF_RO}
   SectionSetFlags "${SEC_CORE}" $R0
-FunctionEnd
-
-Function un.onUninstSuccess
-  HideWindow
-  #MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) 已成功地从你的计算机移除。"
 FunctionEnd
 
 Function un.onInit
@@ -182,13 +190,13 @@ Section Uninstall
   Delete "$INSTDIR\Resources\ToDoListTableStylesheet_v1.xsl"
   Delete "$INSTDIR\Resources\ToDoListDocumentation.tdl"
   RMDir "$INSTDIR\Resources"
+  RMDir "$INSTDIR"
 
   Delete "$SMPROGRAMS\$ICONS_GROUP\卸载ToDoList.lnk"
   Delete "$DESKTOP\ToDoList.lnk"
   Delete "$SMPROGRAMS\$ICONS_GROUP\ToDoList.lnk"
-
+  RMDir /r "$SMPROGRAMS\$ICONS_GROUP\相关网站"
   RMDir "$SMPROGRAMS\$ICONS_GROUP"
-  RMDir "$INSTDIR"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
