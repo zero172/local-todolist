@@ -20,7 +20,7 @@
   !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\orange-r.bmp"
 !define MUI_ABORTWARNING
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
+!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\win-uninstall.ico"
 
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
@@ -56,6 +56,7 @@ InstallDir "$PROGRAMFILES\ToDoList"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
+BrandingText "  http://hi.baidu.com/jamesfancy"
 
 SectionGroup "ToDoList" SEC_TODOLIST
   Section "ºËÐÄ×é¼þ" SEC_CORE
