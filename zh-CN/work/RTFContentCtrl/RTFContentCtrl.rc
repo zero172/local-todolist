@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -27,7 +27,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,2
+ FILEVERSION 1,0,0,85
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -43,18 +43,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "RTFContentCtrl DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 2\0"
-            VALUE "InternalName", "RTFContentCtrl\0"
-            VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2005 & Johan Rosengren (r) 2005\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "RTFContentCtrl.DLL\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "RTFContentCtrl Dynamic Link Library\0"
-            VALUE "ProductVersion", "1, 0, 0, 0\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "FileDescription", "RTFContentCtrl DLL"
+            VALUE "FileVersion", "1, 0, 0, 85"
+            VALUE "InternalName", "RTFContentCtrl"
+            VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2005 & Johan Rosengren (r) 2005"
+            VALUE "OriginalFilename", "RTFContentCtrl.DLL"
+            VALUE "ProductName", "RTFContentCtrl Dynamic Link Library"
+            VALUE "ProductVersion", "1, 0, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -136,8 +131,8 @@ END
 // Bitmap
 //
 
-TOOLBAR_CONTROL         BITMAP  DISCARDABLE     "toolbar.bmp"
-IDB_TOOLBAR             BITMAP  DISCARDABLE     "toolbar2.bmp"
+TOOLBAR_CONTROL         BITMAP                  "toolbar.bmp"
+IDB_TOOLBAR             BITMAP                  "toolbar2.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -169,9 +164,9 @@ BEGIN
         MENUITEM "插入文件链接...(&F)",         ID_EDIT_FILEBROWSE
         MENUITEM SEPARATOR
         MENUITEM "插入时间(&D)",                ID_EDIT_INSERTDATESTAMP
-        MENUITEM "插入文件链接...(&F)",        ID_EDIT_FILEBROWSE
+        MENUITEM "插入文件链接...(&F)",         ID_EDIT_FILEBROWSE
         MENUITEM SEPARATOR
-        MENUITEM "拼写检查(&H)",             ID_EDIT_SPELLCHECK
+        MENUITEM "拼写检查(&H)",                ID_EDIT_SPELLCHECK
         MENUITEM SEPARATOR
         MENUITEM "显示格式工具栏(&F)",          ID_EDIT_SHOWTOOLBAR
         MENUITEM "显示标尺(&R)",                ID_EDIT_SHOWRULER
@@ -194,7 +189,7 @@ END
 // String Table
 //
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     STRING_COLOR            "字"
     STRING_DEFAULT          "自动"
@@ -218,26 +213,27 @@ BEGIN
     BUTTON_STRIKETHRU       "\n删除线"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     BUTTON_TEXTCOLOR        "文本颜色"
     BUTTON_BACKCOLOR        "背景颜色"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_COMMENTSGOTOERRMSG  "不能打开选择的文件。\n\n请检查文件是否存在，\n以及是否有程序注册为打开该文件类型。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_EDIT_WORDWRAP        "\n自动换行"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     BUTTON_WORDWRAP         "\n自动换行"
 END
+
 #endif    // 中文(中华人民共和国) resources
 /////////////////////////////////////////////////////////////////////////////
 

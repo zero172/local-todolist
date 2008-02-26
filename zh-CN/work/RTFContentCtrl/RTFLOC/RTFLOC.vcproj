@@ -126,7 +126,8 @@ copy debug\rtfcontentctrlloc.dll ..\debug /y
 				Name="VCPostBuildEventTool"
 				CommandLine="mkdir ..\release
 copy release\rtfcontentctrlloc.dll ..\release /y
-copy release\rtfcontentctrlloc.dll ..\..\todolist\release /y"/>
+copy release\rtfcontentctrlloc.dll ..\..\todolist\release /y
+"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -175,6 +176,9 @@ copy release\rtfcontentctrlloc.dll ..\..\todolist\release /y"/>
 		</File>
 		<File
 			RelativePath="..\toolbar.bmp">
+		</File>
+		<File
+			RelativePath="..\toolbar2.bmp">
 		</File>
 	</Files>
 	<Globals>
