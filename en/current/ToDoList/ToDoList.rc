@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,4,0,0
+ FILEVERSION 5,4,10,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -47,7 +47,7 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 4, 0, 0\0"
+            VALUE "FileVersion", "5, 4, 10, 0\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-08\0"
             VALUE "LegalTrademarks", "\0"
@@ -2389,9 +2389,7 @@ BEGIN
             , GRAYED
         END
         MENUITEM SEPARATOR
-        MENUITEM "About...",                    ID_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "AbstractSpoon © 2003-06",     ID_TRAYICON, GRAYED
+        MENUITEM "About ToDoList",              ID_ABOUT
         MENUITEM SEPARATOR
         MENUITEM "E&xit ToDoList",              ID_TRAYICON_CLOSE
     END

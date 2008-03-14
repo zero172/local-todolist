@@ -616,7 +616,6 @@
 #define ID_TOOLS_TODAYSDATE             32922
 #define ID_TOOLS_TODOLIST               32923
 #define ID_TOOLS_SELTASKCOMMENTS        32924
-#define ID_TOOLS_SELTASKFILELINK        33925
 #define ID_TOOLS_EXPORTTOHTML           32929
 #define ID_TOOLS_EXPORTTOPLAINTEXT      32930
 #define ID_NEXTTOPLEVELTASK             32932
@@ -830,6 +829,7 @@
 #define ID_TDD_TASKREFERENCE            33219
 #define ID_NEXTTASK                     33220
 #define ID_PREVTASK                     33221
+#define ID_TOOLS_SELTASKFILELINK        33925
 #define IDS_PTP_NEWTOOL                 57671
 #define IDS_PTP_TOOLNAME                57672
 #define IDS_PTP_TOOLPATH                57673
@@ -1253,7 +1253,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        209
 #define _APS_NEXT_COMMAND_VALUE         33226
-#define _APS_NEXT_CONTROL_VALUE         1253
+#define _APS_NEXT_CONTROL_VALUE         1255
 #define _APS_NEXT_SYMED_VALUE           105
 #endif
 #endif
