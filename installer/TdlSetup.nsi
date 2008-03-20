@@ -122,6 +122,7 @@ SectionGroupEnd
 
 SectionGroup /e "插件" SEC_PLUGINS
   Section /o "日历插件 1.0 Alpha 4" SEC_PLUGIN_CALC
+    SetOutPath "$INSTDIR"
     File "ToDoList\plugins\CalendarExt.dll"
   SectionEnd
 SectionGroupEnd
