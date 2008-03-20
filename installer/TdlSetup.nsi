@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "ToDoList"
-!define PRODUCT_VERSION "5.4.7"
+!define PRODUCT_VERSION "5.4.10"
 !define PRODUCT_PUBLISHER "Dan.G"
 !define PRODUCT_WEB_SITE "http://jamesfancy.5d6d.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ToDoList.exe"
@@ -98,7 +98,7 @@ SectionGroup "简体中文资源" SEC_ZH_CN
     File "ToDoList\zh-CN\RTFContentCtrlLOC.dll"
   SectionEnd
 
-  Section /o "简体中文文档(未完成)" SEC_ZH_CN_DOC
+  Section "简体中文文档" SEC_ZH_CN_DOC
     SetOutPath "$INSTDIR\Resources"
     File "ToDoList\zh-CN\ToDoListDocumentation.tdl"
     SetFileAttributes "$INSTDIR\Resources\ToDoListDocumentation.tdl" READONLY
@@ -121,7 +121,7 @@ SectionGroup /e "快捷方式" SEC_SHORTCUT
 SectionGroupEnd
 
 SectionGroup /e "插件" SEC_PLUGINS
-  Section /o "日历插件" SEC_PLUGIN_CALC
+  Section /o "日历插件 1.0 Alpha 4" SEC_PLUGIN_CALC
     File "ToDoList\plugins\CalendarExt.dll"
   SectionEnd
 SectionGroupEnd
@@ -149,7 +149,7 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_CORE} "ToDoList主程序和核心插件"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_ZH_CN} "简体中文资源，包括界面和文档等"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_ZH_CN_UI} "使ToDoList界面文本显示为简体中文"
-  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_ZH_CN_DOC} "安装简体中文的文档，它会替换掉原来的英文文档。目前中文文档翻译工作尚未完成，仅有部分翻译。"
+  !insertmacro MUI_DESCRIPTION_TEXT ${SEC_ZH_CN_DOC} "安装简体中文的文档，它会替换掉原来的英文文档。"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_SHORTCUT} "创建附加的快捷方式"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_PLUGINS} "ToDoList的一些插件"
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP} "在桌面创建ToDoList的快捷方式"
