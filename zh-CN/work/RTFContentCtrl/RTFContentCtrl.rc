@@ -27,7 +27,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,85
+ FILEVERSION 1,0,0,90
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -43,9 +43,10 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "RTFContentCtrl DLL"
-            VALUE "FileVersion", "1, 0, 0, 85"
-            VALUE "InternalName", "RTFContentCtrl"
+            VALUE "Comments", "边城狂人(James Fanch) 翻译"
+            VALUE "FileDescription", "RTFContentCtrl简体中文资源"
+            VALUE "FileVersion", "1, 0, 0, 90"
+            VALUE "InternalName", "RTFContentCtrlLOC.DLL"
             VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2005 & Johan Rosengren (r) 2005"
             VALUE "OriginalFilename", "RTFContentCtrl.DLL"
             VALUE "ProductName", "RTFContentCtrl Dynamic Link Library"

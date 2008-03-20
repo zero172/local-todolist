@@ -27,7 +27,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,4,0,85
+ FILEVERSION 5,4,0,90
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -43,11 +43,11 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "Comments", "边城狂人 汉化"
+            VALUE "Comments", "边城狂人(James Fancy) 翻译"
             VALUE "CompanyName", "AbstractSpoon Software"
-            VALUE "FileDescription", "ToDoList"
-            VALUE "FileVersion", "5, 4, 0, 85"
-            VALUE "InternalName", "ToDoList"
+            VALUE "FileDescription", "ToDoList简体中文资源"
+            VALUE "FileVersion", "5, 4, 0, 90"
+            VALUE "InternalName", "ToDoListLOC.DLL"
             VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2003-08"
             VALUE "OriginalFilename", "ToDoList.exe"
             VALUE "ProductName", "ToDoList"
@@ -74,7 +74,7 @@ BEGIN
     LTEXT           "导出(&X)",IDC_STATIC,7,9,33,8
     COMBOBOX        IDC_TASKLISTOPTIONS,41,7,98,125,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "导出到单一文件(&P)",IDC_EXPORTONEFILE,"Button",
+    CONTROL         "导出到单一文件(&O)",IDC_EXPORTONEFILE,"Button",
                     BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | 
                     WS_TABSTOP,144,8,84,10
     LTEXT           "格式(&F)",IDC_STATIC,7,28,32,8
@@ -83,7 +83,7 @@ BEGIN
     LTEXT           "路径(&P)",IDC_PATHLABEL,7,47,32,8
     EDITTEXT        IDC_EXPORTPATH,41,45,187,14,ES_AUTOHSCROLL
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,143,221,1
-    DEFPUSHBUTTON   "确定",IDOK,121,151,50,14
+    DEFPUSHBUTTON   "导出(&E)",IDOK,121,151,50,14
     PUSHBUTTON      "取消",IDCANCEL,178,151,50,14
     CONTROL         "",IDC_FRAME,"Static",SS_BLACKFRAME | NOT WS_VISIBLE | 
                     WS_DISABLED,7,66,221,70
@@ -137,11 +137,11 @@ STYLE DS_SETFONT | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "Tahoma", 0, 0, 0x1
 BEGIN
-    CONTROL         "等于(&T)",IDC_THIS,"Button",BS_AUTORADIOBUTTON | 
+    CONTROL         "此时(&T)",IDC_THIS,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,0,1,47,10
-    CONTROL         "大于(&F)",IDC_AFTER,"Button",BS_AUTORADIOBUTTON,0,18,44,
+    CONTROL         "后于(&F)",IDC_AFTER,"Button",BS_AUTORADIOBUTTON,0,18,44,
                     10
-    CONTROL         "小于(&E)",IDC_BEFORE,"Button",BS_AUTORADIOBUTTON | 
+    CONTROL         "先于(&E)",IDC_BEFORE,"Button",BS_AUTORADIOBUTTON | 
                     WS_TABSTOP,0,35,45,10
     CONTROL         "介于(&B)",IDC_BETWEEN,"Button",BS_AUTORADIOBUTTON | 
                     WS_TABSTOP,0,52,46,10
@@ -160,7 +160,7 @@ END
 
 IDD_FINDNUM_PAGE DIALOGEX 0, 0, 136, 78
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "Tahoma", 0, 0, 0x0
+FONT 8, "Tahoma", 0, 0, 0x1
 BEGIN
     CONTROL         "等于(&T)",IDC_THIS,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,0,1,43,10
@@ -180,7 +180,7 @@ END
 
 IDD_FINDTEXT_PAGE DIALOGEX 0, 0, 136, 73
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "Tahoma", 0, 0, 0x0
+FONT 8, "Tahoma", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_TEXT,0,0,136,115,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
                     WS_VSCROLL | WS_TABSTOP
@@ -188,7 +188,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,0,20,136,10
     CONTROL         "区分大小写(&C)",IDC_MATCHCASE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,0,34,135,10
-    CONTROL         "匹配所有词(&A)",IDC_MATCHALLWORDS,"Button",
+    CONTROL         "匹配所有字(&A)",IDC_MATCHALLWORDS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,0,48,136,10
 END
 
@@ -211,23 +211,23 @@ END
 
 IDD_PREFEXPORT_PAGE DIALOGEX 0, 0, 369, 249
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "Tahoma", 0, 0, 0x0
+FONT 8, "Tahoma", 0, 0, 0x1
 BEGIN
-    CONTROL         "仅导出列中显示的属性(&X)",IDC_EXPORTVISIBLEONLY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,7,161,10
-    CONTROL         "仅导出上级任务的标题和备注",
+    CONTROL         "仅导出列中显示出来的属性(&X)",IDC_EXPORTVISIBLEONLY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,161,10
+    CONTROL         "仅导出父任务的标题和备注",
                     IDC_EXPORTPARENTTITLECOMMENTSONLY,"Button",
                     BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,
                     21,161,18
     CONTROL         "每个任务后添加一段空白以便写备注",
                     IDC_EXPORTSPACEFORNOTES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,41,161,10
-    CONTROL         "导出后打开(&P)",IDC_PREVIEWEXPORT,"Button",
+    CONTROL         "预览结果(&P)",IDC_PREVIEWEXPORT,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,63,10
     LTEXT           "字体(&F)",IDC_STATIC,15,83,34,8
     COMBOBOX        IDC_HTMLFONTLIST,65,81,86,237,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "大小(&Z)",IDC_STATIC,15,100,40,8
+    LTEXT           "大小(&S)",IDC_STATIC,15,100,40,8
     COMBOBOX        IDC_HTMLFONTSIZE,65,98,39,237,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "字符集",IDC_STATIC,15,117,46,8
@@ -245,7 +245,7 @@ END
 
 IDD_PREFFILE_PAGE DIALOGEX 0, 0, 369, 250
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "Tahoma", 0, 0, 0x0
+FONT 8, "Tahoma", 0, 0, 0x1
 BEGIN
     LTEXT           "载入任务列表后",IDC_LOADGROUP,7,7,166,8
     CONTROL         "如果任务列表是只读的，提醒我(&N)",IDC_NOTIFYREADONLY,
@@ -256,14 +256,14 @@ BEGIN
                     WS_TABSTOP,7,35,160,10
     COMBOBOX        IDC_NOTIFYDUEBYONLOAD,19,48,144,98,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "将已完成的任务存档(&A)",IDC_AUTOARCHIVE,"Button",
+    CONTROL         "将已完成的任务归档(&A)",IDC_AUTOARCHIVE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,65,160,10
-    CONTROL         "刷新活动的“查找任务”结果(&R)",IDC_REFRESHFINDTASKS,
+    CONTROL         "刷新当前“查找任务”结果(&R)",IDC_REFRESHFINDTASKS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,79,160,10
     CONTROL         "展开所有任务(&E)",IDC_EXPANDTASKS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,93,157,10
     LTEXT           "存档",IDC_ARCHIVEGROUP,7,110,166,8
-    CONTROL         "将已存档的任务从当前列表中删队(&R)",
+    CONTROL         "将已存档的任务从当前列表中删除(&R)",
                     IDC_REMOVEARCHIVEDITEMS,"Button",BS_AUTOCHECKBOX | 
                     WS_GROUP | WS_TABSTOP,7,123,160,10
     CONTROL         "除非这些任务做了标记(&U)",IDC_DONTREMOVEFLAGGED,"Button",
@@ -321,9 +321,9 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PREFGEN_PAGE DIALOG  0, 0, 369, 249
+IDD_PREFGEN_PAGE DIALOGEX 0, 0, 369, 249
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
     CONTROL         "保持ToDoList在顶层(&K)",IDC_ALWAYSONTOP,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,7,171,10
@@ -360,7 +360,7 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,185,125,10
     CONTROL         "在菜单中显示最近打开的(MRU)任务列表",IDC_ADDFILESTOMRU,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,199,171,10
-    PUSHBUTTON      "清空MRU列表",IDC_CLEARMRU,123,210,57,14
+    PUSHBUTTON      "清空MRU列表",IDC_CLEARMRU,114,211,57,14
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
     CONTROL         "启动时自动检查更新",IDC_CHECKFORUPDATES,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,229,172,10
@@ -434,28 +434,28 @@ BEGIN
                     WS_TABSTOP,18,35,157,10
     CONTROL         "任务列表中包含未激活的任务",IDC_TRACKNONACTIVETASKLISTS,
                     "Button",BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,18,49,163,10
+                    BS_MULTILINE | WS_TABSTOP,18,50,163,10
     CONTROL         "屏幕保护程序正在运行或者桌面被锁定",
                     IDC_TRACKSCREENSAVER,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,18,63,158,17
+                    BS_MULTILINE | WS_TABSTOP,18,65,158,10
     CONTROL         "计算机休眠或待机",IDC_TRACKHIBERNATED,"Button",
-                    BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,18,81,157,10
+                    BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,18,80,157,10
     CONTROL         "跟踪新任务时停止跟踪其它打开的任务列表中的任务",
                     IDC_EXCLUSIVETRACKING,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,7,97,158,18
+                    BS_MULTILINE | WS_TABSTOP,7,96,158,18
     CONTROL         "记录跟踪时间",IDC_LOGTIME,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,117,81,10
     CONTROL         "将每个任务的记录保存在不同的文件",IDC_LOGTASKSEPARATELY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,131,156,10
     CONTROL         "在上级任务中进行时间跟踪",IDC_ALLOWPARENTRACKING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,146,128,10
-    LTEXT           "1天代表",IDC_STATIC,7,179,50,8
+    LTEXT           "1天代表",IDC_STATIC,33,179,32,8
     COMBOBOX        IDC_HOURSINONEDAY,71,177,39,115,CBS_DROPDOWN | 
                     WS_TABSTOP
-    LTEXT           "1周代表",IDC_STATIC,7,194,56,8
+    LTEXT           "1周代表",IDC_STATIC,33,194,32,8
     COMBOBOX        IDC_DAYSINONEWEEK,71,192,39,108,CBS_DROPDOWN | 
                     WS_TABSTOP
-    CONTROL         "如何一个任务的所有子任务都已完成，那么这个任务也被当作完成((&T)",
+    CONTROL         "如果一个任务的所有子任务都已完成，那么这个任务也被当作完成((&T)",
                     IDC_TREATSUBCOMPLETEDASDONE,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,191,7,176,18
     CONTROL         "用“消耗时间”除以“估计时间”来计算“完成百分比”",
@@ -558,21 +558,21 @@ BEGIN
     LTEXT           "继承属性",IDC_INHERITGROUP,191,7,175,8
 END
 
-IDD_PREFTOOLS_PAGE DIALOG  0, 0, 369, 249
+IDD_PREFTOOLS_PAGE DIALOGEX 0, 0, 369, 249
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
     CONTROL         "List1",IDC_TOOLLIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | 
                     LVS_EDITLABELS | LVS_NOSORTHEADER | WS_BORDER | 
                     WS_TABSTOP,7,7,355,168
     DEFPUSHBUTTON   "新工具(&N)",IDC_NEWTOOL,7,182,50,14
-    LTEXT           "路径(&P)",IDC_STATIC,64,184,31,8
+    LTEXT           "路径(&P)",IDC_STATIC,65,184,29,8
     EDITTEXT        IDC_TOOLPATH,104,182,203,14,ES_AUTOHSCROLL
     PUSHBUTTON      "删除工具(&D)",IDC_DELETETOOL,312,182,50,14
-    LTEXT           "参数(&A)",IDC_STATIC,64,202,34,8
+    LTEXT           "参数(&A)",IDC_STATIC,65,202,29,8
     EDITTEXT        IDC_CMDLINE,104,200,203,14,ES_AUTOHSCROLL
-    LTEXT           "图标(&I)",IDC_STATIC,64,220,32,8
+    LTEXT           "图标(&I)",IDC_STATIC,65,220,29,8
     EDITTEXT        IDC_ICONPATH,104,218,203,14,ES_AUTOHSCROLL | WS_DISABLED
     CONTROL         "最小化运行(&R)",IDC_RUNMINIMIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,104,236,86,10
@@ -804,10 +804,10 @@ BEGIN
                     WS_TABSTOP,172,9,57,10
 END
 
-IDD_WELCOME_DIALOG DIALOG  0, 0, 246, 106
+IDD_WELCOME_DIALOG DIALOGEX 0, 0, 246, 106
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "欢迎使用ToDoList - AbstractSpoon"
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
     LTEXT           "Static",IDC_TEXT,7,7,232,77
     COMBOBOX        IDC_PREFCHOICE,7,87,176,57,CBS_DROPDOWNLIST | WS_VSCROLL | 
@@ -900,9 +900,9 @@ BEGIN
     CONTROL         "已完成任务(&C)",IDC_INCLUDEDONE,"Button",
                     BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,43,17,68,10
     CONTROL         "未完成任务(&U)",IDC_INCLUDENOTDONE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,43,60,74,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,43,31,74,10
     CONTROL         "以及其子任务",IDC_INCLUDESUBTASKS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,43,31,77,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,43,60,77,10
     LTEXT           "包含：",IDC_STATIC,2,3,27,8
 END
 
@@ -954,9 +954,9 @@ BEGIN
                     WS_TABSTOP
 END
 
-IDD_FINDRISK_PAGE DIALOG  0, 0, 136, 78
+IDD_FINDRISK_PAGE DIALOGEX 0, 0, 136, 78
 STYLE DS_SETFONT | WS_CHILD
-FONT 8, "Tahoma"
+FONT 8, "Tahoma", 0, 0, 0x0
 BEGIN
     CONTROL         "等于(&T)",IDC_THIS,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,0,1,47,10
@@ -974,7 +974,7 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_RISKSTART,50,50,86,96,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "和",IDC_STATIC,31,68,13,8
+    LTEXT           "和",IDC_STATIC,27,68,13,8
     COMBOBOX        IDC_RISKEND,50,65,86,96,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
 END
@@ -985,15 +985,15 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "Tahoma", 0, 0, 0x1
 BEGIN
     LTEXT           "显示(&O)",IDC_FILTERLABEL,8,8,29,12,SS_CENTERIMAGE
-    COMBOBOX        IDC_FILTERCOMBO,37,7,151,112,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_FILTERCOMBO,37,8,151,112,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "高于优先级(&P)",IDC_PRIORITYFILTERLABEL,191,8,52,8,
+    LTEXT           "高于优先级(&P)",IDC_PRIORITYFILTERLABEL,191,10,52,8,
                     SS_CENTERIMAGE
-    COMBOBOX        IDC_PRIORITYFILTERCOMBO,244,7,33,118,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_PRIORITYFILTERCOMBO,244,8,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "高于风险(&R)",IDC_RISKFILTERLABEL,279,9,44,8,
+    LTEXT           "高于风险(&R)",IDC_RISKFILTERLABEL,279,10,44,8,
                     SS_CENTERIMAGE
     COMBOBOX        IDC_RISKFILTERCOMBO,327,8,33,118,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -1007,19 +1007,19 @@ BEGIN
     COMBOBOX        IDC_ALLOCBYFILTERCOMBO,262,30,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "状态",IDC_STATUSFILTERLABEL,302,28,22,8,SS_CENTERIMAGE
+    LTEXT           "状态",IDC_STATUSFILTERLABEL,302,32,22,8,SS_CENTERIMAGE
     COMBOBOX        IDC_STATUSFILTERCOMBO,328,30,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "分类(&G)",IDC_CATEGORYFILTERLABEL,13,46,31,8,
+    LTEXT           "分类(&G)",IDC_CATEGORYFILTERLABEL,13,47,31,8,
                     SS_CENTERIMAGE
     COMBOBOX        IDC_CATEGORYFILTERCOMBO,49,46,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "必须匹配所有人(&S)",IDC_ALLALLOCTO,"Button",
-                    BS_AUTOCHECKBOX | BS_VCENTER | WS_TABSTOP,87,28,117,12
+                    BS_AUTOCHECKBOX | BS_VCENTER | WS_TABSTOP,87,27,117,12
     CONTROL         "必须匹配所有分类(&E)",IDC_ALLCATEGORIES,"Button",
-                    BS_AUTOCHECKBOX | BS_VCENTER | WS_TABSTOP,87,47,117,12
+                    BS_AUTOCHECKBOX | BS_VCENTER | WS_TABSTOP,87,46,117,12
 END
 
 IDD_FINDCATEGORY_PAGE DIALOG  0, 0, 136, 73
@@ -1052,33 +1052,32 @@ BEGIN
     LTEXT           "任务发生：",IDC_STATIC,7,7,40,8
     CONTROL         "一次(&O)",IDC_ONCE,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,53,7,55,10
-    CONTROL         "每天(&D)",IDC_DAILY,"Button",BS_AUTORADIOBUTTON,15,38,
-                    37,10
-    CONTROL         "每周(&W)",IDC_WEEKLY,"Button",BS_AUTORADIOBUTTON,15,65,
-                    39,10
-    CONTROL         "每月(&M)",IDC_MONTHLY,"Button",BS_AUTORADIOBUTTON,15,92,
-                    41,10
-    CONTROL         "每年(&Y)",IDC_YEARLY,"Button",BS_AUTORADIOBUTTON,15,119,
-                    36,10
-    LTEXT           "每(&E)",IDC_STATIC,26,50,19,8
+    CONTROL         "按天",IDC_DAILY,"Button",BS_AUTORADIOBUTTON,15,38,37,10
+    CONTROL         "按周",IDC_WEEKLY,"Button",BS_AUTORADIOBUTTON,15,65,39,
+                    10
+    CONTROL         "按月",IDC_MONTHLY,"Button",BS_AUTORADIOBUTTON,15,92,41,
+                    10
+    CONTROL         "按年",IDC_YEARLY,"Button",BS_AUTORADIOBUTTON,15,119,36,
+                    10
+    LTEXT           "每",IDC_STATIC,39,50,10,8
     EDITTEXT        IDC_DAYS,52,48,25,13,ES_AUTOHSCROLL
     LTEXT           "天",IDC_STATIC,83,50,20,8
-    LTEXT           "每(&E)",IDC_STATIC,26,78,19,8
+    LTEXT           "每",IDC_STATIC,39,78,10,8
     EDITTEXT        IDC_WEEKS,52,76,25,13,ES_AUTOHSCROLL
-    LTEXT           "周，在(&O)",IDC_STATIC,83,78,36,8
+    LTEXT           "周，在",IDC_STATIC,83,78,25,8
     LISTBOX         IDC_WEEKDAYS,124,56,94,44,LBS_OWNERDRAWFIXED | 
                     LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_MULTICOLUMN | 
                     LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "在(&O)",IDC_STATIC,26,106,23,8
+    LTEXT           "在",IDC_STATIC,39,106,10,8
     EDITTEXT        IDC_MONTHDAY,52,103,25,13,ES_AUTOHSCROLL
-    LTEXT           "于每(&V)",IDC_STATIC,83,106,32,8
+    LTEXT           "日，于每",IDC_STATIC,83,106,32,8
     EDITTEXT        IDC_MONTHS,124,103,25,13,ES_AUTOHSCROLL
     LTEXT           "月",IDC_STATIC,155,106,28,8
-    LTEXT           "每(&E)",IDC_STATIC,26,132,19,8
+    LTEXT           "每",IDC_STATIC,39,132,10,8
     COMBOBOX        IDC_MONTHLIST,52,130,69,30,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     EDITTEXT        IDC_YEARMONTHDAY,124,130,25,13,ES_AUTOHSCROLL
-    LTEXT           "计算下一次发生时间(&C)",IDC_RECALCFROMLABEL,26,159,82,8
+    LTEXT           "计算下一次发生时间",IDC_RECALCFROMLABEL,26,159,82,8
     COMBOBOX        IDC_RECALCFROM,124,157,94,30,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,16,150,203,1
@@ -1958,7 +1957,7 @@ BEGIN
         MENUITEM "重做(&R)",                    ID_EDIT_REDO
         MENUITEM SEPARATOR
         MENUITEM "编辑任务标题(&E)",            ID_EDIT_TASKTEXT
-        POPUP "其它任务自发性(&A)"
+        POPUP "其它任务属性(&A)"
         BEGIN
             MENUITEM "给任务设置颜色...(&C)",       ID_EDIT_TASKCOLOR
             MENUITEM "清除任务颜色(&C)",            ID_EDIT_CLEARTASKCOLOR
@@ -2000,10 +1999,10 @@ BEGIN
         MENUITEM "查看任务的日志文件(&L)",      ID_SHOWTIMELOGFILE
         MENUITEM SEPARATOR
         MENUITEM "插入日期(&I)",                ID_EDIT_INSERTDATE
-        MENUITEM "插入日期和日间(&I)",          ID_EDIT_INSERTDATETIME
+        MENUITEM "插入日期和时间(&I)",          ID_EDIT_INSERTDATETIME
         MENUITEM SEPARATOR
         MENUITEM "对任务标题进行拼写检查(&K)",  ID_EDIT_SPELLCHECKTITLE
-        MENUITEM "对任务血液进行拼写检查(&K)",  ID_EDIT_SPELLCHECKCOMMENTS
+        MENUITEM "对任务备注进行拼写检查(&K)",  ID_EDIT_SPELLCHECKCOMMENTS
         MENUITEM SEPARATOR
         MENUITEM "剪切(&U)",                    ID_EDIT_CUT
         MENUITEM "复制(&C)",                    ID_EDIT_COPY
@@ -2111,7 +2110,7 @@ BEGIN
         MENUITEM "按分类(&C)",                  ID_SORT_BYCATEGORY
         MENUITEM "按创建人(&Y)",                ID_SORT_BYCREATEDBY
         MENUITEM SEPARATOR
-        MENUITEM "禁止排序",                    ID_SORT_NONE
+        MENUITEM "禁止排序(&D)",                ID_SORT_NONE
     END
     POPUP "删除(&D)"
     BEGIN
