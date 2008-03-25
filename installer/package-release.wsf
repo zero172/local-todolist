@@ -1,0 +1,310 @@
+<job id="create release package">
+<script language="vbscript">
+Function getInput(text, title)
+    GetInput = InputBox(text, title)
+End Function
+</script>
+
+<script language="jscript">
+var package = new Object();
+package.shell = new ActiveXObject("WScript.Shell");
+package.fso = new ActiveXObject("Scripting.FileSystemObject");
+
+package.VAR = {
+    origin: "TDL_ORIGINAL",
+    plugins: "TDL_PLUGINS",
+    zhCnDll: "TDL_ZH_CN_DLL",
+    zhCnDoc: "TDL_ZH_CN_DOC",
+    middle: "TDL_MIDDLE",
+    release: "TDL_RELEASE",
+    upx: "TDL_UPX",
+    nsis: "TDL_NSIS",
+    zip: "TDL_ZIP"
+};
+
+package.DEFAULT = {
+    origin: "original-todolist~",
+    plugins: "original-plugins~",
+    zhCnDll: "zh-CN~\\todolist\\release",
+    zhCnDoc: "zh-CN~\\doc",
+    middle: "ToDoList",
+    release: "release",
+    upx: "",
+    nsis: "makensis.exe",
+    zip: "7z.exe -r -tzip -mx=9"
+};
+
+package.getVariables = function() {
+    var env = this.shell.Environment("Process");
+    this.origin = env(this.VAR.origin) || this.DEFAULT.origin;
+    this.plugins = env(this.VAR.plugins) || this.DEFAULT.plugins;
+    this.zhCnDll = env(this.VAR.zhCnDll) || this.DEFAULT.zhCnDll;
+    this.zhCnDoc = env(this.VAR.zhCnDoc) || this.DEFAULT.zhCnDoc;
+    this.middle = env(this.VAR.middle) || this.DEFAULT.middle;
+    this.release = env(this.VAR.release) || this.DEFAULT.release;
+    this.upx = env(this.VAR.upx) || this.DEFAULT.upx;
+    this.nsis = env(this.VAR.nsis) || this.DEFAULT.nsis;
+    this.zip = env(this.VAR.zip) || this.DEFAULT.zip;
+}
+
+package.getVersion = function() {
+    this.version = getInput("请输入ToDoList版本号：", "输入版本");
+}
+
+package.printVariables = function() {
+    this.println("-------------------------------");
+    this.println("Origin:    " + this.origin);
+    this.println("Plugins:   " + this.plugins);
+    this.println("Version:   " + this.version);
+    this.println("zh-CN Dll: " + this.zhCnDll);
+    this.println("zh-CN Dco: " + this.zhCnDoc);
+    this.println("Middle:    " + this.middle);
+    this.println("Release:   " + this.release);
+    this.println("Upx Exe:   " + this.upx);
+    this.println("Nsis Exe:  " + this.nsis);
+    this.println("Zip Exe:   " + this.zip);
+    this.println("-------------------------------");
+}
+
+package.println = function(message) {
+    WScript.Echo(message);
+}
+
+package.warning = function(message) {
+    this.println("Warming: " + message);
+}
+
+package.info = function(message) {
+    this.println("Info: " + message);
+}
+
+package.error = function(message) {
+    this.println("Error: " + message);
+}
+
+package.prepareMiddle = function() {
+    if (this.fso.FolderExists(this.middle)) {
+        this.info("中间目录已经存在，删除它... [" + this.middle + "]");
+        this.fso.DeleteFolder(this.middle);
+    }
+    this.info("创建中间目录 [" + this.middle + "]");
+    this.fso.CreateFolder(this.middle);
+}
+
+package.copyMiddle = function() {
+    this.prepareMiddle();
+    this.info("拷贝文件到中间目录...");
+
+    this.info("  拷贝原版ToDoList...");
+    try {
+        this.fso.CopyFile(this.fso.BuildPath(this.origin, "*"), this.middle);
+        this.fso.CopyFolder(this.fso.BuildPath(this.origin, "Resources"),
+            this.fso.BuildPath(this.middle, "Resources"));
+    } catch (err) {
+        this.error("拷贝原版ToDoList失败，脚本中止！");
+        return false;
+    }
+
+    this.info("  拷贝原版插件...");
+    try {
+        this.fso.CopyFolder(this.plugins, this.fso.BuildPath(this.middle, "plugins"));
+    } catch (err) {
+        this.warning("拷贝原版插件失败，可能不存在插件！");
+    }
+    
+    var zhCnFolder = this.fso.BuildPath(this.middle, "zh-CN");
+    this.info("  创建中文资源目录 [" + zhCnFolder + "]");
+    this.fso.CreateFolder(zhCnFolder);
+    this.info("  拷贝中文资源DLL...");
+    try {
+        this.fso.CopyFile(this.fso.BuildPath(this.zhCnDll, "*.dll"), zhCnFolder);
+    } catch (err) {
+        this.error("拷贝中文资源失败，脚本中止！");
+        return false;
+    }
+    
+    this.info("  拷贝中文文档...");
+    try {
+        this.fso.CopyFile(this.fso.BuildPath(this.zhCnDoc, "*.tdl"), zhCnFolder);
+    } catch (err) {
+        this.error("拷贝中文文件失败，脚本中止！");
+        return false;
+    }
+    
+    this.info("拷贝中间文件完成！");
+    return true;
+}
+
+package.exec = function(cmd) {
+    this.info("运行命令: " + cmd);
+    var exec = this.shell.Exec(cmd);
+    var buffer = "";
+    while (exec.Stauts == 0) {
+        WScript.Sleep(100);
+    }
+    
+    this.println(exec.StdOut.ReadAll());
+
+    if (exec.ExitCode != 0) {
+        throw new Error("外部命令执行不成功 [" + cmd + "]");
+    }
+}
+
+package.compress = function() {
+    var upx = this.upx;
+    if (upx == "") {
+        var r = this.shell.Run("upx --help", 0, true);
+        if (r == 0) {
+            upx = "upx";
+        } else {
+            this.warning("没找到UPX，不压缩EXE文件和DLL文件！");
+            return;
+        }
+    }
+    
+    var cd = this.shell.CurrentDirectory;
+    this.shell.CurrentDirectory = this.middle;
+    this.info("压缩EXE文件和DLL文件...");
+    this.exec(upx + ' *.exe *.dll plugins\\*.dll zh-CN\\*.dll');
+    this.shell.CurrentDirectory = cd;
+}
+
+package.prepareRelease = function() {
+    if (!this.fso.FolderExists(this.release)) {
+        this.info("Release目录不存在，创建之。[" + this.release + "]");
+        this.fso.CreateFolder(this.release);
+    }
+}
+
+package.getReleaseName = function(type) {
+    var now = new Date();
+    var y = now.getYear() % 100;
+    var m = now.getMonth() + 1;
+    var d = now.getDate();
+    var buildDate = "" + (y < 10 ? "0" + y : y)
+        + (m < 10 ? "0" + m : m) + (d < 10 ? "0" + d : d);
+
+    if (type.match(/res/i)) {
+        return "ToDoList_" + this.version + "_res_zh-CN_" + buildDate + ".zip";
+    } else if (type.match(/package/i)) {
+        return "ToDoList_" + this.version + "_zh-CN_" + buildDate + ".zip";
+    } else if (type.match(/setup/i)) {
+        return "ToDoList_" + this.version + "_setup_zh-CN_" + buildDate + ".zip";
+    } else {
+        return "";
+    }
+}
+
+package.releaseRes = function() {
+    this.info("准备资源文件...");
+    var temp = this.shell.Environment("Process")("TEMP");
+    var tempParent = this.fso.BuildPath(temp, "ToDoList" + Math.round(Math.random() * 10000));
+    while (this.fso.FolderExists(tempParent)) {
+        tempParent = this.fso.BuildPath(temp, "ToDoList" + Math.round(Math.random() * 10000));
+    }
+    var tempTodolist = this.fso.BuildPath(tempParent, "ToDoList");
+    
+    this.info("创建临时目录...[" + tempTodolist + "]");
+    this.fso.CreateFolder(tempParent);
+    this.fso.CreateFolder(tempTodolist);
+    this.fso.CopyFile(this.fso.BuildPath(this.middle, "zh-CN\\*.dll"), tempTodolist);
+    var tempRes = this.fso.BuildPath(tempTodolist, "Resources");
+    this.fso.CreateFolder(tempRes);
+    this.fso.CopyFile(this.fso.BuildPath(this.middle, "zh-CN\\*.tdl"), tempRes);
+    
+    this.info("将资源文件打包...");
+    var target = this.fso.BuildPath(this.release, this.getReleaseName("res"));
+    target = this.fso.GetAbsolutePathName(target);
+    var cd = this.shell.CurrentDirectory;
+    this.shell.CurrentDirectory = tempTodolist;
+    this.exec(this.zip + ' "' + target + '" *');
+    this.shell.CurrentDirectory = cd;
+    
+    this.info("删除临时目录...[" + tempParent + "]");
+    this.fso.DeleteFolder(tempParent);
+}
+
+package.releasePackage = function() {
+    this.info("准备ToDoList完整版文件...");
+    var temp = this.shell.Environment("Process")("TEMP");
+    var tempParent = this.fso.BuildPath(temp, "ToDoList" + Math.round(Math.random() * 10000));
+    while (this.fso.FolderExists(tempParent)) {
+        tempParent = this.fso.BuildPath(temp, "ToDoList" + Math.round(Math.random() * 10000));
+    }
+    var tempTodolist = this.fso.BuildPath(tempParent, "ToDoList");
+    
+    this.info("创建临时目录...[" + tempTodolist + "]");
+    this.fso.CreateFolder(tempParent);
+    this.fso.CreateFolder(tempTodolist);
+    
+    this.fso.CopyFile(this.fso.BuildPath(this.middle, "*"), tempTodolist);
+    var tempRes = this.fso.BuildPath(tempTodolist, "Resources");
+    this.fso.CopyFolder(this.fso.BuildPath(this.middle, "Resources"), tempRes);
+    
+    this.fso.CopyFile(this.fso.BuildPath(this.middle, "zh-CN\\*.dll"), tempTodolist);
+    this.fso.CopyFile(this.fso.BuildPath(this.middle, "zh-CN\\*.tdl"), tempRes);
+    
+    this.info("将ToDoList完整版打包...");
+    var target = this.fso.BuildPath(this.release, this.getReleaseName("package"));
+    target = this.fso.GetAbsolutePathName(target);
+    var cd = this.shell.CurrentDirectory;
+    this.shell.CurrentDirectory = tempParent;
+    this.exec(this.zip + ' "' + target + '" ToDoList');
+    this.shell.CurrentDirectory = cd;
+    
+    this.info("删除临时目录...[" + tempParent + "]");
+    this.fso.DeleteFolder(tempParent);
+}
+
+package.releaseSetup = function() {
+    this.info("开始编译生成安装程序...");
+    this.exec(this.nsis + ' TdlSetup.nsi');
+    this.info("开始将安装程序打包...");
+    var target = this.fso.BuildPath(this.release, this.getReleaseName("setup"));
+    if (this.fso.FileExists(target)) {
+        this.info("目标文件已经存在，删除之。[" + target + "]");
+        this.fso.DeleteFile(target);
+    }
+    this.exec(this.zip + ' "' + target + '" TdlSetup.exe');
+}
+
+</script>
+<script language="jscript">
+package.internalMain = function() {
+    this.getVersion();
+    this.getVariables();
+    this.printVariables();
+    
+    if (!this.copyMiddle()) {
+        return;
+    }
+    
+    this.compress();
+
+    this.prepareRelease();
+    this.releaseRes();
+    this.releasePackage();
+    this.releaseSetup();
+}
+
+package.main = function() {
+    if (WScript.FullName.match(/wscript\.exe$/i)) {
+        var cscript = WScript.FullName.replace(/wscript\.exe$/i, "cscript.exe");
+        var r = this.shell.Run('"cscript" "' + WScript.ScriptFullName + '"', 1, true);
+        WScript.Quit(r);
+    }
+    
+    try {
+        this.internalMain();
+        this.shell.Popup("全部成功完成！");
+    } catch (err) {
+        if (err instanceof Error) {
+            this.error(err.message);
+        }
+        this.shell.Popup("过程中发生错误！");
+    }
+}
+
+package.main();
+</script>
+</job>
