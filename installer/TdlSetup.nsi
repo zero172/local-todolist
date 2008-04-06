@@ -2,8 +2,8 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "ToDoList"
-!define PRODUCT_VERSION "5.4.10"
-!define PRODUCT_PUBLISHER "Dan.G"
+!define PRODUCT_VERSION "5.4.11"
+!define PRODUCT_PUBLISHER "Dan.G & James Fancy"
 !define PRODUCT_WEB_SITE "http://jamesfancy.5d6d.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ToDoList.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"

@@ -268,6 +268,11 @@ package.releaseSetup = function() {
     this.exec(this.zip + ' "' + target + '" TdlSetup.exe');
 }
 
+package.clearMiddle = function() {
+    this.fso.DeleteFolder(this.middle);
+    this.fso.DeleteFile("TdlSetup.exe");
+}
+
 </script>
 <script language="jscript">
 package.internalMain = function() {
@@ -285,6 +290,8 @@ package.internalMain = function() {
     this.releaseRes();
     this.releasePackage();
     this.releaseSetup();
+    
+    this.clearMiddle();
 }
 
 package.main = function() {
