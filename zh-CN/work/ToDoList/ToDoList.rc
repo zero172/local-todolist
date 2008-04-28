@@ -2705,7 +2705,7 @@ BEGIN
     IDS_ED_NOMAKEEXPORTPATH_TITLE "不能创建路径"
     IDS_ED_FOLDER           "目录"
     IDS_ED_FILEPATH         "文件路径"
-    IDS_PREF_TITLE          "参考 (%s)"
+    IDS_PREF_TITLE          "选项 (%s)"
     IDS_PREF_GEN            "常规"
     IDS_PREF_MULTIUSER      "多用户"
 END
@@ -2938,7 +2938,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_TDC_FIELD_COMMENTS  "备注(&M)"
+    IDS_TDC_FIELD_COMMENTS  "备注(&O)"
     IDS_TDC_FIELD_PROJECT   "工程(&J)"
     IDS_TDC_FIELD_RISK      "风险(&K)"
     IDS_TDC_FIELD_EXTID     "扩展ID(&X)"
