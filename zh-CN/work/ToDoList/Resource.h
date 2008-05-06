@@ -11,6 +11,7 @@
 #define IDD_TODOLIST_DIALOG             102
 #define IDC_TRAYICON                    102
 #define ID_DEBUGQUERYENDSESSION         104
+#define ID_SEARCHLIST                   105
 #define IDR_MAINFRAME                   128
 #define IDR_TOOLBAR                     129
 #define IDS_SAMPLETASK                  129
@@ -85,6 +86,8 @@
 #define IDD_SENDTASKS_DIALOG            204
 #define IDR_TREEDRAGDROP                206
 #define IDD_IMPORT_DIALOG               207
+#define IDD_FINDTASKS_DIALOG            208
+#define IDI_FIND                        211
 #define IDC_TB_FRAME                    1001
 #define IDC_REGULARITY                  1001
 #define IDC_REC_OPTIONS_FRAME           1002
@@ -139,6 +142,7 @@
 #define IDC_PRINTDATE                   1025
 #define IDC_SEARCHRESULTS               1025
 #define IDC_ALLCATEGORIES               1025
+#define IDC_USE3RDPARTYSOURCECTRL       1025
 #define IDC_PREVIEWSAVEAS               1026
 #define IDC_DEFAULTTIMEEST              1026
 #define IDC_SEARCHCOMMENTS              1026
@@ -178,6 +182,7 @@
 #define IDC_APPDESCRIPTION              1031
 #define IDC_SHOWINFOTIPS                1031
 #define IDC_DEFAULTCOST                 1031
+#define IDC_NUMLINESPACE                1031
 #define IDC_COPYRIGHT                   1032
 #define IDC_PRIORITYCOLORS              1032
 #define IDC_DIVIDER                     1033
@@ -350,11 +355,14 @@
 #define IDC_DIRECTION                   1105
 #define IDC_RECALCFROM                  1105
 #define IDC_SELTASKSSENDAS              1105
+#define IDC_ATTRIBCOMBO                 1105
+#define IDC_SEARCHLIST                  1105
 #define IDC_EXPORTFOLDER                1106
 #define IDC_NEWSUBTASKPOSITION          1106
 #define IDC_DAYSINONEWEEK               1106
 #define IDC_STATUSLIST                  1106
 #define IDC_BYUNITS                     1106
+#define IDC_OPERATORCOMBO               1106
 #define IDC_QUERYAPPLYCHANGESTOSUBTASKS 1107
 #define IDC_NOTIFYDUEBYONSWITCH         1107
 #define IDC_COMMENTSFORMAT              1107
@@ -517,6 +525,20 @@
 #define IDC_BACKUPLOCATION              1245
 #define IDC_BACKUPLOCATIONLABEL         1246
 #define IDC_NUMBACKUPSTOKEEP            1248
+#define IDC_ALLATTRIB                   1249
+#define IDC_VISIBLEATTRIB               1250
+#define IDC_CUSTOMATTRIB                1251
+#define IDC_CUSTOMATTRIBLIST            1252
+#define IDC_BACKUPCOUNTLABEL            1253
+#define IDC_BACKUPCOUNTTRAIL            1254
+#define IDC_FINDLIST                    1285
+#define IDC_INSERT                      1286
+#define IDC_MOVEUP                      1287
+#define IDC_TASKCOLOURGROUP             1289
+#define IDC_TEXTINDENTTRAIL             1290
+#define IDC_NUMLINESPACETRAIL           1291
+#define IDC_DELETE                      1306
+#define IDC_MOVEDOWN                    1307
 #define IDB_TOOLBAR24GRAY               30997
 #define ID_NEWITEM                      32771
 #define ID_DELETETASK                   32772
@@ -616,7 +638,6 @@
 #define ID_TOOLS_TODAYSDATE             32922
 #define ID_TOOLS_TODOLIST               32923
 #define ID_TOOLS_SELTASKCOMMENTS        32924
-#define ID_TOOLS_SELTASKFILELINK        33925
 #define ID_TOOLS_EXPORTTOHTML           32929
 #define ID_TOOLS_EXPORTTOPLAINTEXT      32930
 #define ID_NEXTTOPLEVELTASK             32932
@@ -827,9 +848,23 @@
 #define ID_EDIT_INSERTDATE              33215
 #define ID_TDD_COPYTASK                 33217
 #define ID_TDD_TASKDEPENDENCY           33218
+#define ID_TDD_ADDTASKDEPENDENCY        33218
 #define ID_TDD_TASKREFERENCE            33219
 #define ID_NEXTTASK                     33220
 #define ID_PREVTASK                     33221
+#define ID_FIND_SAVE                    33226
+#define ID_FIND_ADDRULE                 33227
+#define ID_FIND_DELETERULE              33228
+#define ID_FIND_FIND                    33229
+#define ID_FIND_NEW                     33230
+#define ID_FIND_DELETESEARCH            33231
+#define ID_FIND_NEWSEARCH               33232
+#define ID_FIND_SAVESEARCH              33233
+#define ID_FIND_MOVERULEUP              33235
+#define ID_FIND_MOVERULEDOWN            33236
+#define ID_MINIMIZETOTRAY               33237
+#define ID_TDD_SETTASKDEPENDENCY        33237
+#define ID_TOOLS_SELTASKFILELINK        33925
 #define IDS_PTP_NEWTOOL                 57671
 #define IDS_PTP_TOOLNAME                57672
 #define IDS_PTP_TOOLPATH                57673
@@ -1246,14 +1281,38 @@
 #define IDS_COMMENTSGOTOERRMSG          58073
 #define IDS_SAVEBADXML                  58074
 #define IDS_TDLLINKLOADFAILED           58075
+#define IDS_FTD_COMMENTS                58076
+#define IDS_FTD_TASKNAME                58077
+#define IDS_FP_EQUALS                   58078
+#define IDS_FP_NOT_EQUALS               58079
+#define IDS_FP_CONTAINS                 58080
+#define IDS_FP_INCLUDES                 58080
+#define IDS_FP_NOT_CONTAINS             58081
+#define IDS_FP_NOT_INCLUDES             58081
+#define IDS_FP_GREATER                  58082
+#define IDS_FP_LESS                     58083
+#define IDS_FP_BEFORE                   58084
+#define IDS_FP_AFTER                    58085
+#define IDS_FP_GREATER_OR_EQUAL         58086
+#define IDS_FP_LESS_OR_EQUAL            58087
+#define IDS_FP_ON_OR_BEFORE             58088
+#define IDS_FP_ON_OR_AFTER              58089
+#define IDS_FP_SET                      58090
+#define IDS_FP_NOT_SET                  58091
+#define IDS_FP_NEW_RULE                 58092
+#define IDS_FP_AND                      58093
+#define IDS_FP_OR                       58094
+#define IDS_TDC_SELTASKHASCIRCULARDEPENDENCY 58095
+#define IDS_TDC_SELTASKSHAVECIRCULARDEPENDENCIES 58096
+#define IDS_TDC_FIELD_DUETIME           58097
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        209
-#define _APS_NEXT_COMMAND_VALUE         33226
-#define _APS_NEXT_CONTROL_VALUE         1253
-#define _APS_NEXT_SYMED_VALUE           105
+#define _APS_NEXT_RESOURCE_VALUE        212
+#define _APS_NEXT_COMMAND_VALUE         33238
+#define _APS_NEXT_CONTROL_VALUE         1291
+#define _APS_NEXT_SYMED_VALUE           106
 #endif
 #endif
