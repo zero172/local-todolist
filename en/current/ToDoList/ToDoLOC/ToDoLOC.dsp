@@ -119,6 +119,10 @@ SOURCE=..\RES\find.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=..\RES\find.ico
+# End Source File
+# Begin Source File
+
 SOURCE=..\RES\findtoolbar16.bmp
 # End Source File
 # Begin Source File
