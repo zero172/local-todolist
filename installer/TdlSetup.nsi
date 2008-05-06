@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "ToDoList"
-!define PRODUCT_VERSION "5.4.11"
+!define PRODUCT_VERSION "5.5.1"
 !define PRODUCT_PUBLISHER "Dan.G & James Fancy"
 !define PRODUCT_WEB_SITE "http://jamesfancy.5d6d.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ToDoList.exe"
@@ -121,7 +121,7 @@ SectionGroup /e "快捷方式" SEC_SHORTCUT
 SectionGroupEnd
 
 SectionGroup /e "插件" SEC_PLUGINS
-  Section /o "日历插件 1.0 Alpha 4" SEC_PLUGIN_CALC
+  Section /o "日历插件 1.0 Alpha 5" SEC_PLUGIN_CALC
     SetOutPath "$INSTDIR"
     File "ToDoList\plugins\CalendarExt.dll"
   SectionEnd
