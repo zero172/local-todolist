@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,5,1,0
+ FILEVERSION 5,5,7,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -47,7 +47,7 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 5, 1, 0\0"
+            VALUE "FileVersion", "5, 5, 7, 0\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-07\0"
             VALUE "LegalTrademarks", "\0"
@@ -1216,7 +1216,7 @@ END
 IDD_IMPORT_DIALOG DIALOG DISCARDABLE  0, 0, 243, 225
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Import Tasks"
-FONT 8, "MS Sans Serif"
+FONT 8, "Tahoma"
 BEGIN
     LTEXT           "&Format",IDC_STATIC,7,9,22,8
     COMBOBOX        IDC_FORMATOPTIONS,62,7,165,125,CBS_DROPDOWNLIST | 
@@ -1256,8 +1256,7 @@ BEGIN
                     49,124,8
     CONTROL         "List1",IDC_FINDLIST,"SysListView32",LVS_REPORT | 
                     LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDRAWFIXED | 
-                    LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | 
-                    WS_TABSTOP,5,60,288,98
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,5,60,288,98
     PUSHBUTTON      "Select &All",IDC_SELECTALL,5,172,50,14
     LTEXT           "&Results:",IDC_RESULTSLABEL,59,175,186,8
     CONTROL         "List1",IDC_RESULTS,"SysListView32",LVS_REPORT | 
@@ -3067,7 +3066,7 @@ BEGIN
     IDS_PRINTDLG_PRINT_TITLE "Print Tasks"
     IDS_TDC_COLUMN_ID       "ID"
     IDS_TDC_COLUMN_PRIORITY "!"
-    IDS_TDC_COLUMN_PERCENT  "%%"
+    IDS_TDC_COLUMN_PERCENT  "%"
     IDS_TDC_COLUMN_TIMEEST  "Est."
     IDS_TDC_COLUMN_TIMESPENT "Spent"
     IDS_TDC_COLUMN_STARTDATE "Start"
@@ -3104,7 +3103,7 @@ BEGIN
     IDS_TDC_SCALE10         "Highest"
     IDS_TDC_FIELD_TASKLIST  "&Body"
     IDS_TDC_FIELD_PRIORITY  "Priorit&y"
-    IDS_TDC_FIELD_PERCENT   "%% &Complete"
+    IDS_TDC_FIELD_PERCENT   "% &Complete"
     IDS_TDC_FIELD_TIMEEST   "T&ime Est."
     IDS_TDC_FIELD_TIMESPENT "T&ime Spent"
     IDS_TDC_FIELD_STARTDATE "St&art Date"
@@ -3125,7 +3124,7 @@ BEGIN
     IDS_TDC_FIELD_EXTID     "E&xternal ID"
     IDS_TDCTIP_TASK         "Task:\t\t"
     IDS_TDCTIP_PRIORITY     "Priority:\t\t"
-    IDS_TDCTIP_PERCENT      "%% Complete:\t"
+    IDS_TDCTIP_PERCENT      "% Complete:\t"
     IDS_TDCTIP_TIMEEST      "Time Est:\t"
     IDS_TDCTIP_STARTDATE    "Start Date:\t"
     IDS_TDCTIP_DUEDATE      "Due Date:\t"
