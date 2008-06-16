@@ -27,7 +27,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,5,7,107
+ FILEVERSION 5,5,7,109
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -36,7 +36,7 @@ VS_VERSION_INFO VERSIONINFO
  FILEFLAGS 0x0L
 #endif
  FILEOS 0x4L
- FILETYPE 0x1L
+ FILETYPE 0x2L
  FILESUBTYPE 0x0L
 BEGIN
     BLOCK "StringFileInfo"
@@ -46,11 +46,11 @@ BEGIN
             VALUE "Comments", "边城狂人(James Fancy) 翻译"
             VALUE "CompanyName", "AbstractSpoon Software"
             VALUE "FileDescription", "ToDoList简体中文DLL"
-            VALUE "FileVersion", "5, 5, 7, 107"
+            VALUE "FileVersion", "5, 5, 7, 109"
             VALUE "InternalName", "ToDoListLOC.DLL"
             VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2003-07"
-            VALUE "OriginalFilename", "ToDoList.exe"
-            VALUE "ProductName", "ToDoList"
+            VALUE "OriginalFilename", "ToDoListLOC.DLL"
+            VALUE "ProductName", "ToDoList动态连接库"
             VALUE "ProductVersion", "1, 0, 0, 0"
         END
     END
@@ -816,9 +816,7 @@ BEGIN
     COMBOBOX        IDC_TASKLISTOPTIONS,33,30,164,125,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "包含已完成任务(&N)",IDC_INCLUDEDONE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,206,32,93,10
     LTEXT           "配置下面的规则(&F):",IDC_STATIC,5,49,124,8
-    CONTROL         "List1",IDC_FINDLIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDRAWFIXED | 
-                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,5,60,288,98
+    CONTROL         "List1",IDC_FINDLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_OWNERDRAWFIXED | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,5,60,288,98
     PUSHBUTTON      "全选(&A)",IDC_SELECTALL,5,172,50,14
     LTEXT           "结果(&R):",IDC_RESULTSLABEL,59,175,186,8
     CONTROL         "List1",IDC_RESULTS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,5,191,368,78
