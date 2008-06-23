@@ -26,6 +26,9 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 // Version
 //
 
+
+
+
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,109
  PRODUCTVERSION 1,0,0,0
@@ -58,6 +61,7 @@ BEGIN
         VALUE "Translation", 0x804, 1200
     END
 END
+
 
 
 #ifdef APSTUDIO_INVOKED
@@ -103,7 +107,7 @@ END
 // Toolbar
 //
 
-TOOLBAR_CONTROL TOOLBAR  16, 15
+TOOLBAR_CONTROL TOOLBAR DISCARDABLE  16, 15
 BEGIN
     BUTTON      BUTTON_FONT
     SEPARATOR
@@ -140,46 +144,47 @@ IDB_TOOLBAR             BITMAP                  "toolbar2.bmp"
 // Menu
 //
 
-IDR_POPUP MENU 
+IDR_POPUP MENU DISCARDABLE 
 BEGIN
-    POPUP "edit"
+    POPUP "编辑"
     BEGIN
-        MENUITEM "粗体(&B)",                      BUTTON_BOLD
-        MENUITEM "斜体(&I)",                      BUTTON_ITALIC
-        MENUITEM "下划线(&U)",                     BUTTON_UNDERLINE
-        MENUITEM "删除线(&K)",                     BUTTON_STRIKETHRU
+        MENUITEM "粗体(&B)\tCtrl+B",               BUTTON_BOLD
+        MENUITEM "斜体(&I)\tCtrl+I",             BUTTON_ITALIC
+        MENUITEM "下划线(&U)\tCtrl+U",          BUTTON_UNDERLINE
+        MENUITEM "删除线(&K)",              BUTTON_STRIKETHRU
         MENUITEM SEPARATOR
-        MENUITEM "上标",                          ID_EDIT_SUPERSCRIPT
-        MENUITEM "下标",                          ID_EDIT_SUBSCRIPT
+        MENUITEM "上标",                 ID_EDIT_SUPERSCRIPT
+        MENUITEM "下标",                   ID_EDIT_SUBSCRIPT
         MENUITEM SEPARATOR
-        MENUITEM "剪切(&T)\tCtrl+X",              ID_EDIT_CUT
-        MENUITEM "复制(&C)\tCtrl+C",              ID_EDIT_COPY
+        MENUITEM "剪切(&T)\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "复制(&C)\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "粘贴(&P)\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM "粘贴文本（不含格式）",                  ID_EDIT_PASTESIMPLE
-        MENUITEM "粘贴为引用任务(&E)",                 ID_EDIT_PASTEASREF
-        MENUITEM "删除\tDel",                     ID_EDIT_DELETE
+        MENUITEM "粘贴文本（不含格式）", 
+                                                ID_EDIT_PASTESIMPLE
+        MENUITEM "粘贴为引用任务(&E)",  ID_EDIT_PASTEASREF
+        MENUITEM "删除\tDel",                 ID_EDIT_DELETE
         MENUITEM SEPARATOR
-        MENUITEM "全选(&A)\tCtrl+A",              ID_EDIT_SELECT_ALL
+        MENUITEM "全选(&A)\tCtrl+A",         ID_EDIT_SELECT_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "查找(&F)...\tCtrl+F",            ID_EDIT_FIND
+        MENUITEM "替换(&R)...\tCtrl+H",         ID_EDIT_FINDREPLACE
         MENUITEM SEPARATOR
         MENUITEM "打开URL(&O)",                   ID_EDIT_OPENURL
-        MENUITEM "插入文件链接...(&F)",               ID_EDIT_FILEBROWSE
+        MENUITEM "插入文件链接...(&F)",        ID_EDIT_FILEBROWSE
         MENUITEM SEPARATOR
-        MENUITEM "插入时间(&D)",                    ID_EDIT_INSERTDATESTAMP
-        MENUITEM "插入文件链接...(&F)",               ID_EDIT_FILEBROWSE
+        MENUITEM "拼写检查(&H)",             ID_EDIT_SPELLCHECK
         MENUITEM SEPARATOR
-        MENUITEM "拼写检查(&H)",                    ID_EDIT_SPELLCHECK
+        MENUITEM "显示格式工具栏(&F)",    ID_EDIT_SHOWTOOLBAR
+        MENUITEM "显示标尺(&R)",                 ID_EDIT_SHOWRULER
         MENUITEM SEPARATOR
-        MENUITEM "显示格式工具栏(&F)",                 ID_EDIT_SHOWTOOLBAR
-        MENUITEM "显示标尺(&R)",                    ID_EDIT_SHOWRULER
-        MENUITEM SEPARATOR
-        MENUITEM "自动换行",                        ID_EDIT_WORDWRAP
+        MENUITEM "自动换行",                   ID_EDIT_WORDWRAP
     END
-    POPUP "unused"
+    POPUP "未使用"
     BEGIN
-        MENUITEM "撤消(&U)\tCtrl+Z",              ID_EDIT_UNDO
-        MENUITEM "恢复(&R)\tCtrl+Y",              ID_EDIT_REDO
+        MENUITEM "撤消(&U)\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "恢复(&R)\tCtrl+Y",               ID_EDIT_REDO
         MENUITEM SEPARATOR
-        MENUITEM "插入横线(&H)",                    ID_EDIT_HORZRULE
+        MENUITEM "插入横线(&H)",     ID_EDIT_HORZRULE
         MENUITEM "",                            1
     END
 END
@@ -190,7 +195,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     STRING_COLOR            "字"
     STRING_DEFAULT          "自动"
@@ -199,7 +204,7 @@ BEGIN
     IDS_REPLACE_TITLE       "Replace In Comments"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     BUTTON_FONT             "\n字体"
     BUTTON_BOLD             "\n粗体"
@@ -214,30 +219,29 @@ BEGIN
     BUTTON_STRIKETHRU       "\n删除线"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     BUTTON_TEXTCOLOR        "文本颜色"
     BUTTON_BACKCOLOR        "背景颜色"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_COMMENTSGOTOERRMSG  "不能打开选择的文件。\n\n请检查文件是否存在，\n以及是否有程序注册为打开该文件类型。"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     ID_EDIT_WORDWRAP        "\n自动换行"
 END
 
-STRINGTABLE 
+STRINGTABLE DISCARDABLE 
 BEGIN
     BUTTON_WORDWRAP         "\n自动换行"
 END
 
 #endif    // Chinese (P.R.C.) resources
 /////////////////////////////////////////////////////////////////////////////
-
 
 
 #ifndef APSTUDIO_INVOKED
