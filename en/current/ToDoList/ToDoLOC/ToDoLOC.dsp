@@ -107,6 +107,14 @@ SOURCE=..\RES\bitmap1.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=..\RES\bmp00001.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=..\RES\cc_somerights.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=..\RES\checklistbox.bmp
 # End Source File
 # Begin Source File
