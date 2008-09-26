@@ -201,7 +201,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="mkdir ..\release&#x0D;&#x0A;copy release\rtfcontentctrlloc.dll ..\release /y&#x0D;&#x0A;copy release\rtfcontentctrlloc.dll ..\..\todolist\release /y&#x0D;&#x0A;"
+				CommandLine="if not exist ..\..\todolist\release (&#x0D;&#x0A;    mkdir ..\..\todolist\release&#x0D;&#x0A;)&#x0D;&#x0A;&#x0D;&#x0A;copy release\rtfcontentctrlloc.dll ..\..\todolist\release /y&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

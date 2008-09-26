@@ -88,6 +88,7 @@
 #define IDD_IMPORT_DIALOG               207
 #define IDD_FINDTASKS_DIALOG            208
 #define IDI_FIND                        211
+#define IDB_TREELIST                    212
 #define IDC_TB_FRAME                    1001
 #define IDC_REGULARITY                  1001
 #define IDC_REC_OPTIONS_FRAME           1002
@@ -203,6 +204,7 @@
 #define IDC_NOTIFYDUEONLOAD             1041
 #define IDC_COLORPRIORITY               1042
 #define IDC_NOTIFYREADONLY              1042
+#define IDC_HIDEDUETIME                 1042
 #define IDC_AUTOARCHIVE                 1043
 #define IDC_CONFIRMSAVEONEXIT           1044
 #define IDC_NOTIFYDUEONSWITCH           1044
@@ -476,6 +478,7 @@
 #define IDC_TOOLBARGROUP                1194
 #define IDC_INHERITGROUP                1194
 #define IDC_SORTGROUP                   1195
+#define IDC_DROPLISTGROUP               1195
 #define IDC_TABBARGROUP                 1196
 #define IDC_COMMENTSGROUP               1197
 #define IDC_COLUMNGROUP                 1198
@@ -812,7 +815,9 @@
 #define ID_SORT_BYEXTERNALID            33143
 #define ID_SORT_BYVERSION               33144
 #define ID_SORT_BYRECURRENCE            33145
-#define ID_SORT_NONE                    33146
+#define ID_SORT_BYREMAINING             33146
+#define ID_SORT_BYRECENTEDIT            33147
+#define ID_SORT_NONE                    33148
 #define ID_HELP_COMMANDLINE             33180
 #define ID_HELP_DONATE                  33181
 #define ID_EDIT_CLEARTASKCOLOR          33182
@@ -864,6 +869,10 @@
 #define ID_FIND_MOVERULEDOWN            33236
 #define ID_MINIMIZETOTRAY               33237
 #define ID_TDD_SETTASKDEPENDENCY        33237
+#define ID_VIEW_TASKTREE                33238
+#define ID_VIEW_TOGGLETREEANDLIST       33238
+#define ID_VIEW_TASKLIST                33239
+#define ID_VIEW_TOGGLETASKSANDCOMMENTS  33243
 #define ID_TOOLS_SELTASKFILELINK        33925
 #define IDS_PTP_NEWTOOL                 57671
 #define IDS_PTP_TOOLNAME                57672
@@ -1249,6 +1258,7 @@
 #define ID_SB_FILEVERSION_TIP           58041
 #define ID_SB_TASKCOUNT                 58042
 #define ID_SB_TASKCOUNT_TIP             58043
+#define IDS_SB_TREETASKCOUNT_TIP        58043
 #define ID_SB_FILEPATH                  58044
 #define ID_SB_FILEPATH_TIP              58045
 #define ID_SB_SPACER                    58046
@@ -1305,13 +1315,35 @@
 #define IDS_TDC_SELTASKHASCIRCULARDEPENDENCY 58095
 #define IDS_TDC_SELTASKSHAVECIRCULARDEPENDENCIES 58096
 #define IDS_TDC_FIELD_DUETIME           58097
+#define IDS_TASKTREE                    58098
+#define IDS_LISTVIEW                    58099
+#define IDS_FT_TASK                     58100
+#define IDS_FT_WHATMATCHED              58101
+#define IDS_TDLBC_TITLEORCOMMENTS       58102
+#define IDS_TDLBC_ANYTEXTATTRIB         58103
+#define IDS_FT_ATTRIB                   58104
+#define IDS_FT_MATCHES                  58105
+#define IDS_FT_VALUE                    58106
+#define IDS_FT_ANDOR                    58107
+#define IDS_TDLBC_RECENTEDIT            58108
+#define IDS_TDC_COLUMN_RECENTEDIT       58109
+#define IDS_TDLBC_REMAINING             58110
+#define IDS_SB_LISTTASKCOUNT            58111
+#define IDS_SB_TREETASKCOUNT            58112
+#define IDS_SB_LISTTASKCOUNT_TIP        58113
+#define IDS_TE_MINS                     58114
+#define IDS_TE_HOURS                    58115
+#define IDS_TE_DAYS                     58116
+#define IDS_TE_WEEKS                    58117
+#define IDS_TE_MONTHS                   58118
+#define IDS_TE_YEARS                    58119
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        212
-#define _APS_NEXT_COMMAND_VALUE         33238
+#define _APS_NEXT_RESOURCE_VALUE        213
+#define _APS_NEXT_COMMAND_VALUE         33244
 #define _APS_NEXT_CONTROL_VALUE         1291
 #define _APS_NEXT_SYMED_VALUE           106
 #endif
