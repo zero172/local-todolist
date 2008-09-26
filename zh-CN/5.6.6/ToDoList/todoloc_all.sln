@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ToDoLOC", "ToDoLOC\ToDoLOC.vcproj", "{D0103A10-F255-4717-A1B6-45E1E16379D9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTFLOC", "..\RTFContentCtrl\RTFLOC\RTFLOC.vcproj", "{FF9BD6D5-E1AB-4C5C-B24C-8E16748EDB64}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0103A10-F255-4717-A1B6-45E1E16379D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D0103A10-F255-4717-A1B6-45E1E16379D9}.Debug|Win32.Build.0 = Debug|Win32
+		{D0103A10-F255-4717-A1B6-45E1E16379D9}.Release|Win32.ActiveCfg = Release|Win32
+		{D0103A10-F255-4717-A1B6-45E1E16379D9}.Release|Win32.Build.0 = Release|Win32
+		{FF9BD6D5-E1AB-4C5C-B24C-8E16748EDB64}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FF9BD6D5-E1AB-4C5C-B24C-8E16748EDB64}.Debug|Win32.Build.0 = Debug|Win32
+		{FF9BD6D5-E1AB-4C5C-B24C-8E16748EDB64}.Release|Win32.ActiveCfg = Release|Win32
+		{FF9BD6D5-E1AB-4C5C-B24C-8E16748EDB64}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
