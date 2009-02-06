@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,6,6,0
+ FILEVERSION 5,6,999,4
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -47,7 +47,7 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 6, 6, 0\0"
+            VALUE "FileVersion", "5, 6, 999, 4\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-08\0"
             VALUE "LegalTrademarks", "\0"
@@ -80,71 +80,18 @@ BEGIN
     LTEXT           "E&xport",IDC_STATIC,7,9,21,8
     COMBOBOX        IDC_TASKLISTOPTIONS,41,7,98,125,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Exp&ort to one file",IDC_EXPORTONEFILE,"Button",
-                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | 
-                    WS_TABSTOP,144,8,70,10
     LTEXT           "&Format",IDC_STATIC,7,28,22,8
     COMBOBOX        IDC_FORMATOPTIONS,41,26,187,125,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "&Path",IDC_PATHLABEL,7,47,32,8
     EDITTEXT        IDC_EXPORTPATH,41,45,187,14,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "&Export",IDOK,199,161,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,256,161,50,14
     CONTROL         "",IDC_FRAME,"Static",SS_BLACKFRAME | NOT WS_VISIBLE | 
                     WS_DISABLED,7,66,299,88
-END
-
-IDD_FINDBLANK_PAGE DIALOGEX 0, 0, 117, 79
-STYLE WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "Tahoma", 0, 0, 0x1
-BEGIN
-END
-
-IDD_FINDDATE_PAGE DIALOGEX 0, 0, 136, 79
-STYLE WS_CHILD
-EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "Tahoma", 0, 0, 0x1
-BEGIN
-    CONTROL         "&This",IDC_THIS,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
-                    0,1,29,10
-    CONTROL         "A&fter",IDC_AFTER,"Button",BS_AUTORADIOBUTTON,0,18,31,
-                    10
-    CONTROL         "B&efore",IDC_BEFORE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,35,37,10
-    CONTROL         "&Between",IDC_BETWEEN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,52,44,10
-    CONTROL         "DateTimePicker1",IDC_THISDATE,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | WS_GROUP | WS_TABSTOP,48,0,87,13
-    CONTROL         "DateTimePicker1",IDC_AFTERDATE,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | WS_GROUP | WS_TABSTOP,48,17,87,13
-    CONTROL         "DateTimePicker1",IDC_BEFOREDATE,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | WS_TABSTOP,48,34,87,13
-    CONTROL         "DateTimePicker1",IDC_BEGINDATE,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | WS_TABSTOP,48,50,87,13
-    LTEXT           "and",IDC_STATIC,27,69,13,8
-    CONTROL         "DateTimePicker1",IDC_ENDDATE,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | WS_TABSTOP,48,66,87,13
-END
-
-IDD_FINDNUM_PAGE DIALOG DISCARDABLE  0, 0, 136, 78
-STYLE WS_CHILD
-FONT 8, "Tahoma"
-BEGIN
-    CONTROL         "&This",IDC_THIS,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
-                    0,1,29,10
-    CONTROL         "M&ore than",IDC_MORETHAN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,18,48,10
-    CONTROL         "Less t&han",IDC_LESSTHAN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,35,47,10
-    CONTROL         "&Between",IDC_BETWEEN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,52,44,10
-    EDITTEXT        IDC_THISNUMBER,49,0,86,13,ES_AUTOHSCROLL | WS_GROUP
-    EDITTEXT        IDC_MORETHANNUMBER,49,16,86,13,ES_AUTOHSCROLL | WS_GROUP
-    EDITTEXT        IDC_LESSTHANNUMBER,49,33,86,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_NUMBERSTART,49,50,86,13,ES_AUTOHSCROLL
-    LTEXT           "and",IDC_STATIC,27,68,13,8
-    EDITTEXT        IDC_NUMBEREND,49,65,86,13,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&Export",IDOK,199,161,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,256,161,50,14
+    CONTROL         "Exp&ort to one file",IDC_EXPORTONEFILE,"Button",
+                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | 
+                    WS_TABSTOP,144,8,70,10
 END
 
 IDD_FINDTEXT_PAGE DIALOG DISCARDABLE  0, 0, 136, 73
@@ -183,6 +130,8 @@ IDD_PREFEXPORT_PAGE DIALOG DISCARDABLE  0, 0, 369, 249
 STYLE WS_CHILD
 FONT 8, "Tahoma"
 BEGIN
+    CONTROL         "&Preview results",IDC_PREVIEWEXPORT,"Button",
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,7,63,10
     CONTROL         "E&xport attributes in visible columns only ",
                     IDC_EXPORTVISIBLEONLY,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,21,161,10
@@ -193,8 +142,7 @@ BEGIN
     CONTROL         "Provide a space below each task for notes",
                     IDC_EXPORTSPACEFORNOTES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,55,161,10
-    CONTROL         "&Preview results",IDC_PREVIEWEXPORT,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,7,63,10
+    EDITTEXT        IDC_NUMLINESPACE,17,67,40,13,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "&Font",IDC_STATIC,15,101,15,8
     COMBOBOX        IDC_HTMLFONTLIST,65,99,86,237,CBS_DROPDOWNLIST | 
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
@@ -207,12 +155,11 @@ BEGIN
                     BS_AUTORADIOBUTTON | WS_GROUP,15,176,87,10
     CONTROL         "Use spaces for indenting",IDC_SPACETEXTINDENT,"Button",
                     BS_AUTORADIOBUTTON,15,191,95,10
+    EDITTEXT        IDC_TABWIDTHS,25,203,40,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
     GROUPBOX        "HTML",IDC_STATIC,7,89,153,65
     GROUPBOX        "Text",IDC_STATIC,7,163,153,61
-    EDITTEXT        IDC_TABWIDTHS,25,203,40,13,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "space(s)",IDC_TEXTINDENTTRAIL,69,205,28,8
-    EDITTEXT        IDC_NUMLINESPACE,17,67,40,13,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "line(s)",IDC_NUMLINESPACETRAIL,61,69,20,8
 END
 
@@ -267,9 +214,12 @@ BEGIN
     CONTROL         "&Only display tasks allocated to",
                     IDC_ONLYSHOWDUETASKFORPERSON,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,191,79,110,10
+    EDITTEXT        IDC_DUETASKPERSON,302,77,52,14,ES_AUTOHSCROLL
     LTEXT           "Saving",IDC_SAVEGROUP,189,95,176,8
     CONTROL         "A&uto-save tasklists every ",IDC_AUTOSAVE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,191,108,96,10
+    COMBOBOX        IDC_AUTOSAVEFREQUENCY,291,106,63,96,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
     CONTROL         "Au&to-save when switching tasklists",
                     IDC_AUTOSAVEONSWITCHTASKLIST,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,191,122,171,10
@@ -286,18 +236,16 @@ BEGIN
                     IDC_USESTYLESHEETFORSAVE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,203,179,126,10
     EDITTEXT        IDC_SAVEEXPORTSTYLESHEET,214,192,140,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_DUETASKPERSON,302,77,52,14,ES_AUTOHSCROLL
-    COMBOBOX        IDC_AUTOSAVEFREQUENCY,291,106,63,96,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
-    CONTROL         "&Backup tasklists before saving",IDC_BACKUPONSAVE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,191,209,109,10
-    EDITTEXT        IDC_BACKUPLOCATION,237,220,117,13,ES_AUTOHSCROLL
+    CONTROL         "Keep &backup copies of tasklists before saving",
+                    IDC_BACKUPONSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    191,209,109,10
     LTEXT           "&To folder",IDC_BACKUPLOCATIONLABEL,201,223,30,8
+    EDITTEXT        IDC_BACKUPLOCATION,237,220,117,13,ES_AUTOHSCROLL
     LTEXT           "&Keep",IDC_BACKUPCOUNTLABEL,201,238,17,8
-    LTEXT           "most recent backups",IDC_BACKUPCOUNTTRAIL,275,238,85,8
     COMBOBOX        IDC_NUMBACKUPSTOKEEP,237,236,32,30,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
+    LTEXT           "most recent backups",IDC_BACKUPCOUNTTRAIL,275,238,85,8
 END
 
 IDD_PREFGEN_PAGE DIALOG DISCARDABLE  0, 0, 369, 249
@@ -432,20 +380,26 @@ BEGIN
                     WS_TABSTOP,18,81,157,10
     CONTROL         "Tracking a new task should stop the tracking of tasks in all other open tasklists",
                     IDC_EXCLUSIVETRACKING,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,7,97,158,18
+                    BS_MULTILINE | WS_TABSTOP,7,95,158,18
     CONTROL         "Log tracked time",IDC_LOGTIME,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,117,81,10
+                    WS_TABSTOP,7,115,81,10
     CONTROL         "Log each task to a separate file",IDC_LOGTASKSEPARATELY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,131,132,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,129,132,10
     CONTROL         "Allow time-tracking on parent tasks",
                     IDC_ALLOWPARENTRACKING,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,146,128,10
-    LTEXT           "One day equals",IDC_STATIC,7,179,50,8
-    COMBOBOX        IDC_HOURSINONEDAY,71,177,39,115,CBS_DROPDOWN | 
+                    WS_TABSTOP,7,144,128,10
+    LTEXT           "One day equals",IDC_STATIC,7,175,50,8
+    COMBOBOX        IDC_HOURSINONEDAY,71,173,39,115,CBS_DROPDOWN | 
                     WS_TABSTOP
-    LTEXT           "One week equals",IDC_STATIC,7,194,56,8
-    COMBOBOX        IDC_DAYSINONEWEEK,71,192,39,108,CBS_DROPDOWN | 
+    LTEXT           "One week equals",IDC_STATIC,7,190,56,8
+    COMBOBOX        IDC_DAYSINONEWEEK,71,188,39,108,CBS_DROPDOWN | 
                     WS_TABSTOP
+    CONTROL         "&Treat due tasks as having the highest priority",
+                    IDC_DUEHAVEHIGHESTPRIORITY,"Button",BS_AUTOCHECKBOX | 
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,7,217,161,10
+    CONTROL         "T&reat completed tasks as having the lowest priority/risk",
+                    IDC_DONEHAVELOWESTPRIORITY,"Button",BS_AUTOCHECKBOX | 
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,7,231,165,17
     CONTROL         "&Treat tasks whose subtasks are all completed as also being 'completed'",
                     IDC_TREATSUBCOMPLETEDASDONE,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,191,7,176,18
@@ -486,13 +440,14 @@ BEGIN
                     IDC_AUTOUPDATEDEPENDEES,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,192,221,175,19
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
-    LTEXT           "Time Periods",IDC_TIMEGROUP,7,164,166,8
-    LTEXT           "hours",IDC_STATIC,117,179,18,8
-    LTEXT           "days",IDC_STATIC,117,194,16,8
+    LTEXT           "Time Periods",IDC_TIMEGROUP,7,160,166,8
+    LTEXT           "hours",IDC_STATIC,117,175,18,8
+    LTEXT           "days",IDC_STATIC,117,190,16,8
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,210,169,1
 END
 
 IDD_PREFTASKDEF_PAGE DIALOG DISCARDABLE  0, 0, 369, 249
-STYLE WS_POPUP
+STYLE WS_CHILD
 FONT 8, "Tahoma"
 BEGIN
     LTEXT           "&Allocated To",IDC_STATIC,7,21,41,8
@@ -515,7 +470,7 @@ BEGIN
     LTEXT           "&Time Estimate",IDC_STATIC,7,139,45,8
     EDITTEXT        IDC_DEFAULTTIMEEST,62,137,97,13,ES_AUTOHSCROLL
     LTEXT           "&Colour",IDC_STATIC,7,156,21,8
-    PUSHBUTTON      "S&et...   ",IDC_SETDEFAULTCOLOR,62,154,40,13,BS_RIGHT
+    PUSHBUTTON      "S&et...   ",IDC_SETDEFAULTCOLOR,61,155,40,13,BS_RIGHT
     LTEXT           "&Start Date",IDC_STATIC,7,173,40,8
     CONTROL         "&Date of creation",IDC_USECREATIONFORDEFSTARTDATE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,62,173,85,10
@@ -524,9 +479,10 @@ BEGIN
     CONTROL         "&Have subtasks inherit the following attributes from their parent when they are created",
                     IDC_USEPARENTATTRIB,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     BS_MULTILINE | WS_TABSTOP,191,21,165,17
-    LISTBOX         IDC_INHERITATTRIBUTES,201,42,164,56,LBS_OWNERDRAWFIXED | 
-                    LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_MULTICOLUMN | 
-                    WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    LISTBOX         IDC_INHERITATTRIBUTES,201,42,164,56,LBS_SORT | 
+                    LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | 
+                    LBS_NOINTEGRALHEIGHT | LBS_MULTICOLUMN | WS_VSCROLL | 
+                    WS_HSCROLL | WS_TABSTOP
     LTEXT           "Default Categories",IDC_STATIC,191,118,80,8
     COMBOBOX        IDC_CATEGORYLIST,191,130,82,45,CBS_SIMPLE | 
                     CBS_AUTOHSCROLL | CBS_SORT | CBS_NOINTEGRALHEIGHT | 
@@ -563,13 +519,13 @@ BEGIN
     LTEXT           "&Path",IDC_STATIC,64,184,16,8
     EDITTEXT        IDC_TOOLPATH,104,182,203,14,ES_AUTOHSCROLL
     PUSHBUTTON      "&Delete Tool",IDC_DELETETOOL,312,182,50,14
+    PUSHBUTTON      "&Test Tool",IDC_TESTTOOL,7,200,50,14
     LTEXT           "&Arguments",IDC_STATIC,64,202,34,8
     EDITTEXT        IDC_CMDLINE,104,200,203,14,ES_AUTOHSCROLL
     LTEXT           "&Icon",IDC_STATIC,64,220,15,8
     EDITTEXT        IDC_ICONPATH,104,218,203,14,ES_AUTOHSCROLL | WS_DISABLED
     CONTROL         "&Run Minimized",IDC_RUNMINIMIZED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,104,236,86,10
-    PUSHBUTTON      "&Test Tool",IDC_TESTTOOL,7,200,50,14
     PUSHBUTTON      "I&mport...",IDC_IMPORT,312,235,50,14
 END
 
@@ -602,44 +558,42 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,6,128,170,10
     CONTROL         "Keep tabs ordered by name",IDC_KEEPTABSORDERED,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,6,142,170,10
-    CONTROL         "Allow middle button clicking on tabs to close tasklists",
-                    IDC_ENABLECTRLMBTNCLOSE,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | BS_MULTILINE | WS_TABSTOP,6,156,169,19
-    LTEXT           "Filtering",IDC_FILTERGROUP,6,178,172,8
+    LTEXT           "Filtering",IDC_FILTERGROUP,6,159,172,8
     CONTROL         "Allow multi selection in the 'Category' filter",
                     IDC_MULTISELCATFILTER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,192,162,10
+                    WS_TABSTOP,6,173,162,10
     CONTROL         "Allow multi selection in the 'Allocated To' filter",
                     IDC_MULTISELALLOCTOFILTER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,206,162,10
+                    WS_TABSTOP,6,187,162,10
     CONTROL         "Restore tasklist filters when restarting ToDoList",
                     IDC_RESTORETASKLISTFILTERS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,220,162,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
+                    WS_TABSTOP,6,201,162,10
+    LTEXT           "Sorting",IDC_SORTGROUP,191,7,168,8
     CONTROL         "Always sort completed tasks below other tasks",
                     IDC_SORTDONETASKSATBOTTOM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,191,21,170,10
-    LTEXT           "Toolbar",IDC_TOOLBARGROUP,191,38,168,8
-    LTEXT           "'New Task' button places task:",IDC_STATIC,191,51,98,8
-    COMBOBOX        IDC_NEWTASKPOSITION,193,62,141,121,CBS_DROPDOWNLIST | 
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
+    LTEXT           "Toolbar",IDC_TOOLBARGROUP,191,37,168,8
+    LTEXT           "'New Task' button places task:",IDC_STATIC,191,50,98,8
+    COMBOBOX        IDC_NEWTASKPOSITION,193,61,141,121,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "'New Subtask' button places subtask:",IDC_STATIC,191,79,
+    LTEXT           "'New Subtask' button places subtask:",IDC_STATIC,191,78,
                     120,8
-    COMBOBOX        IDC_NEWSUBTASKPOSITION,193,88,141,115,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_NEWSUBTASKPOSITION,193,87,141,115,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Task Comments",IDC_COMMENTSGROUP,191,111,168,8
-    LTEXT           "Preferred format",IDC_STATIC,191,126,55,8
-    COMBOBOX        IDC_COMMENTSFORMAT,250,124,108,102,CBS_DROPDOWNLIST | 
+    LTEXT           "Task Comments",IDC_COMMENTSGROUP,191,110,168,8
+    LTEXT           "Preferred format",IDC_STATIC,191,125,55,8
+    COMBOBOX        IDC_COMMENTSFORMAT,250,123,108,102,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Location",IDC_STATIC,191,141,28,8
-    COMBOBOX        IDC_COMMENTPOS,250,139,108,145,CBS_DROPDOWNLIST | 
+    LTEXT           "Location",IDC_STATIC,191,140,28,8
+    COMBOBOX        IDC_COMMENTPOS,250,138,108,145,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    CONTROL         "S&how always",IDC_SHOWCOMMENTSALWAYS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,191,155,170,10
+    CONTROL         "S&how even when tasklist is maximized",
+                    IDC_SHOWCOMMENTSALWAYS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,191,154,170,10
     CONTROL         "&Update all tasklists when the comments field is resized",
                     IDC_SHAREDCOMMENTSHEIGHT,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | BS_MULTILINE | WS_TABSTOP,191,169,170,17
-    LTEXT           "Sorting",IDC_SORTGROUP,191,7,168,8
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,191,168,170,17
 END
 
 IDD_PREFUITASKLIST_PAGE DIALOG DISCARDABLE  0, 0, 369, 249
@@ -651,28 +605,27 @@ BEGIN
                     LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | 
                     LBS_NOINTEGRALHEIGHT | LBS_MULTICOLUMN | WS_VSCROLL | 
                     WS_HSCROLL | WS_TABSTOP
-    CONTROL         "Show columns on the right of the task tree",
-                    IDC_RIGHTSIDECOLUMNS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,120,152,10
+    LTEXT           "Dates/Times",IDC_DATETIMEGROUP,7,120,167,8
     CONTROL         "Hid&e 'Start' and 'Due' dates for completed tasks",
                     IDC_HIDESTARTDUEFORDONETASKS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,134,169,10
-    CONTROL         "Round 'Time Estimate/Spent' to whole numbers",
+    CONTROL         "Hi&de 'Due Time' field",IDC_HIDEDUETIME,"Button",
+                    BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,
+                    148,169,10
+    CONTROL         "Hi&de zero 'Times' and 'Costs'",IDC_HIDEUNDEFINEDTIMEST,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | 
+                    WS_TABSTOP,7,162,169,10
+    CONTROL         "Display dates in I&SO format",IDC_USEISODATEFORMAT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,176,177,10
+    CONTROL         "&Include the weekday when displaying dates",
+                    IDC_SHOWWEEKDAYINDATES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,190,177,10
+    CONTROL         "&Round 'Time Estimate/Spent' to whole numbers",
                     IDC_ROUNDTIMEFRACTIONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,148,169,10
-    CONTROL         "Show non-file links as text",IDC_SHOWNONFILEREFSASTEXT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,162,169,10
-    CONTROL         "Display 'Estimated/Spent' times in HMS format",
+                    WS_TABSTOP,7,204,169,10
+    CONTROL         "&Display 'Estimated/Spent' times in HMS format",
                     IDC_USEHMSTIMEFORMAT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,176,169,10
-    CONTROL         "Set focus to tasklist whenever ToDoList is activated",
-                    IDC_AUTOFOCUSTASKLIST,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,7,190,169,17
-    CONTROL         "&Enable full row selection",IDC_FULLROWSELECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,211,169,10
-    CONTROL         "&Display the selected task's path in the header bar",
-                    IDC_DISPLAYPATHINHEADER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,225,171,10
+                    WS_TABSTOP,7,218,169,10
     CONTROL         "&Show task infotips",IDC_SHOWINFOTIPS,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,191,7,177,10
     CONTROL         "Limit length of comments shown to:",
@@ -694,27 +647,29 @@ BEGIN
     CONTROL         "Display subtask completion in front of task's title",
                     IDC_SHOWSUBTASKCOMPLETION,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,191,91,178,10
-    CONTROL         "Display dates in ISO format",IDC_USEISODATEFORMAT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,191,105,177,10
-    CONTROL         "Include the weekday when displaying dates",
-                    IDC_SHOWWEEKDAYINDATES,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,191,119,177,10
     CONTROL         "Show parent tasks with a folder icon",
                     IDC_SHOWPARENTSASFOLDERS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,191,133,177,10
+                    WS_TABSTOP,191,105,177,10
     CONTROL         "&Hide '% Complete' for completed tasks",
                     IDC_HIDEPERCENTFORDONETASKS,"Button",BS_AUTOCHECKBOX | 
-                    BS_TOP | BS_MULTILINE | WS_TABSTOP,191,147,177,10
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,191,119,177,10
     CONTROL         "&Show '% Complete' as a progress bar",
                     IDC_SHOWPERCENTPROGRESSBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,191,161,177,10
-    CONTROL         "Hi&de zero 'Times' and 'Costs'",IDC_HIDEUNDEFINEDTIMEST,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | 
-                    WS_TABSTOP,191,175,177,10
+                    WS_TABSTOP,191,133,177,10
+    CONTROL         "Show columns on the right of the task tree",
+                    IDC_RIGHTSIDECOLUMNS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,191,148,152,10
+    CONTROL         "Show non-file links as text",IDC_SHOWNONFILEREFSASTEXT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,191,162,169,10
+    CONTROL         "Set focus to tasklist whenever ToDoList is activated",
+                    IDC_AUTOFOCUSTASKLIST,"Button",BS_AUTOCHECKBOX | BS_TOP | 
+                    BS_MULTILINE | WS_TABSTOP,191,176,170,20
+    CONTROL         "&Enable full row selection",IDC_FULLROWSELECTION,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,191,197,169,10
+    CONTROL         "&Display the selected task's path in the header bar",
+                    IDC_DISPLAYPATHINHEADER,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,191,211,171,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,242
-    CONTROL         "Hi&de 'Due Time' field",IDC_HIDEDUETIME,"Button",
-                    BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,191,
-                    189,177,10
 END
 
 IDD_PREFUITASKLISTCOLORS_PAGE DIALOG DISCARDABLE  0, 0, 369, 249
@@ -753,12 +708,12 @@ BEGIN
     CONTROL         "Use HSL to calculate intermediate colours",
                     IDC_USEHLSGRADIENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     28,133,150,10
-    CONTROL         "Hide 'Priority' number ",IDC_HIDEPRIORITYNUMBER,"Button",
+    CONTROL         "&Hide 'Priority' number ",IDC_HIDEPRIORITYNUMBER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,147,91,10
     CONTROL         "Show &gridlines",IDC_SPECIFYGRIDLINECOLOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,161,76,10
-    PUSHBUTTON      "&Set...   ",IDC_SETGRIDLINECOLOR,136,159,40,13,BS_RIGHT
-    CONTROL         "Alternate line colour",IDC_ALTERNATELINECOLOR,"Button",
+    PUSHBUTTON      "S&et...   ",IDC_SETGRIDLINECOLOR,136,159,40,13,BS_RIGHT
+    CONTROL         "&Alternate line colour",IDC_ALTERNATELINECOLOR,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,175,93,10
     PUSHBUTTON      "S&et...   ",IDC_SETALTLINECOLOR,136,173,40,13,BS_RIGHT
     LTEXT           "Task Colouring",IDC_TASKCOLOURGROUP,189,7,180,8
@@ -800,31 +755,44 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Print Tasklist"
 FONT 8, "Tahoma"
 BEGIN
-    CONTROL         "",IDC_FRAME,"Static",SS_BLACKFRAME | NOT WS_VISIBLE | 
-                    WS_DISABLED,7,61,299,88
-    DEFPUSHBUTTON   "OK",IDOK,199,156,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,256,156,50,14
-    CONTROL         "Use the following stylesheet",IDC_USESTYLESHEET,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,26,103,10
-    EDITTEXT        IDC_STYLESHEET,18,39,211,13,ES_AUTOHSCROLL
     LTEXT           "Title",IDC_STATIC,7,9,14,8
     EDITTEXT        IDC_PRINTTITLE,27,7,134,13,ES_AUTOHSCROLL
     CONTROL         "Today's date",IDC_PRINTDATE,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,168,9,57,10
+    CONTROL         "Use the following stylesheet",IDC_USESTYLESHEET,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,26,103,10
+    EDITTEXT        IDC_STYLESHEET,18,39,211,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_FRAME,"Static",SS_BLACKFRAME | NOT WS_VISIBLE | 
+                    WS_DISABLED,7,61,299,88
+    DEFPUSHBUTTON   "OK",IDOK,199,156,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,256,156,50,14
 END
 
-IDD_WELCOME_DIALOG DIALOG DISCARDABLE  0, 0, 246, 106
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Welcome to ToDoList © AbstractSpoon"
+IDD_WELCOME_PAGE1 DIALOG DISCARDABLE  0, 0, 246, 137
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "ToDoList Setup"
 FONT 8, "Tahoma"
 BEGIN
-    LTEXT           "Static",IDC_TEXT,7,7,232,77
-    COMBOBOX        IDC_PREFCHOICE,7,87,176,57,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    PUSHBUTTON      "OK",IDOK,189,85,50,14
+    LTEXT           "1. Where do you want ToDoList to store your program settings ?",
+                    IDC_STATIC,7,7,208,8
+    CONTROL         "&Windows registry",IDC_REGISTRY,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,16,21,71,10
+    CONTROL         "&Ini file ",IDC_INIFILE,"Button",BS_AUTORADIOBUTTON,16,
+                    35,37,10
+    LTEXT           "Note: Using an ini file is great for portability and sharing preferences",
+                    IDC_STATIC,16,50,223,8
+    LTEXT           "2. Do you want to be able to share your tasklists on a network ?",
+                    IDC_STATIC,7,77,221,8
+    CONTROL         "&No, I won't be sharing any of my tasklists",
+                    IDC_NOSHARE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,90,
+                    223,10
+    CONTROL         "&Yes, I want to be able to share some of my tasklists",
+                    IDC_SHARE,"Button",BS_AUTORADIOBUTTON,16,104,223,10
+    LTEXT           "Note: You can modify this choice later using 'Tools > Preferences'",
+                    IDC_STATIC,16,122,223,8
 END
 
-IDD_FILTER_DIALOG DIALOG DISCARDABLE  0, 0, 269, 167
+IDD_FILTER_DIALOG DIALOG DISCARDABLE  0, 0, 219, 206
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Filter Tasks"
 FONT 8, "Tahoma"
@@ -862,14 +830,19 @@ BEGIN
     COMBOBOX        IDC_CATEGORYFILTERCOMBO,61,120,77,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "&Clear Filter",IDC_CLEARFILTER,7,146,50,14
-    DEFPUSHBUTTON   "OK",IDOK,153,146,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,212,146,50,14
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,139,254,1
-    CONTROL         "All cat&egories must match",IDC_ALLCATEGORIES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,145,122,117,10
-    CONTROL         "All per&sons must match",IDC_ALLALLOCTO,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,145,65,117,10
+    LTEXT           "&Version",IDC_VERSIONFILTERLABEL,7,139,49,12,
+                    SS_CENTERIMAGE
+    COMBOBOX        IDC_VERSIONFILTERCOMBO,61,139,77,118,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Option&s",IDC_STATIC,7,159,26,8
+    COMBOBOX        IDC_FILTEROPTIONS,61,158,151,112,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
+                    WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "&Clear Filter",IDC_CLEARFILTER,7,185,50,14
+    DEFPUSHBUTTON   "OK",IDOK,106,185,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,185,50,14
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,178,205,1
 END
 
 IDD_OFFSETDATES_DIALOG DIALOG DISCARDABLE  0, 0, 208, 139
@@ -932,71 +905,16 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Transform Tasklist"
 FONT 8, "Tahoma"
 BEGIN
-    CONTROL         "",IDC_FRAME,"Static",SS_BLACKFRAME | NOT WS_VISIBLE | 
-                    WS_DISABLED,7,61,299,88
-    DEFPUSHBUTTON   "OK",IDOK,199,156,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,256,156,50,14
-    EDITTEXT        IDC_STYLESHEET,7,39,222,13,ES_AUTOHSCROLL
-    LTEXT           "Stylesheet",IDC_STATIC,7,26,35,8
     LTEXT           "Title",IDC_STATIC,7,9,14,8
     EDITTEXT        IDC_TRANSFORMTITLE,27,7,135,13,ES_AUTOHSCROLL
     CONTROL         "Today's date",IDC_TRANSFORMDATE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,168,9,57,10
-END
-
-IDD_FINDPRIORITY_PAGE DIALOG DISCARDABLE  0, 0, 136, 78
-STYLE WS_CHILD
-FONT 8, "Tahoma"
-BEGIN
-    CONTROL         "&This",IDC_THIS,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
-                    0,1,29,10
-    CONTROL         "M&ore than",IDC_MORETHAN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,18,48,10
-    CONTROL         "Less t&han",IDC_LESSTHAN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,35,47,10
-    CONTROL         "&Between",IDC_BETWEEN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,52,44,10
-    COMBOBOX        IDC_THISPRIORITY,50,0,86,108,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
-    COMBOBOX        IDC_MORETHANPRIORITY,50,16,86,127,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
-    COMBOBOX        IDC_LESSTHANPRIORITY,50,33,86,123,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        IDC_PRIORITYSTART,50,50,86,96,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
-                    WS_TABSTOP
-    LTEXT           "and",IDC_STATIC,27,68,13,8
-    COMBOBOX        IDC_PRIORITYEND,50,65,86,96,CBS_DROPDOWNLIST | 
-                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
-                    WS_TABSTOP
-END
-
-IDD_FINDRISK_PAGE DIALOG DISCARDABLE  0, 0, 136, 78
-STYLE WS_CHILD
-FONT 8, "Tahoma"
-BEGIN
-    CONTROL         "&This",IDC_THIS,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
-                    0,1,29,10
-    CONTROL         "M&ore than",IDC_MORETHAN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,18,48,10
-    CONTROL         "Less t&han",IDC_LESSTHAN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,35,47,10
-    CONTROL         "&Between",IDC_BETWEEN,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,0,52,44,10
-    COMBOBOX        IDC_THISRISK,50,0,86,108,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
-    COMBOBOX        IDC_MORETHANRISK,50,16,86,127,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    COMBOBOX        IDC_LESSTHANRISK,50,33,86,123,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_RISKSTART,50,50,86,96,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    LTEXT           "and",IDC_STATIC,27,68,18,8
-    COMBOBOX        IDC_RISKEND,50,65,86,96,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    LTEXT           "Stylesheet",IDC_STATIC,7,26,35,8
+    EDITTEXT        IDC_STYLESHEET,7,39,222,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_FRAME,"Static",SS_BLACKFRAME | NOT WS_VISIBLE | 
+                    WS_DISABLED,7,61,299,88
+    DEFPUSHBUTTON   "OK",IDOK,199,156,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,256,156,50,14
 END
 
 IDD_FILTER_BAR DIALOGEX 0, 0, 406, 71
@@ -1022,8 +940,6 @@ BEGIN
     COMBOBOX        IDC_ALLOCTOFILTERCOMBO,49,27,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "All per&sons must match",IDC_ALLALLOCTO,"Button",
-                    BS_AUTOCHECKBOX | BS_VCENTER | WS_TABSTOP,87,28,117,12
     LTEXT           "A&llocated by",IDC_ALLOCBYFILTERLABEL,218,30,40,8,
                     SS_CENTERIMAGE
     COMBOBOX        IDC_ALLOCBYFILTERCOMBO,262,30,33,118,CBS_DROPDOWNLIST | 
@@ -1034,24 +950,22 @@ BEGIN
     COMBOBOX        IDC_STATUSFILTERCOMBO,328,30,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Cate&gory",IDC_CATEGORYFILTERLABEL,13,46,31,8,
+    LTEXT           "Cate&gory",IDC_CATEGORYFILTERLABEL,7,44,31,8,
                     SS_CENTERIMAGE
-    COMBOBOX        IDC_CATEGORYFILTERCOMBO,49,46,33,118,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_CATEGORYFILTERCOMBO,43,44,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "All cat&egories must match",IDC_ALLCATEGORIES,"Button",
-                    BS_AUTOCHECKBOX | BS_VCENTER | WS_TABSTOP,87,47,117,12
     CONTROL         "",IDC_DIVIDER,"Static",SS_ETCHEDHORZ,7,63,392,1
-END
-
-IDD_FINDCATEGORY_PAGE DIALOG DISCARDABLE  0, 0, 136, 73
-STYLE WS_CHILD
-FONT 8, "Tahoma"
-BEGIN
-    COMBOBOX        IDC_CATEGORIES,0,0,136,115,CBS_DROPDOWN | 
-                    CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "All cat&egories must match",IDC_MATCHALLCATEGORIES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,18,117,10
+    LTEXT           "Option&s",IDC_OPTIONFILTERLABEL,209,49,26,8,
+                    SS_CENTERIMAGE
+    COMBOBOX        IDC_OPTIONFILTERCOMBO,250,46,33,118,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Version",IDC_VERSIONFILTERLABEL,92,44,24,8,
+                    SS_CENTERIMAGE
+    COMBOBOX        IDC_VERSIONFILTERCOMBO,128,44,33,118,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_KEYBOARDSHORTCUTDISPLAYDIALOG DIALOG DISCARDABLE  0, 0, 277, 227
@@ -1122,22 +1036,12 @@ BEGIN
                     BS_AUTORADIOBUTTON | WS_GROUP,7,140,73,10
     CONTROL         "Aff&ects active tasklist only",IDC_ACTIVETASKLIST,
                     "Button",BS_AUTORADIOBUTTON,7,154,96,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,167,
-                    246,1
+    PUSHBUTTON      "&Select All",IDC_SELECTALLCOLS,147,147,50,14
+    PUSHBUTTON      "&Clear All",IDC_CLEARALLCOLS,203,147,50,14
     DEFPUSHBUTTON   "OK",IDOK,147,175,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,203,175,50,14
-    PUSHBUTTON      "&Clear All",IDC_CLEARALLCOLS,203,147,50,14
-    PUSHBUTTON      "&Select All",IDC_SELECTALLCOLS,147,147,50,14
-END
-
-IDD_FINDITEMS_PAGE DIALOG DISCARDABLE  0, 0, 136, 73
-STYLE WS_CHILD
-FONT 8, "Tahoma"
-BEGIN
-    COMBOBOX        IDC_ITEMS,0,0,136,115,CBS_DROPDOWN | CBS_AUTOHSCROLL | 
-                    WS_VSCROLL | WS_TABSTOP
-    CONTROL         "All It&ems must match",IDC_MATCHALLITEMS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,0,18,117,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ | WS_GROUP,7,167,
+                    246,1
 END
 
 IDD_REGMIGRATION_DIALOG DIALOG DISCARDABLE  0, 0, 186, 57
@@ -1202,11 +1106,13 @@ FONT 8, "Tahoma"
 BEGIN
     COMBOBOX        IDC_SEARCHLIST,85,4,71,121,CBS_DROPDOWN | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&Search:",IDC_STATIC,5,32,26,8
-    COMBOBOX        IDC_TASKLISTOPTIONS,33,30,164,125,CBS_DROPDOWNLIST | 
+    LTEXT           "&Search",IDC_STATIC,5,32,23,8
+    COMBOBOX        IDC_TASKLISTOPTIONS,33,30,114,125,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "I&nclude completed tasks",IDC_INCLUDEDONE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,206,32,93,10
+    LTEXT           "I&ncluding",IDC_STATIC,155,32,30,8
+    COMBOBOX        IDC_INCLUDE,190,30,101,30,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
+                    WS_TABSTOP
     LTEXT           "&For tasks matching the following rules:",IDC_STATIC,5,
                     49,124,8
     CONTROL         "List1",IDC_FINDLIST,"SysListView32",LVS_REPORT | 
@@ -1226,10 +1132,43 @@ BEGIN
     CONTROL         "",IDC_TOOLBAR,"Static",SS_ETCHEDFRAME | NOT WS_VISIBLE | 
                     WS_DISABLED,5,5,285,14
     CONTROL         "",IDC_HDIVIDER2,"Static",SS_ETCHEDHORZ,5,23,289,1
-    CONTROL         "&Search current results only",IDC_SEARCHRESULTS,"Button",
-                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | 
-                    WS_TABSTOP,141,47,102,10
     CONTROL         "",IDC_VDIVIDER,"Static",SS_ETCHEDVERT,301,4,1,153
+END
+
+IDD_WELCOME_PAGE2 DIALOG DISCARDABLE  0, 0, 263, 151
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "ToDoList Setup"
+FONT 8, "Tahoma"
+BEGIN
+    LTEXT           "3. &Which columns do you initially want to see ?\n\nNote: You can modify this choice later using  'View > Select Columns'",
+                    IDC_STATIC,7,7,249,26
+    LISTBOX         IDC_COLUMNLIST,7,39,249,105,LBS_SORT | 
+                    LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | 
+                    LBS_NOINTEGRALHEIGHT | LBS_MULTICOLUMN | WS_VSCROLL | 
+                    WS_HSCROLL | WS_TABSTOP
+END
+
+IDD_WELCOME_PAGE3 DIALOG DISCARDABLE  0, 0, 246, 135
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "ToDoList Setup"
+FONT 8, "Tahoma"
+BEGIN
+    LTEXT           "4. Do you want to keep the user interface as simple as possible ?",
+                    IDC_STATIC,7,7,208,8
+    CONTROL         "&No, let me see all available options",IDC_ALLOPTIONS,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,21,126,10
+    CONTROL         "&Yes, hide attributes and menu items for hidden columns",
+                    IDC_HIDEATTRIB,"Button",BS_AUTORADIOBUTTON,16,35,193,10
+    LTEXT           "5. Do you want to view a sample tasklist to help you get started ?",
+                    IDC_STATIC,7,77,211,8
+    CONTROL         "N&o, thanks",IDC_NOSAMPLE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,16,91,51,10
+    CONTROL         "Y&es, please",IDC_SAMPLE,"Button",BS_AUTORADIOBUTTON,16,
+                    105,53,10
+    EDITTEXT        IDC_SAMPLETASKLIST,69,104,170,14,ES_AUTOHSCROLL | 
+                    WS_GROUP
+    LTEXT           "Note: You can modify this choice later using 'Tools > Preferences'",
+                    IDC_STATIC,16,50,223,8
 END
 
 
@@ -1531,66 +1470,53 @@ BEGIN
     0
 END
 
-IDD_WELCOME_DIALOG DLGINIT
-BEGIN
-    IDC_PREFCHOICE, 0x403, 41, 0
-0x7355, 0x2065, 0x6874, 0x2065, 0x6552, 0x6967, 0x7473, 0x7972, 0x6620, 
-0x726f, 0x7320, 0x6f74, 0x6972, 0x676e, 0x6d20, 0x2079, 0x6573, 0x7474, 
-0x6e69, 0x7367, "\000" 
-    IDC_PREFCHOICE, 0x403, 40, 0
-0x7355, 0x2065, 0x6e61, 0x4920, 0x696e, 0x4620, 0x6c69, 0x2065, 0x6f66, 
-0x2072, 0x7473, 0x726f, 0x6e69, 0x2067, 0x796d, 0x7320, 0x7465, 0x6974, 
-0x676e, 0x0073, 
-    0
-END
-
 IDD_FILTER_DIALOG DLGINIT
 BEGIN
-    IDC_FILTERCOMBO, 0x403, 14, 0
+    IDC_FILTEROPTIONS, 0x403, 14, 0
 0x2941, 0x745c, 0x6c41, 0x206c, 0x6154, 0x6b73, 0x0073, 
-    IDC_FILTERCOMBO, 0x403, 21, 0
+    IDC_FILTEROPTIONS, 0x403, 21, 0
 0x2942, 0x745c, 0x6e49, 0x6f63, 0x706d, 0x656c, 0x6574, 0x5420, 0x7361, 
 0x736b, "\000" 
-    IDC_FILTERCOMBO, 0x403, 20, 0
+    IDC_FILTEROPTIONS, 0x403, 20, 0
 0x2943, 0x745c, 0x6f43, 0x706d, 0x656c, 0x6574, 0x2064, 0x6154, 0x6b73, 
 0x0073, 
-    IDC_FILTERCOMBO, 0x403, 23, 0
+    IDC_FILTEROPTIONS, 0x403, 23, 0
 0x2944, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x5420, 
 0x646f, 0x7961, "\000" 
-    IDC_FILTERCOMBO, 0x403, 26, 0
+    IDC_FILTEROPTIONS, 0x403, 26, 0
 0x2945, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x5420, 
 0x6d6f, 0x726f, 0x6f72, 0x0077, 
-    IDC_FILTERCOMBO, 0x403, 38, 0
+    IDC_FILTEROPTIONS, 0x403, 38, 0
 0x2946, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
 0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x6854, 0x7369, 0x5720, 0x6565, 
 0x006b, 
-    IDC_FILTERCOMBO, 0x403, 38, 0
+    IDC_FILTEROPTIONS, 0x403, 38, 0
 0x2947, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
 0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x654e, 0x7478, 0x5720, 0x6565, 
 0x006b, 
-    IDC_FILTERCOMBO, 0x403, 39, 0
+    IDC_FILTEROPTIONS, 0x403, 39, 0
 0x2948, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
 0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x6854, 0x7369, 0x4d20, 0x6e6f, 
 0x6874, "\000" 
-    IDC_FILTERCOMBO, 0x403, 39, 0
+    IDC_FILTEROPTIONS, 0x403, 39, 0
 0x2949, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
 0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x654e, 0x7478, 0x4d20, 0x6e6f, 
 0x6874, "\000" 
-    IDC_FILTERCOMBO, 0x403, 38, 0
+    IDC_FILTEROPTIONS, 0x403, 38, 0
 0x294a, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
 0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x6854, 0x7369, 0x5920, 0x6165, 
 0x0072, 
-    IDC_FILTERCOMBO, 0x403, 38, 0
+    IDC_FILTEROPTIONS, 0x403, 38, 0
 0x294b, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
 0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x654e, 0x7478, 0x5920, 0x6165, 
 0x0072, 
-    IDC_FILTERCOMBO, 0x403, 28, 0
+    IDC_FILTEROPTIONS, 0x403, 28, 0
 0x294c, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7453, 0x7261, 0x6974, 0x676e, 
 0x6220, 0x2079, 0x6f54, 0x6164, 0x0079, 
-    IDC_FILTERCOMBO, 0x403, 32, 0
+    IDC_FILTEROPTIONS, 0x403, 32, 0
 0x294d, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7453, 0x7261, 0x6974, 0x676e, 
 0x6220, 0x2079, 0x6854, 0x7369, 0x5720, 0x6565, 0x006b, 
-    IDC_FILTERCOMBO, 0x403, 18, 0
+    IDC_FILTEROPTIONS, 0x403, 18, 0
 0x294e, 0x745c, 0x6c46, 0x6761, 0x6567, 0x2064, 0x6154, 0x6b73, 0x0073, 
 
     0
@@ -1608,58 +1534,6 @@ BEGIN
 0x6557, 0x6b65, 0x7328, 0x0029, 
     IDC_BYUNITS, 0x403, 9, 0
 0x6f4d, 0x746e, 0x2868, 0x2973, "\000" 
-    0
-END
-
-IDD_FILTER_BAR DLGINIT
-BEGIN
-    IDC_FILTERCOMBO, 0x403, 14, 0
-0x2941, 0x745c, 0x6c41, 0x206c, 0x6154, 0x6b73, 0x0073, 
-    IDC_FILTERCOMBO, 0x403, 21, 0
-0x2942, 0x745c, 0x6e49, 0x6f63, 0x706d, 0x656c, 0x6574, 0x5420, 0x7361, 
-0x736b, "\000" 
-    IDC_FILTERCOMBO, 0x403, 20, 0
-0x2943, 0x745c, 0x6f43, 0x706d, 0x656c, 0x6574, 0x2064, 0x6154, 0x6b73, 
-0x0073, 
-    IDC_FILTERCOMBO, 0x403, 23, 0
-0x2944, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x5420, 
-0x646f, 0x7961, "\000" 
-    IDC_FILTERCOMBO, 0x403, 26, 0
-0x2945, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x5420, 
-0x6d6f, 0x726f, 0x6f72, 0x0077, 
-    IDC_FILTERCOMBO, 0x403, 38, 0
-0x2946, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
-0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x6854, 0x7369, 0x5720, 0x6565, 
-0x006b, 
-    IDC_FILTERCOMBO, 0x403, 38, 0
-0x2947, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
-0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x654e, 0x7478, 0x5720, 0x6565, 
-0x006b, 
-    IDC_FILTERCOMBO, 0x403, 39, 0
-0x2948, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
-0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x6854, 0x7369, 0x4d20, 0x6e6f, 
-0x6874, "\000" 
-    IDC_FILTERCOMBO, 0x403, 39, 0
-0x2949, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
-0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x654e, 0x7478, 0x4d20, 0x6e6f, 
-0x6874, "\000" 
-    IDC_FILTERCOMBO, 0x403, 38, 0
-0x294a, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
-0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x6854, 0x7369, 0x5920, 0x6165, 
-0x0072, 
-    IDC_FILTERCOMBO, 0x403, 38, 0
-0x294b, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7544, 0x2065, 0x7962, 0x7420, 
-0x6568, 0x6520, 0x646e, 0x6f20, 0x2066, 0x654e, 0x7478, 0x5920, 0x6165, 
-0x0072, 
-    IDC_FILTERCOMBO, 0x403, 28, 0
-0x294c, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7453, 0x7261, 0x6974, 0x676e, 
-0x6220, 0x2079, 0x6f54, 0x6164, 0x0079, 
-    IDC_FILTERCOMBO, 0x403, 32, 0
-0x294d, 0x745c, 0x6154, 0x6b73, 0x2073, 0x7453, 0x7261, 0x6974, 0x676e, 
-0x6220, 0x2079, 0x6854, 0x7369, 0x5720, 0x6565, 0x006b, 
-    IDC_FILTERCOMBO, 0x403, 18, 0
-0x294e, 0x745c, 0x6c46, 0x6761, 0x6567, 0x2064, 0x6154, 0x6b73, 0x0073, 
-
     0
 END
 
@@ -1686,11 +1560,15 @@ END
 IDD_FINDTASKS_DIALOG DLGINIT
 BEGIN
     IDC_TASKLISTOPTIONS, 0x403, 20, 0
-0x6874, 0x2065, 0x6361, 0x6974, 0x6576, 0x7420, 0x7361, 0x6c6b, 0x7369, 
+0x6854, 0x2065, 0x6361, 0x6974, 0x6576, 0x7420, 0x7361, 0x6c6b, 0x7369, 
 0x0074, 
     IDC_TASKLISTOPTIONS, 0x403, 19, 0
-0x6c61, 0x206c, 0x706f, 0x6e65, 0x7420, 0x7361, 0x6c6b, 0x7369, 0x7374, 
+0x6c41, 0x206c, 0x706f, 0x6e65, 0x7420, 0x7361, 0x6c6b, 0x7369, 0x7374, 
 "\000" 
+    IDC_INCLUDE, 0x403, 16, 0
+0x6f43, 0x706d, 0x656c, 0x6574, 0x2064, 0x6174, 0x6b73, 0x0073, 
+    IDC_INCLUDE, 0x403, 13, 0
+0x6150, 0x6572, 0x746e, 0x7420, 0x7361, 0x736b, "\000" 
     0
 END
 
@@ -1742,20 +1620,20 @@ BEGIN
         BOTTOMMARGIN, 170
     END
 
-    IDD_WELCOME_DIALOG, DIALOG
+    IDD_WELCOME_PAGE1, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 239
         TOPMARGIN, 7
-        BOTTOMMARGIN, 99
+        BOTTOMMARGIN, 130
     END
 
     IDD_FILTER_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 262
+        RIGHTMARGIN, 212
         TOPMARGIN, 7
-        BOTTOMMARGIN, 160
+        BOTTOMMARGIN, 199
     END
 
     IDD_OFFSETDATES_DIALOG, DIALOG
@@ -1774,27 +1652,12 @@ BEGIN
         BOTTOMMARGIN, 170
     END
 
-    IDD_FINDPRIORITY_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 116
-    END
-
-    IDD_FINDRISK_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 116
-    END
-
     IDD_FILTER_BAR, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 399
         TOPMARGIN, 7
         BOTTOMMARGIN, 64
-    END
-
-    IDD_FINDCATEGORY_PAGE, DIALOG
-    BEGIN
-        RIGHTMARGIN, 135
     END
 
     IDD_KEYBOARDSHORTCUTDISPLAYDIALOG, DIALOG
@@ -1851,6 +1714,22 @@ BEGIN
         RIGHTMARGIN, 373
         TOPMARGIN, 4
         BOTTOMMARGIN, 284
+    END
+
+    IDD_WELCOME_PAGE2, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 256
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 144
+    END
+
+    IDD_WELCOME_PAGE3, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 239
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 128
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1920,7 +1799,6 @@ IDB_SOURCECONTROL       BITMAP  DISCARDABLE     "res\\bitmap1.bmp"
 IDB_TOOLBAR16           BITMAP  DISCARDABLE     "RES\\toolbar16.bmp"
 IDB_FIND16              BITMAP  DISCARDABLE     "RES\\findtoolbar16.bmp"
 IDB_TODO                BITMAP  DISCARDABLE     "RES\\XPcheckboxes.bmp"
-AFX_IDB_CHECKLISTBOX_95 BITMAP  DISCARDABLE     "res\\checklistbox.bmp"
 IDR_TOOLBAR             BITMAP  DISCARDABLE     "res\\toolbar.bmp"
 IDR_FINDDLG             BITMAP  DISCARDABLE     "res\\find.bmp"
 IDB_TREELIST            BITMAP  DISCARDABLE     "res\\bmp00001.bmp"
@@ -1945,6 +1823,9 @@ BEGIN
     BUTTON      ID_EDIT_REDO
     SEPARATOR
     BUTTON      ID_SIMPLEMODE
+    SEPARATOR
+    BUTTON      ID_VIEW_EXPANDTASK
+    BUTTON      ID_VIEW_COLLAPSETASK
     SEPARATOR
     BUTTON      ID_VIEW_PREV_SEL
     BUTTON      ID_VIEW_NEXT_SEL
@@ -2051,7 +1932,7 @@ BEGIN
             , GRAYED
         END
         MENUITEM SEPARATOR
-        MENUITEM "Send &To...",                 ID_SENDTASKS
+        MENUITEM "Email &Tasks...",             ID_SENDTASKS
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_EXIT
     END
@@ -2126,6 +2007,7 @@ BEGIN
             MENUITEM "Decre&ment Task Priority",    ID_EDIT_DECTASKPRIORITY
             MENUITEM SEPARATOR
             MENUITEM "Trac&k Time Spent",           ID_EDIT_CLOCK_TASK
+            MENUITEM "Edit Task &Log File",         ID_SHOWTIMELOGFILE
             MENUITEM SEPARATOR
             MENUITEM "&Offset Dates...",            ID_EDIT_OFFSETDATES
             MENUITEM SEPARATOR
@@ -2135,13 +2017,17 @@ BEGIN
             MENUITEM "T&oggle Task Flag",           ID_EDIT_FLAGTASK
         END
         MENUITEM SEPARATOR
-        MENUITEM "Display Task &Log File",      ID_SHOWTIMELOGFILE
-        MENUITEM SEPARATOR
         MENUITEM "&Insert Date",                ID_EDIT_INSERTDATE
         MENUITEM "&Insert Date && Time",        ID_EDIT_INSERTDATETIME
         MENUITEM SEPARATOR
-        MENUITEM "Spell Chec&k Task Title",     ID_EDIT_SPELLCHECKTITLE
-        MENUITEM "Spell Chec&k Task Comments",  ID_EDIT_SPELLCHECKCOMMENTS
+        POPUP "Spell Chec&k"
+        BEGIN
+            MENUITEM "&Task Title",                 ID_EDIT_SPELLCHECKTITLE
+            MENUITEM "&Task Comments",              ID_EDIT_SPELLCHECKCOMMENTS
+
+            MENUITEM "&Active Tasklist",            ID_TOOLS_SPELLCHECKTASKLIST
+
+        END
         MENUITEM SEPARATOR
         MENUITEM "C&ut",                        ID_EDIT_CUT
         MENUITEM "&Copy",                       ID_EDIT_COPY
@@ -2164,9 +2050,16 @@ BEGIN
                                                 ID_EDIT_PASTESUB
         MENUITEM "&Paste after the Selected Task", ID_EDIT_PASTEAFTER
         MENUITEM SEPARATOR
+        MENUITEM "&Delete the Selected Task",   ID_DELETETASK
+        MENUITEM "Delete &All Tasks",           ID_DELETEALLTASKS
+        MENUITEM SEPARATOR
         MENUITEM "Select A&ll",                 ID_EDIT_SELECTALL
         MENUITEM SEPARATOR
         MENUITEM "&Find Tasks...",              ID_EDIT_FINDTASKS
+        MENUITEM SEPARATOR
+        MENUITEM "&Quick Find",                 ID_EDIT_QUICKFIND
+        MENUITEM "Find &Next",                  ID_EDIT_QUICKFINDNEXT
+        MENUITEM "Find &Prev",                  ID_EDIT_QUICKFINDPREV
     END
     POPUP "&View"
     BEGIN
@@ -2255,12 +2148,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Unsorted",                   ID_SORT_NONE
     END
-    POPUP "&Delete"
-    BEGIN
-        MENUITEM "&Delete the Selected Task",   ID_DELETETASK
-        MENUITEM SEPARATOR
-        MENUITEM "Delete &All Tasks",           ID_DELETEALLTASKS
-    END
     POPUP "&Tools"
     BEGIN
         MENUITEM "Check &Out to Edit",          ID_TOOLS_CHECKOUT
@@ -2270,8 +2157,6 @@ BEGIN
         MENUITEM "E&xport Tasks...",            ID_TOOLS_EXPORT
         MENUITEM SEPARATOR
         MENUITEM "&Transform Active Tasklist...", ID_TOOLS_TRANSFORM
-        MENUITEM SEPARATOR
-        MENUITEM "Spellchec&k Active Tasklist", ID_TOOLS_SPELLCHECKTASKLIST
         MENUITEM SEPARATOR
         MENUITEM "Arc&hive Completed Tasks",    ID_ARCHIVE_COMPLETEDTASKS
         MENUITEM SEPARATOR
@@ -2295,8 +2180,10 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Preferences...",             ID_PREFERENCES
         MENUITEM SEPARATOR
-        MENUITEM "&Import Preferences...",      ID_TOOLS_IMPORTPREFS
-        MENUITEM "&Export Preferences...",      ID_TOOLS_EXPORTPREFS
+        MENUITEM "&Import Preferences into Registry...", 
+                                                ID_TOOLS_IMPORTPREFS
+        MENUITEM "&Export Preferences from Registry...", 
+                                                ID_TOOLS_EXPORTPREFS
         MENUITEM SEPARATOR
         MENUITEM "User Defined Tool 1",         ID_TOOLS_USERTOOL1, GRAYED
         MENUITEM "User Defined Tool 2",         ID_TOOLS_USERTOOL2, GRAYED
@@ -2697,7 +2584,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_BOLDTASK             "\nToggle the Bold State of the Selected Task "
-    ID_SORT                 "\nSort"
+    ID_SORT                 "\nSort Tasks"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -2765,6 +2652,8 @@ BEGIN
     ID_UNDOCK               "\nUndocked"
     ID_DOCKBELOW            "\nDock Below"
     ID_TOOLS_TOGGLECHECKIN  "\nToggle Checkout"
+    ID_VIEW_EXPANDTASK      "\nExpand Task"
+    ID_VIEW_COLLAPSETASK    "\nCollapse Task"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -2957,7 +2846,7 @@ BEGIN
     IDS_COMMENTFORMATCHANGE "Changes to the comments format will not affect tasklists that are currently open."
     IDS_COMMENTFORMATCHANGE_TITLE "Default Format Change"
     IDS_POSTEXPORTPREFS     "Your registry settings have been successfully exported.\n\nDo you want to start using these preferences immediately?"
-    IDS_POSTIMPORTPREFS     "Yours preferences have been successfully imported into the registry.\n\nDo you want to start using these settings immediately?"
+    IDS_POSTIMPORTPREFS     "Your preferences have been successfully imported into the registry.\n\nDo you want to start using these settings immediately?"
     IDS_PREF_UITABBAR       "User Interface>General>Tabbar"
     IDS_PREF_UICOMMENTS     "User Interface>General>Task Comments"
     IDS_PTP_PLACEHOLDERS    "Placeholders"
@@ -3135,7 +3024,7 @@ BEGIN
     IDS_TDC_TASKLISTPROMPT  "This tasklist contains no tasks"
     IDS_TDC_FILTEREDTASKLISTPROMPT 
                             "There are no tasks matching the selected filter"
-    IDS_RES_VERSION         "1"
+    IDS_RES_VERSION         "2"
     IDS_MISMATCHEDRESOURCES "The localized resources that you are using to translate ToDoList into your prefered language\nare out of date and cannot be used.\n\nPlease contact the supplier of the resource file for an update."
     IDS_SAVEALL_TIP         "Save All"
     IDS_SAVE_TIP            "Save Tasklist"
@@ -3385,24 +3274,56 @@ BEGIN
     IDS_TDLBC_RECENTEDIT    "Recently Modified"
     IDS_TDC_COLUMN_RECENTEDIT "*"
     IDS_TDLBC_REMAINING     "Remaining Time"
-    IDS_SB_LISTTASKCOUNT    "%d / %d tasks"
+    IDS_SB_TASKCOUNT        "%d / %d tasks"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_SB_TREETASKCOUNT    "%d tasks"
-    IDS_SB_LISTTASKCOUNT_TIP "Filtered task count / Total task count"
+    IDS_SB_TASKCOUNT_TIP    "Filtered task count / Total task count"
     IDS_TE_MINS             "m(inutes)"
     IDS_TE_HOURS            "H(ours)"
     IDS_TE_DAYS             "D(ays)"
     IDS_TE_WEEKS            "W(eeks)"
     IDS_TE_MONTHS           "M(onths)"
     IDS_TE_YEARS            "Y(ears)"
+    IDS_FILTER_ANYCATS      "Any category can match"
+    IDS_FILTER_ANYPEOPLE    "Any person can match"
+    IDS_FILTER_HIDEPARENTS  "Hide parent tasks (List View)"
+    IDS_FILTER_HIDEOVERDUE  "Hide overdue tasks"
+    IDS_FILTER_HIDEDONE     "Hide completed tasks"
+    IDS_FILTER_HIDECOLLAPSED "Hide collapsed tasks (List View)"
+    IDS_QUICKFIND           "Quick Find"
+    IDS_NOTASKSIMPORTED     "No tasks were imported."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_HELP_WIKI            "\nOnline Wiki"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FT_SAVESEARCHPROMPT "Save Search"
+    IDS_FILTER_ALL          "All Tasks"
+    IDS_FILTER_NOTDONE      "Incomplete Tasks"
+    IDS_FILTER_DONE         "Completed Tasks"
+    IDS_FILTER_DUETODAY     "Tasks Due by Today"
+    IDS_FILTER_DUETOMORROW  "Tasks Due by Tomorrow"
+    IDS_FILTER_DUEENDTHISWEEK "Tasks Due by the end of This Week"
+    IDS_FILTER_DUEENDNEXTWEEK "Tasks Due by the end of Next Week"
+    IDS_FILTER_DUEENDTHISMONTH "Tasks Due by the end of This Month"
+    IDS_FILTER_DUEENDNEXTMONTH "Tasks Due by the end of Next Month"
+    IDS_FILTER_DUEENDTHISYEAR "Tasks Due by the end of This Year"
+    IDS_FILTER_DUEENDNEXTYEAR "Tasks Due by the end of Next Year"
+    IDS_FILTER_DUENEXTSEVENDAYS "Tasks Due within the Next 7 Days"
+    IDS_FILTER_STARTTODAY   "Tasks Starting by Today"
+    IDS_FILTER_STARTENDTHISWEEK "Tasks Starting by the end of This Week"
+    IDS_FILTER_STARTNEXTSEVENDAYS "Tasks Starting within the Next 7 Days"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_FILTER_FLAGGED      "Flagged Tasks"
 END
 
 #endif    // English (Australia) resources
