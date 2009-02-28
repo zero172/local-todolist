@@ -12,6 +12,7 @@
 #define IDC_TRAYICON                    102
 #define ID_DEBUGQUERYENDSESSION         104
 #define ID_SEARCHLIST                   105
+#define IDC_QUICKFIND                   106
 #define IDR_MAINFRAME                   128
 #define IDR_TOOLBAR                     129
 #define IDS_SAMPLETASK                  129
@@ -45,6 +46,7 @@
 #define IDD_PREFERENCES                 148
 #define IDD_PREFUITASKLIST_PAGE         149
 #define IDD_WELCOME_DIALOG              150
+#define IDD_WELCOME_PAGE1               150
 #define IDD_FINDTEXT_PAGE               152
 #define IDD_FINDDATE_PAGE               153
 #define IDD_FINDNUM_PAGE                154
@@ -87,6 +89,8 @@
 #define IDR_TREEDRAGDROP                206
 #define IDD_IMPORT_DIALOG               207
 #define IDD_FINDTASKS_DIALOG            208
+#define IDD_WELCOME_PAGE2               209
+#define IDD_WELCOME_PAGE3               210
 #define IDI_FIND                        211
 #define IDB_TREELIST                    212
 #define IDC_TB_FRAME                    1001
@@ -107,6 +111,7 @@
 #define IDC_CHARSET                     1007
 #define IDC_MONTHDAY                    1007
 #define IDC_FROMFILEPATH                1007
+#define IDC_SAMPLETASKLIST              1007
 #define IDC_DONE                        1008
 #define IDC_SAVEEXPORTSTYLESHEET        1008
 #define IDC_MONTHLIST                   1008
@@ -175,6 +180,7 @@
 #define IDC_FONTSIZE                    1029
 #define IDC_TREEFONTSIZE                1029
 #define IDC_DEFAULTSTATUS               1029
+#define IDC_DUEHAVEHIGHESTPRIORITY      1029
 #define IDC_APPNAME                     1030
 #define IDC_USESYSTRAY                  1030
 #define IDC_HTMLFONTSIZE                1030
@@ -184,6 +190,7 @@
 #define IDC_SHOWINFOTIPS                1031
 #define IDC_DEFAULTCOST                 1031
 #define IDC_NUMLINESPACE                1031
+#define IDC_DONEHAVELOWESTPRIORITY      1031
 #define IDC_COPYRIGHT                   1032
 #define IDC_PRIORITYCOLORS              1032
 #define IDC_DIVIDER                     1033
@@ -228,6 +235,8 @@
 #define IDC_SENDACTIVETASKLIST          1055
 #define IDC_DAILY                       1055
 #define IDC_FROMFILE                    1055
+#define IDC_SHARE                       1055
+#define IDC_ALLOPTIONS                  1055
 #define IDC_BUTTON1                     1056
 #define IDC_LOWPRIORITYCOLOR            1056
 #define IDC_ASSIGNSHORTCUT              1056
@@ -243,6 +252,8 @@
 #define IDC_SENDSELECTEDTASKS           1056
 #define IDC_WEEKLY                      1056
 #define IDC_FROMCLIPBOARD               1056
+#define IDC_NOSHARE                     1056
+#define IDC_HIDEATTRIB                  1056
 #define IDC_BUTTON2                     1057
 #define IDC_HIGHPRIORITYCOLOR           1057
 #define IDC_DELETETOOL                  1057
@@ -256,10 +267,14 @@
 #define IDC_ACTIVETASKLIST              1058
 #define IDC_YEARLY                      1058
 #define IDC_TONEWTASKLIST               1058
+#define IDC_REGISTRY                    1058
+#define IDC_NOSAMPLE                    1058
 #define IDC_BUTTON3                     1059
 #define IDC_SETPRIORITYCOLOR            1059
 #define IDC_IMPORT                      1059
 #define IDC_TOACTIVETASLIST             1059
+#define IDC_INIFILE                     1059
+#define IDC_SAMPLE                      1059
 #define IDC_TABCONTROL                  1060
 #define IDC_SETDEFAULTCOLOR             1060
 #define IDC_SETGRIDLINECOLOR            1060
@@ -365,6 +380,7 @@
 #define IDC_STATUSLIST                  1106
 #define IDC_BYUNITS                     1106
 #define IDC_OPERATORCOMBO               1106
+#define IDC_FILTEROPTIONS               1106
 #define IDC_QUERYAPPLYCHANGESTOSUBTASKS 1107
 #define IDC_NOTIFYDUEBYONSWITCH         1107
 #define IDC_COMMENTSFORMAT              1107
@@ -474,11 +490,15 @@
 #define IDC_TRACKGROUP                  1191
 #define IDC_RISKFILTERCOMBO             1191
 #define IDC_TIMEGROUP                   1192
+#define IDC_OPTIONFILTERLABEL           1192
 #define IDC_DEFGROUP                    1193
+#define IDC_OPTIONFILTERCOMBO           1193
 #define IDC_TOOLBARGROUP                1194
 #define IDC_INHERITGROUP                1194
+#define IDC_VERSIONFILTERLABEL          1194
 #define IDC_SORTGROUP                   1195
 #define IDC_DROPLISTGROUP               1195
+#define IDC_VERSIONFILTERCOMBO          1195
 #define IDC_TABBARGROUP                 1196
 #define IDC_COMMENTSGROUP               1197
 #define IDC_COLUMNGROUP                 1198
@@ -540,6 +560,9 @@
 #define IDC_TASKCOLOURGROUP             1289
 #define IDC_TEXTINDENTTRAIL             1290
 #define IDC_NUMLINESPACETRAIL           1291
+#define IDC_COLUMNLIST                  1294
+#define IDC_DATETIMEGROUP               1297
+#define IDC_INCLUDE                     1298
 #define IDC_DELETE                      1306
 #define IDC_MOVEDOWN                    1307
 #define IDB_TOOLBAR24GRAY               30997
@@ -873,6 +896,9 @@
 #define ID_VIEW_TOGGLETREEANDLIST       33238
 #define ID_VIEW_TASKLIST                33239
 #define ID_VIEW_TOGGLETASKSANDCOMMENTS  33243
+#define ID_EDIT_QUICKFIND               33244
+#define ID_EDIT_QUICKFINDNEXT           33245
+#define ID_EDIT_QUICKFINDPREV           33246
 #define ID_TOOLS_SELTASKFILELINK        33925
 #define IDS_PTP_NEWTOOL                 57671
 #define IDS_PTP_TOOLNAME                57672
@@ -1329,22 +1355,49 @@
 #define IDS_TDC_COLUMN_RECENTEDIT       58109
 #define IDS_TDLBC_REMAINING             58110
 #define IDS_SB_LISTTASKCOUNT            58111
+#define IDS_SB_TASKCOUNT                58111
 #define IDS_SB_TREETASKCOUNT            58112
 #define IDS_SB_LISTTASKCOUNT_TIP        58113
+#define IDS_SB_TASKCOUNT_TIP            58113
 #define IDS_TE_MINS                     58114
 #define IDS_TE_HOURS                    58115
 #define IDS_TE_DAYS                     58116
 #define IDS_TE_WEEKS                    58117
 #define IDS_TE_MONTHS                   58118
 #define IDS_TE_YEARS                    58119
+#define IDS_FILTER_ANYCATS              58120
+#define IDS_FILTER_ANYPEOPLE            58121
+#define IDS_FILTER_HIDEPARENTS          58122
+#define IDS_FILTER_HIDEOVERDUE          58123
+#define IDS_FILTER_HIDEDONE             58124
+#define IDS_FILTER_HIDECOLLAPSED        58125
+#define IDS_QUICKFIND                   58126
+#define IDS_NOTASKSIMPORTED             58127
+#define IDS_FT_SAVESEARCHPROMPT         58128
+#define IDS_FILTER_ALL                  58129
+#define IDS_FILTER_NOTDONE              58130
+#define IDS_FILTER_DONE                 58131
+#define IDS_FILTER_DUETODAY             58132
+#define IDS_FILTER_DUETOMORROW          58133
+#define IDS_FILTER_DUEENDTHISWEEK       58134
+#define IDS_FILTER_DUEENDNEXTWEEK       58135
+#define IDS_FILTER_DUEENDTHISMONTH      58136
+#define IDS_FILTER_DUEENDNEXTMONTH      58137
+#define IDS_FILTER_DUEENDTHISYEAR       58138
+#define IDS_FILTER_DUEENDNEXTYEAR       58139
+#define IDS_FILTER_DUENEXTSEVENDAYS     58140
+#define IDS_FILTER_STARTTODAY           58141
+#define IDS_FILTER_STARTENDTHISWEEK     58142
+#define IDS_FILTER_STARTNEXTSEVENDAYS   58143
+#define IDS_FILTER_FLAGGED              58144
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        213
-#define _APS_NEXT_COMMAND_VALUE         33244
-#define _APS_NEXT_CONTROL_VALUE         1291
-#define _APS_NEXT_SYMED_VALUE           106
+#define _APS_NEXT_RESOURCE_VALUE        214
+#define _APS_NEXT_COMMAND_VALUE         33248
+#define _APS_NEXT_CONTROL_VALUE         1299
+#define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif
