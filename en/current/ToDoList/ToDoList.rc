@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,6,999,4
+ FILEVERSION 5,7,2,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -47,9 +47,9 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 6, 999, 4\0"
+            VALUE "FileVersion", "5, 7, 2, 0\0"
             VALUE "InternalName", "ToDoList\0"
-            VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-08\0"
+            VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-09\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "ToDoList.exe\0"
             VALUE "PrivateBuild", "\0"
@@ -920,7 +920,7 @@ END
 IDD_FILTER_BAR DIALOGEX 0, 0, 406, 71
 STYLE DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
-FONT 8, "Tahoma", 0, 0, 0x1
+FONT 8, "Tahoma"
 BEGIN
     LTEXT           "Sh&ow",IDC_FILTERLABEL,9,8,19,12,SS_CENTERIMAGE
     COMBOBOX        IDC_FILTERCOMBO,37,7,151,112,CBS_DROPDOWNLIST | 
@@ -956,7 +956,7 @@ BEGIN
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
                     WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_DIVIDER,"Static",SS_ETCHEDHORZ,7,63,392,1
-    LTEXT           "Option&s",IDC_OPTIONFILTERLABEL,209,49,26,8,
+    LTEXT           "Optio&ns",IDC_OPTIONFILTERLABEL,209,49,26,8,
                     SS_CENTERIMAGE
     COMBOBOX        IDC_OPTIONFILTERCOMBO,250,46,33,118,CBS_DROPDOWNLIST | 
                     CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | 
@@ -2313,7 +2313,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "About...",                    ID_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "AbstractSpoon © 2003-08",     ID_TRAYICON, GRAYED
+        MENUITEM "AbstractSpoon © 2003-09",     ID_TRAYICON, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit ToDoList",              ID_TRAYICON_CLOSE
     END
@@ -2747,13 +2747,13 @@ BEGIN
     IDS_OPENSOURCECONTROLLED 
                             "The file '%s' is currently held under source control \nand you will not be able to make any changes to it.\n\nTo edit the file you need to enable source control and check the file out."
     IDS_OPENNEWER           "The file '%s' has a more recent file format than your \ncurrent version of ToDoList and you will therefore not be able to make any \nchanges to it."
-    IDS_DUETOMORROW         "The following tasks are due tomorrow"
-    IDS_DUETHISWEEK         "The following tasks are due by the end of this week"
-    IDS_DUENEXTWEEK         "The following tasks are due by the end of next week"
-    IDS_DUETHISMONTH        "The following tasks are due by the end of this month"
-    IDS_DUENEXTMONTH        "The following tasks are due by the end of next month"
+    IDS_DUETOMORROW         "'%s' has following tasks due by tomorrow"
+    IDS_DUETHISWEEK         "'%s' has the following tasks due by the end of this week"
+    IDS_DUENEXTWEEK         "'%s' has the following tasks due by the end of next week"
+    IDS_DUETHISMONTH        "'%s' has the following tasks due by the end of this month"
+    IDS_DUENEXTMONTH        "'%s' has the following tasks due by the end of next month"
     IDS_DUETASKS_TITLE      "Due Tasks"
-    IDS_ABOUTCOPYRIGHT      "Copyright © 2003-08 AbstractSpoon Software\n   (www.abstractspoon.com)\n\nInstaller © Power Programmer\n   (www.powerprogrammer.co.uk)\n\nToolbar Icons (some) © AWIcons\n   (www.awicons.com)\r\n\r\nCredits:\r\n\r\n- Paul DiLascia (of course)\r\n- d3m0n (Calendar Plugin and Testing)\r\n- :floyd: (part of the System Tray code)\r\n- Hans Dietrich (HTML control)\r\n- Armen Hakobyan (Enhanced folder dialog)\r\n- Open Office (Spellcheck Engine and Dictionaries)\r\n- Alex Hazanov (MSXML wrapper classes)\r\n- Richard Butler (Encryption)\r\n- Johan Rosengren (Original RTF comments control)\r\n- Daniel Beutler  (RTF2HTML conversion)\r\n- Valik (Plain Text importer)\r\n- Patchou (RichEdit border theming)\r\n- =[ Abin ]= (Ini class for tools importing)\r\n- Alex Cohn (Menu icon code)\r\n- Paul S. Vickery (Statusbar)"
+    IDS_ABOUTCOPYRIGHT      "Copyright © 2003-09 AbstractSpoon Software\n   (www.abstractspoon.com)\n\nInstaller © Power Programmer\n   (www.powerprogrammer.co.uk)\n\nToolbar Icons (some) © AWIcons\n   (www.awicons.com)\r\n\r\nCredits:\r\n\r\n- Paul DiLascia (of course)\r\n- d3m0n (Calendar Plugin and Testing)\r\n- :floyd: (part of the System Tray code)\r\n- Hans Dietrich (HTML control)\r\n- Armen Hakobyan (Enhanced folder dialog)\r\n- Open Office (Spellcheck Engine and Dictionaries)\r\n- Alex Hazanov (MSXML wrapper classes)\r\n- Richard Butler (Encryption)\r\n- Johan Rosengren (Original RTF comments control)\r\n- Daniel Beutler  (RTF2HTML conversion)\r\n- Valik (Plain Text importer)\r\n- Patchou (RichEdit border theming)\r\n- =[ Abin ]= (Ini class for tools importing)\r\n- Alex Cohn (Menu icon code)\r\n- Paul S. Vickery (Statusbar)"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -2842,7 +2842,7 @@ BEGIN
     IDS_EARLIERVERRUNNING   "There is an earlier version of ToDoList already running.\n\nTo run the more recent version, you will need to close the earlier version first and then retry."
     IDS_LOCATEHELP          "ToDoList was unable to locate the help documentation. This may be because \nyou have not downloaded it or this is the first time you have accessed it. \n\nWould you like to browse for it?"
     IDS_LOCATEHELP_TITLE    "Locate Help File"
-    IDS_HELPFILEFILTER      "Help Files (*.chm)|*.chm||"
+    IDS_HELPFILEFILTER      "Help Files (*.tdl)|*.tdl||"
     IDS_COMMENTFORMATCHANGE "Changes to the comments format will not affect tasklists that are currently open."
     IDS_COMMENTFORMATCHANGE_TITLE "Default Format Change"
     IDS_POSTEXPORTPREFS     "Your registry settings have been successfully exported.\n\nDo you want to start using these preferences immediately?"
@@ -3024,7 +3024,7 @@ BEGIN
     IDS_TDC_TASKLISTPROMPT  "This tasklist contains no tasks"
     IDS_TDC_FILTEREDTASKLISTPROMPT 
                             "There are no tasks matching the selected filter"
-    IDS_RES_VERSION         "2"
+    IDS_RES_VERSION         "3"
     IDS_MISMATCHEDRESOURCES "The localized resources that you are using to translate ToDoList into your prefered language\nare out of date and cannot be used.\n\nPlease contact the supplier of the resource file for an update."
     IDS_SAVEALL_TIP         "Save All"
     IDS_SAVE_TIP            "Save Tasklist"
@@ -3122,7 +3122,7 @@ BEGIN
     IDS_TDLBC_RECURRENCE    "Recurrence"
     IDS_TDLBC_VERSION       "Version"
     IDS_TDC_COLUMN_VERSION  "Ver."
-    IDS_TDC_FIELD_VERSION   "&Version"
+    IDS_TDC_FIELD_VERSION   "V&ersion"
     IDS_TDCTIP_VERSION      "Version:\t\t"
     IDS_TDC_RECALCPROMPT    "Would you like to recalculate the task time in the new units?"
     IDS_TDC_RECALCTITLE     "Recalculate Time"
@@ -3260,7 +3260,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_TDC_SELTASKSHAVECIRCULARDEPENDENCIES 
                             "The tasks %s have circular dependencies that must be resolved before they can be completed."
-    IDS_TDC_FIELD_DUETIME   "Due &Time"
+    IDS_TDC_FIELD_DUETIME   "Due T&ime"
     IDS_TASKTREE            "Task Tree"
     IDS_LISTVIEW            "List View"
     IDS_FT_TASK             "Task"
