@@ -1743,7 +1743,7 @@ BEGIN
             , GRAYED
         END
         MENUITEM SEPARATOR
-        MENUITEM "发送到...(&T)",             ID_SENDTASKS
+        MENUITEM "电子邮件发送任务...(&T)",             ID_SENDTASKS
         MENUITEM SEPARATOR
         MENUITEM "退出(&X)",                       ID_EXIT
     END
