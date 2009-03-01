@@ -65,22 +65,10 @@ SectionGroup "ToDoList" SEC_TODOLIST
   Section "核心组件" SEC_CORE
     SetOutPath "$INSTDIR"
     SetOverwrite ifnewer
-    File "ToDoList\RTFContentCtrl.dll"
-    File "ToDoList\PlainTextImport.dll"
-    File "ToDoList\MySpellCheck.dll"
-    File "ToDoList\MLOImport.dll"
-    File "ToDoList\iCalImportExport.dll"
-    File "ToDoList\GPExport.dll"
-    File "ToDoList\FMindImportExport.dll"
-    File "ToDoList\EncryptDecrypt.dll"
-    File "ToDoList\ToDoList.exe"
+    File "ToDoList\*"
 
     SetOutPath "$INSTDIR\Resources"
-    File "ToDoList\Resources\Project-Overview-HTML.xsl"
-    File "ToDoList\Resources\SimpStyler0.2.xsl"
-    File "ToDoList\Resources\TodoListStyler_Firefox.xsl"
-    File "ToDoList\Resources\TodoListStyler_v1.5.xsl"
-    File "ToDoList\Resources\ToDoListTableStylesheet_v1.xsl"
+    File "ToDoList\Resources\*"
 
     SetOverwrite on
     File "ToDoList\Resources\ToDoListDocumentation.tdl"
@@ -97,13 +85,16 @@ SectionGroupEnd
 SectionGroup "简体中文资源" SEC_ZH_CN
   Section "简体中文界面" SEC_ZH_CN_UI
     SetOutPath "$INSTDIR"
-    File "ToDoList\zh-CN\ToDoListLOC.dll"
-    File "ToDoList\zh-CN\RTFContentCtrlLOC.dll"
+    SetOverwrite ifnewer
+    File "ToDoList\zh-CN\*.dll"
   SectionEnd
 
   Section "简体中文文档" SEC_ZH_CN_DOC
     SetOutPath "$INSTDIR\Resources"
-    File "ToDoList\zh-CN\ToDoListDocumentation.tdl"
+    SetOverwrite on
+    File "ToDoList\zh-CN\*.tdl"
+    File "ToDoList\zh-CN\*.xsl"
+    SetFileAttributes "$INSTDIR\Resources\Introduction.tdl" READONLY
     SetFileAttributes "$INSTDIR\Resources\ToDoListDocumentation.tdl" READONLY
   SectionEnd
 SectionGroupEnd
@@ -126,7 +117,7 @@ SectionGroupEnd
 SectionGroup /e "插件" SEC_PLUGINS
   Section "日历插件 ${JF_CALANDER_VERSION}" SEC_PLUGIN_CALC
     SetOutPath "$INSTDIR"
-    File "ToDoList\plugins\CalendarExt.dll"
+    File "ToDoList\plugins\*"
   SectionEnd
 SectionGroupEnd
 
@@ -174,26 +165,12 @@ FunctionEnd
 
 Section Uninstall
   !insertmacro MUI_STARTMENU_GETFOLDER "Application" $ICONS_GROUP
-  Delete "$INSTDIR\uninst.exe"
-  Delete "$INSTDIR\RTFContentCtrlLOC.dll"
-  Delete "$INSTDIR\ToDoListLOC.dll"
-  Delete "$INSTDIR\ToDoList.exe"
-  Delete "$INSTDIR\CalendarExt.dll"
-  Delete "$INSTDIR\EncryptDecrypt.dll"
-  Delete "$INSTDIR\FMindImportExport.dll"
-  Delete "$INSTDIR\GPExport.dll"
-  Delete "$INSTDIR\iCalImportExport.dll"
-  Delete "$INSTDIR\MLOImport.dll"
-  Delete "$INSTDIR\MySpellCheck.dll"
-  Delete "$INSTDIR\PlainTextImport.dll"
-  Delete "$INSTDIR\RTFContentCtrl.dll"
+  Delete "$INSTDIR\*.dll"
+  Delete "$INSTDIR\*.exe"
 
-  Delete "$INSTDIR\Resources\Project-Overview-HTML.xsl"
-  Delete "$INSTDIR\Resources\SimpStyler0.2.xsl"
-  Delete "$INSTDIR\Resources\TodoListStyler_Firefox.xsl"
-  Delete "$INSTDIR\Resources\TodoListStyler_v1.5.xsl"
-  Delete "$INSTDIR\Resources\ToDoListTableStylesheet_v1.xsl"
-  Delete "$INSTDIR\Resources\ToDoListDocumentation.tdl"
+  Delete "$INSTDIR\Resources\*.xsl"
+  Delete "$INSTDIR\Resources\*.tdl"
+
   RMDir "$INSTDIR\Resources"
   RMDir "$INSTDIR"
 

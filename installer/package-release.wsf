@@ -126,6 +126,7 @@ package.copyMiddle = function() {
     this.info("  拷贝中文文档...");
     try {
         this.fso.CopyFile(this.fso.BuildPath(this.zhCnDoc, "*.tdl"), zhCnFolder);
+        this.fso.CopyFile(this.fso.BuildPath(this.zhCnDoc, "*.xsl"), zhCnFolder);
     } catch (err) {
         this.error("拷贝中文文件失败，脚本中止！");
         return false;
@@ -211,6 +212,7 @@ package.releaseRes = function() {
     var tempRes = this.fso.BuildPath(tempTodolist, "Resources");
     this.fso.CreateFolder(tempRes);
     this.fso.CopyFile(this.fso.BuildPath(this.middle, "zh-CN\\*.tdl"), tempRes);
+    this.fso.CopyFile(this.fso.BuildPath(this.middle, "zh-CN\\*.xsl"), tempRes);
     
     this.info("将资源文件打包...");
     var target = this.fso.BuildPath(this.release, this.getReleaseName("res"));
