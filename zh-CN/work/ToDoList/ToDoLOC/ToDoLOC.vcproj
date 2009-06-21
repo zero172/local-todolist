@@ -261,6 +261,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\RES\task_icons.bmp"
+			>
+		</File>
+		<File
 			RelativePath="..\RES\todolist.exe.manifest"
 			>
 			<FileConfiguration

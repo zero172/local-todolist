@@ -23,6 +23,127 @@ LANGUAGE 4, 2
 
 
 
+IDD_TASKICON_DIALOG DIALOGEX 0, 0, 374, 246
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "选项任务图标"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,261,224,50,14
+    PUSHBUTTON      "取消",IDCANCEL,317,224,50,14
+    CONTROL         "List1",IDC_ICONLIST,"SysListView32",LVS_LIST | LVS_SINGLESEL | 
+                    LVS_SHOWSELALWAYS | LVS_NOLABELWRAP | LVS_AUTOARRANGE | 
+                    LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_TABSTOP,7,7,360,
+                    212,WS_EX_CLIENTEDGE
+END
+
+IDD_SETREMINDER_DIALOG DIALOGEX DISCARDABLE 0, 0, 186, 83
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "调任务提醒"
+FONT 8, "Tahoma"
+BEGIN
+    DEFPUSHBUTTON   "确定",IDOK,73,62,50,14
+    PUSHBUTTON      "取消",IDCANCEL,129,62,50,14
+    LTEXT           "任务：",IDC_STATIC,7,7,34,9
+    LTEXT           "",IDC_TASKTITLE,61,7,118,17
+    LTEXT           "提醒我",IDC_STATIC,7,30,37,9
+    LTEXT           "在这个任务还没",IDC_STATIC,7,45,61,9
+    COMBOBOX        IDC_FROMWHERE,73,42,82,30,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_LEADIN,73,27,82,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_SHOWREMINDER_DIALOG DIALOGEX DISCARDABLE 0, 0, 198, 92
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "任务提醒"
+FONT 8, "Tahoma"
+BEGIN
+    PUSHBUTTON      "撤消",IDCANCEL,47,71,50,14
+    LTEXT           "任务：",IDC_STATIC,7,7,29,9
+    LTEXT           "",IDC_TASKTITLE,32,7,159,17
+    LTEXT           "Static",IDC_WHENTEXT,7,30,184,10
+    COMBOBOX        IDC_SNOOZE,72,45,64,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "撤消并转到任务",IDGOTOTASK,102,71,89,14
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,65,184,1
+    PUSHBUTTON      "等待",IDSNOOZE,141,45,50,14
+    LTEXT           "再次提醒我，在",IDC_STATIC,7,47,59,9
+END
+
+IDD_SETREMINDER_DIALOG DLGINIT
+BEGIN
+    IDC_FROMWHERE, 0x403, 5, 0
+0xaabf, 0xbcca, "\000" 
+    IDC_FROMWHERE, 0x403, 5, 0
+0xbdb5, 0xdac6, "\000" 
+    IDC_LEADIN, 0x403, 6, 0
+0xb735, 0xd6d6, 0x00d3,  
+    IDC_LEADIN, 0x403, 7, 0
+0x3031, 0xd6b7, 0xd3d6, "\000" 
+    IDC_LEADIN, 0x403, 7, 0
+0x3531, 0xd6b7, 0xd3d6, "\000" 
+    IDC_LEADIN, 0x403, 7, 0
+0x3032, 0xd6b7, 0xd3d6, "\000" 
+    IDC_LEADIN, 0x403, 7, 0
+0x3033, 0xd6b7, 0xd3d6, "\000" 
+    IDC_LEADIN, 0x403, 7, 0
+0x3534, 0xd6b7, 0xd3d6, "\000" 
+    IDC_LEADIN, 0x403, 13, 0
+0x3036, 0xd6b7, 0xd3d6, 0x312f, 0xa1d0, 0xb1ca, "\000" 
+    IDC_LEADIN, 0x403, 6, 0
+0xd032, 0xcaa1, 0x00b1,  
+    IDC_LEADIN, 0x403, 6, 0
+0xd033, 0xcaa1, 0x00b1,  
+    IDC_LEADIN, 0x403, 6, 0
+0xd034, 0xcaa1, 0x00b1,  
+    IDC_LEADIN, 0x403, 6, 0
+0xd035, 0xcaa1, 0x00b1,  
+    IDC_LEADIN, 0x403, 6, 0
+0xd036, 0xcaa1, 0x00b1,  
+    IDC_LEADIN, 0x403, 7, 0
+0x3231, 0xa1d0, 0xb1ca, "\000" 
+    IDC_LEADIN, 0x403, 11, 0
+0x3432, 0xa1d0, 0xb1ca, 0x312f, 0xeccc, "\000" 
+    IDC_LEADIN, 0x403, 4, 0
+0xcc32, 0x00ec,  
+    IDC_LEADIN, 0x403, 4, 0
+0xcc33, 0x00ec,  
+    IDC_LEADIN, 0x403, 4, 0
+0xcc34, 0x00ec,  
+    IDC_LEADIN, 0x403, 4, 0
+0xcc35, 0x00ec,  
+    IDC_LEADIN, 0x403, 4, 0
+0xcc36, 0x00ec,  
+    IDC_LEADIN, 0x403, 8, 0
+0xcc37, 0x2fec, 0xd631, 0x00dc,  
+    0
+END
+
+IDD_SHOWREMINDER_DIALOG DLGINIT
+BEGIN
+    IDC_SNOOZE, 0x403, 6, 0
+0xb735, 0xd6d6, 0x00d3,  
+    IDC_SNOOZE, 0x403, 7, 0
+0x3031, 0xd6b7, 0xd3d6, "\000" 
+    IDC_SNOOZE, 0x403, 7, 0
+0x3531, 0xd6b7, 0xd3d6, "\000" 
+    IDC_SNOOZE, 0x403, 7, 0
+0x3032, 0xd6b7, 0xd3d6, "\000" 
+    IDC_SNOOZE, 0x403, 7, 0
+0x3033, 0xd6b7, 0xd3d6, "\000" 
+    IDC_SNOOZE, 0x403, 7, 0
+0x3534, 0xd6b7, 0xd3d6, "\000" 
+    IDC_SNOOZE, 0x403, 7, 0
+0x3036, 0xd6b7, 0xd3d6, "\000" 
+    0
+END
+
+IDB_TASKICONS           BITMAP  DISCARDABLE     "res\\task_icons.bmp"
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_SETTASKICON     "\n设置任务图标"
+END
+
+
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -478,7 +599,7 @@ END
 
 IDD_PREFUI_PAGE DIALOGEX DISCARDABLE 0, 0, 367, 249
 STYLE WS_POPUP
-FONT 9, "宋体"
+FONT 8, "Tahoma"
 BEGIN
     CONTROL         "编辑区只显示列表中存在的属性(&O)",IDC_SHOWCTRLSASCOLUMNS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,6,7,170,10
@@ -493,26 +614,25 @@ BEGIN
                     170,18
     CONTROL         "在菜单区域显示关闭任务列表的按钮",IDC_SHOWTASKLISTCLOSEBTN,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,6,84,170,10
-    LTEXT           "任务列表标签栏",IDC_TABBARGROUP,6,101,172,9
-    CONTROL         "只打开1个任务列表时隐藏标签栏(&H)",IDC_AUTOHIDETABBAR,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,114,170,10
-    CONTROL         "多行标签栏(&S)",IDC_STACKTABBARITEMS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,128,170,10
-    CONTROL         "按名称对标签排序",IDC_KEEPTABSORDERED,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,142,170,10
-    LTEXT           "筛选",IDC_FILTERGROUP,6,159,172,9
+    CONTROL         "使用如下主题(&U)",IDC_USEUITHEME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    6,98,93,10
+    EDITTEXT        IDC_UITHEMEFILE,16,110,157,14,ES_AUTOHSCROLL
+    CONTROL         "显示对话框时允许窗口变暗(&E)",IDC_ENABLELIGHTBOXMGR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,6,129,171,10
+    LTEXT           "筛选",IDC_FILTERGROUP,6,146,172,9
     CONTROL         "'分类'筛选器中允许多选",IDC_MULTISELCATFILTER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,173,162,10
+                    WS_TABSTOP,6,160,162,10
     CONTROL         "'指派给'筛选器中允许多选",IDC_MULTISELALLOCTOFILTER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,187,162,10
+                    WS_TABSTOP,6,174,162,10
     CONTROL         "重新启动ToDoList之后恢复筛选器",IDC_RESTORETASKLISTFILTERS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,6,201,162,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,188,162,10
+    CONTROL         "编辑后自动重新过滤(&U)",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    6,202,123,10
     LTEXT           "排序",IDC_SORTGROUP,191,7,168,9
     CONTROL         "总是把已经完成的任务放在其它任务之后",IDC_SORTDONETASKSATBOTTOM,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,191,21,170,10
-    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
     LTEXT           "工具栏",IDC_TOOLBARGROUP,191,37,168,9
-    LTEXT           "“新任务”按钮将任务放置在:",IDC_STATIC,191,50,115,9
+    LTEXT           "“新任务”按钮将任务放置在:",IDC_STATIC,191,50,98,9
     COMBOBOX        IDC_NEWTASKPOSITION,193,61,141,121,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
     LTEXT           "“新子任务”按钮将任务放置在:",IDC_STATIC,191,78,120,9
@@ -525,15 +645,23 @@ BEGIN
     LTEXT           "位置",IDC_STATIC,191,140,28,9
     COMBOBOX        IDC_COMMENTPOS,250,138,108,145,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "任务列表最大化时仍然显示(&H)",IDC_SHOWCOMMENTSALWAYS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,191,154,170,10
+                    WS_TABSTOP,191,157,170,10
     CONTROL         "备注区域改变大小应用到所有任务列表(&U)",IDC_SHAREDCOMMENTSHEIGHT,"Button",
                     BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,191,
-                    168,170,17
+                    171,170,17
+    LTEXT           "任务列表标签栏",IDC_TABBARGROUP,191,195,172,9
+    CONTROL         "只打开1个任务列表时隐藏标签栏(&H)",IDC_AUTOHIDETABBAR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,191,208,170,10
+    CONTROL         "多行标签栏(&S)",IDC_STACKTABBARITEMS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,191,222,170,10
+    CONTROL         "按名称对标签排序",IDC_KEEPTABSORDERED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,191,236,170,10
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
 END
 
 IDD_PREFUITASKLIST_PAGE DIALOGEX DISCARDABLE 0, 0, 369, 249
 STYLE WS_POPUP
-FONT 9, "宋体"
+FONT 8, "Tahoma"
 BEGIN
     LTEXT           "可见的列(&C)",IDC_COLUMNGROUP,7,7,167,9
     LISTBOX         IDC_COLUMNVISIBILITY,7,18,167,96,LBS_SORT | LBS_OWNERDRAWFIXED | 
@@ -544,17 +672,19 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,134,169,10
     CONTROL         "隐藏'完成日期'域(&D)",IDC_HIDEDUETIME,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,7,148,169,10
+    CONTROL         "隐藏'开始时间'域(&D)",IDC_HIDESTARTTIME,"Button",BS_AUTOCHECKBOX | 
+                    BS_TOP | BS_MULTILINE | WS_TABSTOP,7,162,169,10
     CONTROL         "如果时间或者成本为0则不显示出来(&D)",IDC_HIDEUNDEFINEDTIMEST,"Button",
-                    BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,162,
+                    BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,176,
                     169,10
     CONTROL         "用I&SO格式显示日期",IDC_USEISODATEFORMAT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,176,177,10
-    CONTROL         "显示日期的时候也显示是星期几(&I)",IDC_SHOWWEEKDAYINDATES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,190,177,10
+    CONTROL         "显示日期的时候也显示是星期几(&I)",IDC_SHOWWEEKDAYINDATES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,204,177,10
     CONTROL         "将估计时间和消耗时间四舍五入到整数",IDC_ROUNDTIMEFRACTIONS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,204,169,10
-    CONTROL         "用HMS格式显示估计时行和消耗时间(&D)",IDC_USEHMSTIMEFORMAT,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,218,169,10
+    CONTROL         "用HMS格式显示估计时行和消耗时间(&D)",IDC_USEHMSTIMEFORMAT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,232,169,10
     CONTROL         "显示任务的提示信息(&S)",IDC_SHOWINFOTIPS,"Button",BS_AUTOCHECKBOX | 
                     BS_MULTILINE | WS_TABSTOP,191,7,177,10
     CONTROL         "将显示的备注长度限制在:",IDC_LIMITINFOTIPCOMMENTS,"Button",BS_AUTOCHECKBOX | 
@@ -589,6 +719,9 @@ BEGIN
     CONTROL         "将选中任务的路径显示在列表头中(&D)",IDC_DISPLAYPATHINHEADER,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,191,211,171,10
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,242
+    CONTROL         "限制列宽到：",IDC_LIMITCOLWIDTHS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    191,225,97,10
+    EDITTEXT        IDC_COLWIDTHS,289,224,31,12,ES_AUTOHSCROLL
 END
 
 IDD_PREFUITASKLISTCOLORS_PAGE DIALOGEX DISCARDABLE 0, 0, 369, 249
@@ -973,36 +1106,33 @@ BEGIN
     PUSHBUTTON      "取消",IDCANCEL,186,204,50,14
 END
 
-IDD_FINDTASKS_DIALOG DIALOGEX DISCARDABLE 0, 0, 380, 288
+IDD_FINDTASKS_DIALOG DIALOGEX DISCARDABLE 0, 0, 377, 286
 STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "查找任务"
-FONT 9, "宋体"
+FONT 8, "Tahoma"
 BEGIN
-    COMBOBOX        IDC_SEARCHLIST,85,4,71,121,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+    COMBOBOX        IDC_SEARCHLIST,85,3,71,121,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "查找(&S)",IDC_STATIC,5,32,28,9
-    COMBOBOX        IDC_TASKLISTOPTIONS,33,30,114,125,CBS_DROPDOWNLIST | WS_VSCROLL | 
+    LTEXT           "查找(&S):",IDC_SEARCHLABEL,5,24,28,9
+    COMBOBOX        IDC_TASKLISTOPTIONS,35,22,114,125,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    LTEXT           "包含(&N)",IDC_STATIC,155,32,30,9
-    COMBOBOX        IDC_INCLUDE,190,30,101,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | 
+    LTEXT           "包含(&N)",IDC_STATIC,155,24,31,9
+    COMBOBOX        IDC_INCLUDE,190,22,101,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | 
                     CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "匹配下面的规则(&F):",IDC_STATIC,5,49,124,9
+    LTEXT           "匹配下面的规则(&F):",IDC_STATIC,5,43,124,9
     CONTROL         "List1",IDC_FINDLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | 
                     LVS_SHOWSELALWAYS | LVS_OWNERDRAWFIXED | LVS_NOCOLUMNHEADER | 
-                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,5,60,288,98
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,5,56,288,102
     PUSHBUTTON      "全选(&A)",IDC_SELECTALL,5,172,50,14
     LTEXT           "结果(&R):",IDC_RESULTSLABEL,59,175,186,9
     CONTROL         "List1",IDC_RESULTS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | 
                     LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,
-                    5,191,368,78
-    CONTROL         "结果为单个任务时自动选择它并关闭此窗口(&U)",IDC_AUTOSELECTSINGLES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,274,181,10
+                    5,191,368,93
     CONTROL         "",IDC_HDIVIDER,"Static",SS_ETCHEDHORZ,5,164,368,1
-    SCROLLBAR       IDC_GRIPPER,358,273,15,11
     CONTROL         "",IDC_TOOLBAR,"Static",SS_ETCHEDFRAME | NOT WS_VISIBLE | 
-                    WS_DISABLED,5,5,285,14
-    CONTROL         "",IDC_HDIVIDER2,"Static",SS_ETCHEDHORZ,5,23,289,1
-    CONTROL         "",IDC_VDIVIDER,"Static",SS_ETCHEDVERT,301,4,1,153
+                    WS_DISABLED,5,3,285,14
+    CONTROL         "",IDC_HDIVIDER2,"Static",SS_ETCHEDHORZ,5,17,289,1
+    CONTROL         "",IDC_VDIVIDER,"Static",SS_ETCHEDVERT,301,3,1,153
 END
 
 IDD_WELCOME_PAGE2 DIALOGEX DISCARDABLE 0, 0, 263, 151
@@ -1633,6 +1763,7 @@ BEGIN
     BUTTON      ID_NEWSUBTASK
     SEPARATOR
     BUTTON      ID_EDIT_TASKTEXT
+    BUTTON      ID_EDIT_SETTASKICON
     SEPARATOR
     BUTTON      ID_EDIT_UNDO
     BUTTON      ID_EDIT_REDO
@@ -1694,11 +1825,15 @@ BEGIN
         MENUITEM "打开任务列表...(&O)",           ID_LOAD_NORMAL
         MENUITEM "重新载入任务列表(&R)",            ID_OPEN_RELOAD
         MENUITEM SEPARATOR
+        MENUITEM "打开Web任务(&W)...",       ID_LOAD_FROMWEB
+        MENUITEM SEPARATOR
         MENUITEM "打开存档文件(&V)",               ID_FILE_OPENARCHIVE
         MENUITEM SEPARATOR
         MENUITEM "保存任务列表(&S)",              ID_SAVE_NORMAL
         MENUITEM "另存为...(&A)",        ID_SAVEAS
         MENUITEM "全部保存(&L)",                   ID_SAVEALL
+        MENUITEM SEPARATOR
+        MENUITEM "保存到Web(&V)...",             ID_SAVE_TOWEB
         MENUITEM SEPARATOR
         MENUITEM "加密任务列表(&E)",           ID_FILE_ENCRYPT
         MENUITEM SEPARATOR
@@ -1795,6 +1930,9 @@ BEGIN
             MENUITEM "给任务设置颜色...(&C)",         ID_EDIT_TASKCOLOR
             MENUITEM "清除任务颜色(&C)",          ID_EDIT_CLEARTASKCOLOR
             MENUITEM SEPARATOR
+            MENUITEM "设置任务图标(&I)...",           ID_EDIT_SETTASKICON
+            MENUITEM "清除任务图标(&L)",            ID_EDIT_CLEARTASKICON
+            MENUITEM SEPARATOR
             MENUITEM "切换任务为完成/未完成(&T)",     ID_EDIT_TASKDONE
             MENUITEM "增加任务完成度百分比(&I)", 
                                                     ID_EDIT_INCTASKPERCENTDONE
@@ -1831,6 +1969,9 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "标记任务/取消标记",           ID_EDIT_FLAGTASK
         END
+        MENUITEM SEPARATOR
+        MENUITEM "设置提醒(&R)...",            ID_EDIT_SETREMINDER
+        MENUITEM "清除提醒(&C)",             ID_EDIT_CLEARREMINDER
         MENUITEM SEPARATOR
         MENUITEM "插入日期(&I)",                ID_EDIT_INSERTDATE
         MENUITEM "插入日期和时间(&I)",        ID_EDIT_INSERTDATETIME
@@ -1912,6 +2053,7 @@ BEGIN
         MENUITEM "显示筛选栏(&B)",            ID_VIEW_SHOWFILTERBAR
         MENUITEM "筛选...(&F)",                  ID_VIEW_FILTER
         MENUITEM "清空过滤条件(&C)",               ID_VIEW_CLEARFILTER
+        MENUITEM "刷新过滤器(&R)",             ID_VIEW_REFRESHFILTER
         MENUITEM SEPARATOR
         MENUITEM "显示工具栏(&T)",               ID_VIEW_TOOLBAR
         MENUITEM "显示状态栏(&U)",            ID_VIEW_STATUS_BAR
@@ -2177,6 +2319,9 @@ BEGIN
             MENUITEM "给任务设置颜色...(&C)",         ID_EDIT_TASKCOLOR
             MENUITEM "清除任务颜色(&C)",          ID_EDIT_CLEARTASKCOLOR
             MENUITEM SEPARATOR
+            MENUITEM "设置任务图标(&I)",              ID_EDIT_SETTASKICON
+            MENUITEM "清除任务图标(&L)",            ID_EDIT_CLEARTASKICON
+            MENUITEM SEPARATOR
             MENUITEM "切换任务为完成/未完成(&T)",     ID_EDIT_TASKDONE
             MENUITEM "增加任务完成度百分比(&I)", 
                                                     ID_EDIT_INCTASKPERCENTDONE
@@ -2212,6 +2357,9 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "标记任务/取消标记",           ID_EDIT_FLAGTASK
         END
+        MENUITEM SEPARATOR
+        MENUITEM "设置提醒(&R)...",            ID_EDIT_SETREMINDER
+        MENUITEM "清除提醒(&C)",             ID_EDIT_CLEARREMINDER
         MENUITEM SEPARATOR
         MENUITEM "对任务标题进行拼写检查(&K)",     ID_EDIT_SPELLCHECKTITLE
         MENUITEM "对任务备注进行拼写检查(&K)",  ID_EDIT_SPELLCHECKCOMMENTS
@@ -3139,6 +3287,14 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_FILTER_FLAGGED      "标记的任务"
+    IDS_BEGINWHENREMINDERHOURS "在%.2f小时内开始，%s"
+    IDS_DUEWHENREMINDERHOURS "在%.2f小时内到期，%s"
+    IDS_BEGINWHENREMINDERMINS "在%.0f分钟内开始，%s"
+    IDS_DUEWHENREMINDERMINS "在%.0f分钟内到期，%s"
+    IDS_TDC_FIELD_STARTTIME "开始时间(&T)"
+    IDS_UITHEMEFILEFILTER   "主题文件(*.xml)|*.xml||"
+    IDS_NEEDRESTARTTODOLISTLIGHTBOXCHANGE 
+                            "你必须重新启动ToDoList才能看到窗口变暗效果"
 END
 
 #endif    // English (Australia) resources

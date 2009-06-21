@@ -93,6 +93,10 @@
 #define IDD_WELCOME_PAGE3               210
 #define IDI_FIND                        211
 #define IDB_TREELIST                    212
+#define IDB_TASKICONS                   214
+#define IDD_TASKICON_DIALOG             216
+#define IDD_SETREMINDER_DIALOG          217
+#define IDD_SHOWREMINDER_DIALOG         218
 #define IDC_TB_FRAME                    1001
 #define IDC_REGULARITY                  1001
 #define IDC_REC_OPTIONS_FRAME           1002
@@ -112,6 +116,8 @@
 #define IDC_MONTHDAY                    1007
 #define IDC_FROMFILEPATH                1007
 #define IDC_SAMPLETASKLIST              1007
+#define IDC_COLWIDTHS                   1007
+#define IDC_UITHEMEFILE                 1007
 #define IDC_DONE                        1008
 #define IDC_SAVEEXPORTSTYLESHEET        1008
 #define IDC_MONTHLIST                   1008
@@ -213,6 +219,7 @@
 #define IDC_NOTIFYREADONLY              1042
 #define IDC_HIDEDUETIME                 1042
 #define IDC_AUTOARCHIVE                 1043
+#define IDC_HIDESTARTTIME               1043
 #define IDC_CONFIRMSAVEONEXIT           1044
 #define IDC_NOTIFYDUEONSWITCH           1044
 #define IDC_AVERAGEPERCENTSUBCOMPLETION 1045
@@ -374,6 +381,8 @@
 #define IDC_SELTASKSSENDAS              1105
 #define IDC_ATTRIBCOMBO                 1105
 #define IDC_SEARCHLIST                  1105
+#define IDC_LEADIN                      1105
+#define IDC_SNOOZE                      1105
 #define IDC_EXPORTFOLDER                1106
 #define IDC_NEWSUBTASKPOSITION          1106
 #define IDC_DAYSINONEWEEK               1106
@@ -563,8 +572,19 @@
 #define IDC_COLUMNLIST                  1294
 #define IDC_DATETIMEGROUP               1297
 #define IDC_INCLUDE                     1298
+#define IDC_ICONLIST                    1299
+#define IDC_FROMWHERE                   1300
+#define IDC_TASKTITLE                   1301
+#define IDC_WHENTEXT                    1302
+#define IDC_CHECK4                      1303
+#define IDSNOOZE                        1304
+#define IDGOTOTASK                      1305
 #define IDC_DELETE                      1306
+#define IDC_LIMITCOLWIDTHS              1306
 #define IDC_MOVEDOWN                    1307
+#define IDC_SEARCHLABEL                 1307
+#define IDC_USEUITHEME                  1309
+#define IDC_ENABLELIGHTBOXMGR           1311
 #define IDB_TOOLBAR24GRAY               30997
 #define ID_NEWITEM                      32771
 #define ID_DELETETASK                   32772
@@ -899,6 +919,12 @@
 #define ID_EDIT_QUICKFIND               33244
 #define ID_EDIT_QUICKFINDNEXT           33245
 #define ID_EDIT_QUICKFINDPREV           33246
+#define ID_LOAD_FROMWEB                 33248
+#define ID_SAVE_TOWEB                   33249
+#define ID_EDIT_SETTASKICON             33250
+#define ID_EDIT_SETREMINDER             33251
+#define ID_EDIT_CLEARREMINDER           33252
+#define ID_EDIT_CLEARTASKICON           33253
 #define ID_TOOLS_SELTASKFILELINK        33925
 #define IDS_PTP_NEWTOOL                 57671
 #define IDS_PTP_TOOLNAME                57672
@@ -1390,14 +1416,21 @@
 #define IDS_FILTER_STARTENDTHISWEEK     58142
 #define IDS_FILTER_STARTNEXTSEVENDAYS   58143
 #define IDS_FILTER_FLAGGED              58144
+#define IDS_BEGINWHENREMINDERHOURS      58145
+#define IDS_DUEWHENREMINDERHOURS        58146
+#define IDS_BEGINWHENREMINDERMINS       58147
+#define IDS_DUEWHENREMINDERMINS         58148
+#define IDS_TDC_FIELD_STARTTIME         58149
+#define IDS_UITHEMEFILEFILTER           58150
+#define IDS_NEEDRESTARTTODOLISTLIGHTBOXCHANGE 58151
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        214
-#define _APS_NEXT_COMMAND_VALUE         33248
-#define _APS_NEXT_CONTROL_VALUE         1299
+#define _APS_NEXT_RESOURCE_VALUE        220
+#define _APS_NEXT_COMMAND_VALUE         33254
+#define _APS_NEXT_CONTROL_VALUE         1312
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif

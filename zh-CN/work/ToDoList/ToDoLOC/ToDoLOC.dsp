@@ -151,6 +151,10 @@ SOURCE=..\Resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\RES\task_icons.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=..\RES\todolist.exe.manifest
 # End Source File
 # Begin Source File
