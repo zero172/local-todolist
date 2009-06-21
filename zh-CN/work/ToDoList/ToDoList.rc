@@ -614,7 +614,7 @@ BEGIN
                     170,18
     CONTROL         "在菜单区域显示关闭任务列表的按钮",IDC_SHOWTASKLISTCLOSEBTN,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,6,84,170,10
-    CONTROL         "使用如下主题(&U)",IDC_USEUITHEME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+    CONTROL         "使用主题(&U)",IDC_USEUITHEME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     6,98,93,10
     EDITTEXT        IDC_UITHEMEFILE,16,110,157,14,ES_AUTOHSCROLL
     CONTROL         "显示对话框时允许窗口变暗(&E)",IDC_ENABLELIGHTBOXMGR,"Button",BS_AUTOCHECKBOX | 
@@ -670,7 +670,7 @@ BEGIN
     LTEXT           "日期/时间",IDC_DATETIMEGROUP,7,120,167,9
     CONTROL         "隐藏已完成任务的开始时间和结束时间(&E)",IDC_HIDESTARTDUEFORDONETASKS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,134,169,10
-    CONTROL         "隐藏'完成日期'域(&D)",IDC_HIDEDUETIME,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "隐藏'截止时间'域(&D)",IDC_HIDEDUETIME,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,7,148,169,10
     CONTROL         "隐藏'开始时间'域(&D)",IDC_HIDESTARTTIME,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,7,162,169,10

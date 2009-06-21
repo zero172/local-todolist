@@ -28,42 +28,6 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 
 
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,119
- PRODUCTVERSION 1,0,0,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "080404b0"
-        BEGIN
-            VALUE "Comments", "边城狂人(James Fanch) 翻译"
-            VALUE "FileDescription", "RTFContentCtrl简体中文DLL"
-            VALUE "FileVersion", "1, 0, 0, 119"
-            VALUE "InternalName", "RTFContentCtrlLOC.DLL"
-            VALUE "LegalCopyright", "Copyright (c) AbstractSpoon 2005 & Johan Rosengren (r) 2005"
-            VALUE "OriginalFilename", "RTFContentCtrl.DLL"
-            VALUE "ProductName", "RTFContentCtrl动态连接库"
-            VALUE "ProductVersion", "1, 0, 0, 0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x804, 1200
-    END
-END
-
-
-
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -121,6 +85,8 @@ BEGIN
     BUTTON      BUTTON_RIGHTALIGN
     SEPARATOR
     BUTTON      BUTTON_BULLET
+    BUTTON      BUTTON_NUMBER
+    SEPARATOR
     BUTTON      BUTTON_OUTDENT
     BUTTON      BUTTON_INDENT
     SEPARATOR
@@ -238,6 +204,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     BUTTON_WORDWRAP         "\n自动换行"
+    BUTTON_NUMBER           "\n项目编号"
 END
 
 #endif    // Chinese (P.R.C.) resources
