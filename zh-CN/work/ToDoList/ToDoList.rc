@@ -614,8 +614,8 @@ BEGIN
                     170,18
     CONTROL         "在菜单区域显示关闭任务列表的按钮",IDC_SHOWTASKLISTCLOSEBTN,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,6,84,170,10
-    CONTROL         "使用主题(&U)",IDC_USEUITHEME,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    6,98,93,10
+    CONTROL         "(&U)使用主题(仅在XP及以上版本有效)",IDC_USEUITHEME,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,6,98,167,10
     EDITTEXT        IDC_UITHEMEFILE,16,110,157,14,ES_AUTOHSCROLL
     CONTROL         "显示对话框时允许窗口变暗(&E)",IDC_ENABLELIGHTBOXMGR,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,6,129,171,10
