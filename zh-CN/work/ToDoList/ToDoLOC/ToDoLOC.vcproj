@@ -249,6 +249,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\RES\icon2.ico"
+			>
+		</File>
+		<File
 			RelativePath="..\RES\mainfram.ico"
 			>
 		</File>

@@ -97,6 +97,9 @@
 #define IDD_TASKICON_DIALOG             216
 #define IDD_SETREMINDER_DIALOG          217
 #define IDD_SHOWREMINDER_DIALOG         218
+#define IDD_REUSERECURRINGTASK_DIALOG   220
+#define IDI_VISTASHIELD                 221
+#define IDD_MULTISORT_DIALOG            222
 #define IDC_TB_FRAME                    1001
 #define IDC_REGULARITY                  1001
 #define IDC_REC_OPTIONS_FRAME           1002
@@ -155,6 +158,8 @@
 #define IDC_SEARCHRESULTS               1025
 #define IDC_ALLCATEGORIES               1025
 #define IDC_USE3RDPARTYSOURCECTRL       1025
+#define IDC_ASCENDING                   1025
+#define IDC_ASCENDING1                  1025
 #define IDC_PREVIEWSAVEAS               1026
 #define IDC_DEFAULTTIMEEST              1026
 #define IDC_SEARCHCOMMENTS              1026
@@ -168,6 +173,7 @@
 #define IDC_OFFSETDUEDATE               1026
 #define IDC_LOGTASKSEPARATELY           1026
 #define IDC_ALLALLOCTO                  1026
+#define IDC_ASCENDING2                  1026
 #define IDC_ALWAYSONTOP                 1027
 #define IDC_USEEARLIESTDUEDATE          1027
 #define IDC_SEARCHPERSON                1027
@@ -175,6 +181,7 @@
 #define IDC_SORTVISIBLEONLY             1027
 #define IDC_DEFAULTCREATEDBY            1027
 #define IDC_OFFSETDONEDATE              1027
+#define IDC_ASCENDING3                  1027
 #define IDC_FONTLIST                    1028
 #define IDC_HTMLFONTLIST                1028
 #define IDC_DEFAULTALLOCBY              1028
@@ -244,6 +251,7 @@
 #define IDC_FROMFILE                    1055
 #define IDC_SHARE                       1055
 #define IDC_ALLOPTIONS                  1055
+#define IDC_REUSETASK                   1055
 #define IDC_BUTTON1                     1056
 #define IDC_LOWPRIORITYCOLOR            1056
 #define IDC_ASSIGNSHORTCUT              1056
@@ -276,6 +284,7 @@
 #define IDC_TONEWTASKLIST               1058
 #define IDC_REGISTRY                    1058
 #define IDC_NOSAMPLE                    1058
+#define IDC_CREATETASK                  1058
 #define IDC_BUTTON3                     1059
 #define IDC_SETPRIORITYCOLOR            1059
 #define IDC_IMPORT                      1059
@@ -324,6 +333,7 @@
 #define IDC_TOOLPATH                    1068
 #define IDC_SETDUETODAYTASKCOLOR        1068
 #define IDC_COLUMNVISIBILITY            1069
+#define IDC_SETFLAGGEDCOLOR             1069
 #define IDC_FONTSIZELABEL               1070
 #define IDC_TREEFONTSIZELABEL           1070
 #define IDC_HORZDIVIDER                 1071
@@ -383,6 +393,8 @@
 #define IDC_SEARCHLIST                  1105
 #define IDC_LEADIN                      1105
 #define IDC_SNOOZE                      1105
+#define IDC_SPECIFYFLAGGEDCOLOR         1105
+#define IDC_SORTBY1                     1105
 #define IDC_EXPORTFOLDER                1106
 #define IDC_NEWSUBTASKPOSITION          1106
 #define IDC_DAYSINONEWEEK               1106
@@ -390,10 +402,12 @@
 #define IDC_BYUNITS                     1106
 #define IDC_OPERATORCOMBO               1106
 #define IDC_FILTEROPTIONS               1106
+#define IDC_SORTBY2                     1106
 #define IDC_QUERYAPPLYCHANGESTOSUBTASKS 1107
 #define IDC_NOTIFYDUEBYONSWITCH         1107
 #define IDC_COMMENTSFORMAT              1107
 #define IDC_ALLOCTOLIST                 1107
+#define IDC_SORTBY3                     1107
 #define IDC_ALLOCBYLIST                 1108
 #define IDC_TASKLISTOPTIONS             1114
 #define IDC_FORMATOPTIONS               1115
@@ -534,6 +548,7 @@
 #define IDC_ALLOWPARENTRACKING          1221
 #define IDC_DONTAUTOSAVEUNSAVED         1222
 #define IDC_MULTISELCATFILTER           1223
+#define IDC_MULTISELFILTER              1223
 #define IDC_CATEGORIES                  1224
 #define IDC_MULTISELALLOCTOFILTER       1224
 #define IDC_MATCHALLCATEGORIES          1225
@@ -585,6 +600,7 @@
 #define IDC_SEARCHLABEL                 1307
 #define IDC_USEUITHEME                  1309
 #define IDC_ENABLELIGHTBOXMGR           1311
+#define IDC_VISTASHIELD                 1312
 #define IDB_TOOLBAR24GRAY               30997
 #define ID_NEWITEM                      32771
 #define ID_DELETETASK                   32772
@@ -861,6 +877,7 @@
 #define ID_SORT_BYREMAINING             33146
 #define ID_SORT_BYRECENTEDIT            33147
 #define ID_SORT_NONE                    33148
+#define ID_SORT_MULTI                   33149
 #define ID_HELP_COMMANDLINE             33180
 #define ID_HELP_DONATE                  33181
 #define ID_EDIT_CLEARTASKCOLOR          33182
@@ -925,6 +942,7 @@
 #define ID_EDIT_SETREMINDER             33251
 #define ID_EDIT_CLEARREMINDER           33252
 #define ID_EDIT_CLEARTASKICON           33253
+#define ID_TOOLS_REMOVEFROMSOURCECONTROL 33255
 #define ID_TOOLS_SELTASKFILELINK        33925
 #define IDS_PTP_NEWTOOL                 57671
 #define IDS_PTP_TOOLNAME                57672
@@ -1253,9 +1271,13 @@
 #define IDS_ENCRYPTEDFILE               57987
 #define IDS_DECRYPTFAILED               57988
 #define IDS_PASSWORDTITLE               57989
+#define IDS_PD_TITLE                    57989
 #define IDS_PASSWORDPROMPT              57990
+#define IDS_PD_PASSWORDLABEL            57990
 #define IDS_CONFIRMPROMPT               57991
+#define IDS_PD_CONFIRMLABEL             57991
 #define IDS_CONFIRMFAILED               57992
+#define IDS_PD_CONFIRMFAILED            57992
 #define IDS_OK                          57993
 #define IDS_CANCEL                      57994
 #define IDS_ENABLEENCRYPTION            57995
@@ -1423,14 +1445,43 @@
 #define IDS_TDC_FIELD_STARTTIME         58149
 #define IDS_UITHEMEFILEFILTER           58150
 #define IDS_NEEDRESTARTTODOLISTLIGHTBOXCHANGE 58151
+#define IDS_NOONE                       58152
+#define IDS_NOSTATUS                    58153
+#define IDS_NOVERSION                   58154
+#define IDS_FILTER_ACTIVE               58155
+#define IDS_FILTER_NOTSTARTED           58156
+#define IDS_PTDP_VERSION                58157
+#define IDS_REUSE_RECURRING_TASK        58158
+#define IDS_CANTCOMPLETEMULTIPLERECURRINGTASKS 58159
+#define IDS_SD_SERVERLABEL              58160
+#define IDS_SD_USERNAMELABEL            58161
+#define IDS_SD_PASSWORDLABEL            58162
+#define IDS_SCD_DICTLABEL               58163
+#define IDS_SCD_BROWSE                  58164
+#define IDS_SCD_URL                     58165
+#define IDS_SCD_CHECKINGLABEL           58166
+#define IDS_SCD_RESTART                 58167
+#define IDS_SCD_REPLACELABEL            58168
+#define IDS_SCD_WITHLABEL               58169
+#define IDS_SCD_REPLACE                 58170
+#define IDS_SCD_NEXT                    58171
+#define IDS_SCD_TITLE                   58172
+#define IDS_SD_TITLE                    58173
+#define IDS_SCD_BROWSETITLE             58174
+#define IDS_SCD_SETUPMSG                58175
+#define IDS_SCD_DICTFILTER              58176
+#define IDS_SCD_ENGINETITLE             58177
+#define IDS_SCD_ENGINEFILTER            58178
+#define IDS_SD_ANONLOGIN                58179
+#define IDS_TDLBC_NAME                  58180
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        220
-#define _APS_NEXT_COMMAND_VALUE         33254
-#define _APS_NEXT_CONTROL_VALUE         1312
+#define _APS_NEXT_RESOURCE_VALUE        224
+#define _APS_NEXT_COMMAND_VALUE         33256
+#define _APS_NEXT_CONTROL_VALUE         1313
 #define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif
