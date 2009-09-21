@@ -28,7 +28,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,8,7,0
+ FILEVERSION 5,9,0,0
  PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -47,7 +47,7 @@ BEGIN
             VALUE "Comments", "Alpha\0"
             VALUE "CompanyName", "AbstractSpoon Software\0"
             VALUE "FileDescription", "ToDoList\0"
-            VALUE "FileVersion", "5, 8, 7, 0\0"
+            VALUE "FileVersion", "5, 9, 0, 0\0"
             VALUE "InternalName", "ToDoList\0"
             VALUE "LegalCopyright", "Copyright © AbstractSpoon 2003-09\0"
             VALUE "LegalTrademarks", "\0"
@@ -281,9 +281,9 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,143,59,10
     CONTROL         "HotKey1",IDC_GLOBALHOTKEY,"msctls_hotkey32",WS_BORDER | 
                     WS_TABSTOP,70,141,100,14
-    CONTROL         "Enable use of '.tdl' as a file extension for tasklists",
+    CONTROL         "Enable '.tdl' as a file extension for tasklists",
                     IDC_ENABLETDLEXTENSION,"Button",BS_AUTOCHECKBOX | BS_TOP | 
-                    BS_MULTILINE | WS_TABSTOP,7,157,171,10
+                    BS_MULTILINE | WS_TABSTOP,7,157,151,10
     CONTROL         "Enable 'tdl://' as a url protocol",
                     IDC_ENABLETDLPROTOCOL,"Button",BS_AUTOCHECKBOX | BS_TOP | 
                     BS_MULTILINE | WS_TABSTOP,7,171,171,10
@@ -298,6 +298,7 @@ BEGIN
     CONTROL         "Automatically check for updates on startup",
                     IDC_CHECKFORUPDATES,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,229,172,10
+    ICON            IDI_VISTASHIELD,IDC_VISTASHIELD,160,156,21,20
 END
 
 IDD_PREFMULTIUSER_PAGE DIALOG DISCARDABLE  0, 0, 369, 249
@@ -388,6 +389,7 @@ BEGIN
     CONTROL         "Allow time-tracking on parent tasks",
                     IDC_ALLOWPARENTRACKING,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,144,128,10
+    LTEXT           "Time Periods",IDC_TIMEGROUP,7,160,166,8
     LTEXT           "One day equals",IDC_STATIC,7,175,50,8
     COMBOBOX        IDC_HOURSINONEDAY,71,173,39,115,CBS_DROPDOWN | 
                     WS_TABSTOP
@@ -412,15 +414,15 @@ BEGIN
     CONTROL         "Include completed subtasks in this calculation",
                     IDC_INCLUDEDONEINAVERAGECALC,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,203,69,164,10
-    CONTROL         "Weight % completion by time estimate",
-                    IDC_WEIGHTPERCENTCALCBYTIMEEST,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,203,83,159,10
-    CONTROL         "Weight % completion by priority",
-                    IDC_WEIGHTPERCENTCALCBYPRIORITY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,203,97,159,10
     CONTROL         "Weight % completion by number of subtasks",
                     IDC_WEIGHTPERCENTCALCBYNUMSUB,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,203,111,166,10
+                    WS_TABSTOP,203,83,166,10
+    CONTROL         "Weight % completion by time estimate",
+                    IDC_WEIGHTPERCENTCALCBYTIMEEST,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,216,97,153,10
+    CONTROL         "Weight % completion by priority",
+                    IDC_WEIGHTPERCENTCALCBYPRIORITY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,216,111,153,10
     CONTROL         "T&ake a task's '% Complete' into account when calculating time estimates",
                     IDC_USEPERCENTDONEINTIMEEST,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,191,125,176,18
@@ -440,7 +442,6 @@ BEGIN
                     IDC_AUTOUPDATEDEPENDEES,"Button",BS_AUTOCHECKBOX | 
                     BS_TOP | BS_MULTILINE | WS_TABSTOP,192,221,175,19
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDVERT,183,7,1,243
-    LTEXT           "Time Periods",IDC_TIMEGROUP,7,160,166,8
     LTEXT           "hours",IDC_STATIC,117,175,18,8
     LTEXT           "days",IDC_STATIC,117,190,16,8
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,210,169,1
@@ -558,17 +559,14 @@ BEGIN
                     IDC_ENABLELIGHTBOXMGR,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,6,129,171,10
     LTEXT           "Filtering",IDC_FILTERGROUP,6,146,172,8
-    CONTROL         "&Allow multi selection in the 'Category' filter",
-                    IDC_MULTISELCATFILTER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,160,162,10
-    CONTROL         "Allow &multi selection in the 'Allocated To' filter",
-                    IDC_MULTISELALLOCTOFILTER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,174,162,10
+    CONTROL         "&Allow multi selection in the filter droplists",
+                    IDC_MULTISELFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    6,160,162,10
     CONTROL         "Rest&ore tasklist filters when restarting ToDoList",
                     IDC_RESTORETASKLISTFILTERS,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,6,188,162,10
+                    WS_TABSTOP,6,174,162,10
     CONTROL         "A&utomatically refilter after editing",IDC_CHECK4,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,202,123,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,188,123,10
     LTEXT           "Sorting",IDC_SORTGROUP,191,7,168,8
     CONTROL         "Al&ways sort completed tasks below other tasks",
                     IDC_SORTDONETASKSATBOTTOM,"Button",BS_AUTOCHECKBOX | 
@@ -763,6 +761,9 @@ BEGIN
     PUSHBUTTON      "S&et...   ",IDC_SETDONECOLOR,318,174,40,13,BS_RIGHT
     CONTROL         "",-1,"Static",SS_ETCHEDVERT,183,7,1,242
     LTEXT           "to",-1,120,118,8,8
+    CONTROL         "&Flagged task colour",IDC_SPECIFYFLAGGEDCOLOR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,189,190,95,10
+    PUSHBUTTON      "S&et...   ",IDC_SETFLAGGEDCOLOR,318,188,40,13,BS_RIGHT
 END
 
 IDD_PRINT_DIALOG DIALOG DISCARDABLE  0, 0, 313, 177
@@ -1228,6 +1229,46 @@ BEGIN
     LTEXT           "Remind me again in",IDC_STATIC,7,47,62,8
 END
 
+IDD_REUSERECURRINGTASK_DIALOG DIALOG DISCARDABLE  0, 0, 186, 90
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Recurring Task"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Do you want to create a new recurring task or reuse the existing recurring task ?",
+                    IDC_STATIC,7,7,172,20
+    CONTROL         "Create a new task",IDC_CREATETASK,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,20,32,73,10
+    CONTROL         "Reuse existing task",IDC_REUSETASK,"Button",
+                    BS_AUTORADIOBUTTON,20,46,77,10
+    DEFPUSHBUTTON   "OK",IDOK,74,69,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,129,69,50,14
+END
+
+IDD_MULTISORT_DIALOG DIALOG DISCARDABLE  0, 0, 185, 94
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Multi-Sort"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "&Sort by",IDC_STATIC,7,9,23,8
+    COMBOBOX        IDC_SORTBY1,40,7,82,30,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Then by",IDC_STATIC,7,27,27,8
+    COMBOBOX        IDC_SORTBY2,40,25,82,30,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "T&hen by",IDC_STATIC,7,46,27,8
+    COMBOBOX        IDC_SORTBY3,40,44,82,30,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "&Ascending",IDC_ASCENDING1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,130,9,48,10
+    DEFPUSHBUTTON   "OK",IDOK,72,73,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,128,73,50,14
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,65,171,1
+    CONTROL         "&Ascending",IDC_ASCENDING2,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,130,27,48,10
+    CONTROL         "&Ascending",IDC_ASCENDING3,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,130,46,48,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1310,6 +1351,16 @@ BEGIN
 0x3031, 0x6d20, 0x6e69, 0x7475, 0x7365, "\000" 
     IDC_AUTOSAVEFREQUENCY, 0x403, 11, 0
 0x3531, 0x6d20, 0x6e69, 0x7475, 0x7365, "\000" 
+    IDC_NUMBACKUPSTOKEEP, 0x403, 2, 0
+0x0031, 
+    IDC_NUMBACKUPSTOKEEP, 0x403, 2, 0
+0x0032, 
+    IDC_NUMBACKUPSTOKEEP, 0x403, 2, 0
+0x0033, 
+    IDC_NUMBACKUPSTOKEEP, 0x403, 2, 0
+0x0034, 
+    IDC_NUMBACKUPSTOKEEP, 0x403, 2, 0
+0x0035, 
     IDC_NUMBACKUPSTOKEEP, 0x403, 3, 0
 0x3031, "\000" 
     IDC_NUMBACKUPSTOKEEP, 0x403, 3, 0
@@ -1881,6 +1932,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 85
     END
+
+    IDD_REUSERECURRINGTASK_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    IDD_MULTISORT_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 178
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1939,6 +2006,7 @@ IDI_TRAYICONTRACK       ICON    DISCARDABLE     "res\\trayicon.ico"
 IDI_TRAYICON            ICON    DISCARDABLE     "RES\\ToDoList.ico"
 IDI_TRAYICONXP          ICON    DISCARDABLE     "RES\\mainfram.ico"
 IDI_FIND                ICON    DISCARDABLE     "res\\find.ico"
+IDI_VISTASHIELD         ICON    DISCARDABLE     "res\\icon2.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1970,6 +2038,8 @@ BEGIN
     SEPARATOR
     BUTTON      ID_EDIT_TASKTEXT
     BUTTON      ID_EDIT_SETTASKICON
+    SEPARATOR
+    BUTTON      ID_EDIT_SETREMINDER
     SEPARATOR
     BUTTON      ID_EDIT_UNDO
     BUTTON      ID_EDIT_REDO
@@ -2221,7 +2291,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Quick Find",                 ID_EDIT_QUICKFIND
         MENUITEM "Find &Next",                  ID_EDIT_QUICKFINDNEXT
-        MENUITEM "Find &Previous",              ID_EDIT_QUICKFINDPREV
+        MENUITEM "Find &Prev",                  ID_EDIT_QUICKFINDPREV
     END
     POPUP "&View"
     BEGIN
@@ -2283,6 +2353,8 @@ BEGIN
     END
     POPUP "&Sort By"
     BEGIN
+        MENUITEM "Multi-Sort...",               ID_SORT_MULTI
+        MENUITEM SEPARATOR
         MENUITEM "&Allocated By",               ID_SORT_BYALLOCBY
         MENUITEM "&Allocated To",               ID_SORT_BYALLOCTO
         MENUITEM "&Category",                   ID_SORT_BYCATEGORY
@@ -2315,6 +2387,10 @@ BEGIN
     BEGIN
         MENUITEM "Check &Out to Edit",          ID_TOOLS_CHECKOUT
         MENUITEM "Check &In",                   ID_TOOLS_CHECKIN
+        MENUITEM SEPARATOR
+        MENUITEM "Remove Tasklist from Source Control", 
+                                                ID_TOOLS_REMOVEFROMSOURCECONTROL
+
         MENUITEM SEPARATOR
         MENUITEM "I&mport Tasks...",            ID_TOOLS_IMPORT
         MENUITEM "E&xport Tasks...",            ID_TOOLS_EXPORT
@@ -2895,7 +2971,6 @@ BEGIN
     IDS_PREF_EXPORT         "Importing/Exporting"
     IDS_PREF_TOOLS          "User Defined Tools"
     IDS_PREF_SHORTCUT       "Keyboard Shortcuts"
-    IDS_WELCOME             "<font face=""tahoma""><b>ToDoList</b> can store your preferences in the registry or in an ini file. \n\nIf you wish to be able to share your preferences or to take them with you then select 'Use an Ini File' from the droplist below, otherwise choose 'Use the Registry' .<br><br>Enjoy!<br><br><a href=www.abstractspoon.com><font color=""#006000"" face=""tahoma""><u><b>Abstract</b><i>Spoon</i> Software</u></font></a>"
     IDS_PREF_TASKDEFINHERIT "Tasks>Inheritable Attributes"
     IDS_PREF_UIFILTERING    "User Interface>General>Filtering"
     IDS_PREF_UITOOLBAR      "User Interface>General>Toolbar"
@@ -2914,7 +2989,7 @@ BEGIN
     IDS_OPENRECENT_FAILED   "The selected tasklist could not be opened.\n\nPlease check that it has not been moved or deleted."
     IDS_OPENREADONLY        "The file '%s' is currently read-only \nand you will not be able to make any changes to it."
     IDS_OPENSOURCECONTROLLED 
-                            "The file '%s' is currently held under source control \nand you will not be able to make any changes to it.\n\nTo edit the file you need to enable source control and check the file out."
+                            "The file '%s' is currently held under source control \nand you will not be able to make any changes to it.\n\nTo edit the file you need to enable source control and check the file out. Or Alternatively,\nremove the file from source control via the Tools menu."
     IDS_OPENNEWER           "The file '%s' has a more recent file format than your \ncurrent version of ToDoList and you will therefore not be able to make any \nchanges to it."
     IDS_DUETOMORROW         "The following tasks are due tomorrow"
     IDS_DUETHISWEEK         "The following tasks are due by the end of this week"
@@ -2927,7 +3002,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_ABOUTHEADING        "A simple and effective way to keep on top of your programming tasks (freeware)"
+    IDS_ABOUTHEADING        "A simple and effective way to keep on top of your daily tasks"
     IDS_PASTETOPLEVELTASK   "Paste at bottom of tasklist"
     IDS_CONFIRMRELOAD       "If you reload the tasklist you will lose your current \nchanges.\n\nAre you sure you want to continue?"
     IDS_PRINTFAILED         "ToDoList was unable to print the active tasklist via your default  browser, which may mean that your browser does not support the 'print' command.\n\nPlease see your browser help for more information."
@@ -3209,13 +3284,13 @@ BEGIN
     IDS_UNKNOWNENCRYPTION   "'%s' could not be opened because the method of encryption could not be determined."
     IDS_ENCRYPTEDFILE       "The tasklist '%s' has been encrypted.\n\nPlease enter the required password below."
     IDS_DECRYPTFAILED       "The tasklist '%s' could not be decrypted using the provided password.\n\nWould you like to try again?"
-    IDS_PASSWORDTITLE       "Password Required"
-    IDS_PASSWORDPROMPT      "Password:"
-    IDS_CONFIRMPROMPT       "Confirm Password:"
-    IDS_CONFIRMFAILED       "The confirmation did not match the password.\n\nPlease try again."
+    IDS_PD_TITLE            "Password Required"
+    IDS_PD_PASSWORDLABEL    "Password:"
+    IDS_PD_CONFIRMLABEL     "Confirm Password:"
+    IDS_PD_CONFIRMFAILED    "The confirmation did not match the password.\n\nPlease try again."
     IDS_OK                  "OK"
     IDS_CANCEL              "Cancel"
-    IDS_ENABLEENCRYPTION    "Enter the password with which you would like to encrypt this tasklist and then confirm it."
+    IDS_ENABLEENCRYPTION    "Enter the password for encrypting this tasklist and then confirm it."
     IDS_SELECTENCRYPTED     "The tasklist '%s' is password protected.\n\nPlease enter the required password below."
     IDS_TDC_COLUMN_POS      "Pos."
     IDS_TDLBC_TITLE         "Title"
@@ -3260,7 +3335,7 @@ BEGIN
     IDS_BADPLUGINTITLE      "Plugins Out of Date"
     IDS_FIXDEPENDEESTITLE   "Validate Task Dates"
     IDS_FIXDEPENDEES        "Would you like to validate all task dates against their dependencies?"
-    IDS_LICENSE             "ToDoList © 2003-06 <a href=""www.abstractspoon.com""><font color=""#006000"" face=""tahoma""><u><b>Abstract</b><i>Spoon </i>Software</u></font></a> is licensed under a <a href=""http://creativecommons.org/licenses/by-sa/2.5/""><font color=""#606060"" face=""tahoma"">Creative Commons Attribution-ShareAlike 2.5  License</a></font>"
+    IDS_LICENSE             "ToDoList is freeware and is licensed under an <br><a href=""http://www.opensource.org/licenses/eclipse-1.0.php"">Eclipse Public License 1.0</a>."
     IDS_SETFOCUS2TASKLIST   "Sets the focus to the tasklist"
     IDS_NOWUW               "Before you can download updates you need to install the Web Update Wizard component (and then try again).\n\nWould you like to download the Web Update Wizard now?"
     IDS_NOALLOCTO           "<unallocated>"
@@ -3493,19 +3568,58 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_FILTER_FLAGGED      "Flagged Tasks"
-    IDS_BEGINWHENREMINDERHOURS "begins in %.2f hours at %s"
-    IDS_DUEWHENREMINDERHOURS "is due in %.2f hours at %s"
-    IDS_BEGINWHENREMINDERMINS "begins in %.0f minutes at %s"
-    IDS_DUEWHENREMINDERMINS "is due in %.0f minutes at %s"
+    IDS_BEGINWHENREMINDERHOURS "begins in %.2f hour(s) at %s"
+    IDS_DUEWHENREMINDERHOURS "is due in %.2f hour(s) at %s"
+    IDS_BEGINWHENREMINDERMINS "begins in %.0f minute(s) at %s"
+    IDS_DUEWHENREMINDERMINS "is due in %.0f minute(s) at %s"
     IDS_TDC_FIELD_STARTTIME "Start &Time"
     IDS_UITHEMEFILEFILTER   "Theme Files (*.xml)|*.xml||"
     IDS_NEEDRESTARTTODOLISTLIGHTBOXCHANGE 
                             "You will need to restart ToDoList to see the change to the window fading"
+    IDS_NOONE               "<noone>"
+    IDS_NOSTATUS            "<no status>"
+    IDS_NOVERSION           "<no version>"
+    IDS_FILTER_ACTIVE       "Active Tasks"
+    IDS_FILTER_NOTSTARTED   "Tasks Not Started"
+    IDS_PTDP_VERSION        "Version"
+    IDS_REUSE_RECURRING_TASK "Do you want to reuse the recurring task?"
+    IDS_CANTCOMPLETEMULTIPLERECURRINGTASKS 
+                            "You cannot complete more than one recurring task at the same time."
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_EDIT_SETTASKICON     "\nSet Task Icon"
+    ID_EDIT_SETREMINDER     "\nSet Reminder"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_SD_SERVERLABEL      "&Server"
+    IDS_SD_USERNAMELABEL    "&Username:"
+    IDS_SD_PASSWORDLABEL    "&Password:"
+    IDS_SCD_DICTLABEL       "Ac&tive Dictionary:"
+    IDS_SCD_BROWSE          "Bro&wse"
+    IDS_SCD_URL             "Download More Dictionaries"
+    IDS_SCD_CHECKINGLABEL   "C&hecking Text:"
+    IDS_SCD_RESTART         "R&estart"
+    IDS_SCD_REPLACELABEL    "Replace:"
+    IDS_SCD_WITHLABEL       "&With:"
+    IDS_SCD_REPLACE         "&Replace"
+    IDS_SCD_NEXT            "&Next Word"
+    IDS_SCD_TITLE           "Spell Checker"
+    IDS_SD_TITLE            "Enter Remote Server Details"
+    IDS_SCD_BROWSETITLE     "Select Dictionary"
+    IDS_SCD_SETUPMSG        "Before you can spell check for the first time you need \nto specify the location of the Spell Checker."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_SCD_DICTFILTER      "Dictionaries (*.dic)|*.dic||"
+    IDS_SCD_ENGINETITLE     "Locate Spell Check Engine"
+    IDS_SCD_ENGINEFILTER    "SpellChecker Engines|*.dll||"
+    IDS_SD_ANONLOGIN        "&Anonymous Login"
+    IDS_TDLBC_NAME          "Task Name"
 END
 
 #endif    // English (Australia) resources
