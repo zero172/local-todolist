@@ -25,7 +25,7 @@ package.VAR = {
 package.DEFAULT = {
     origin: "original-todolist~",
     plugins: "original-plugins~",
-    zhCnDll: "zh-CN~\\todolist\\release",
+    zhCnDll: "zh-CN~\\todolist",
     zhCnDoc: "zh-CN~\\doc",
     middle: "ToDoList",
     release: "release",
